@@ -1,4 +1,5 @@
 import json
+import re
 from os import path as osp
 from pathlib import Path
 
@@ -45,3 +46,26 @@ def save_config(config_to_save):
 def get_manager(profile="default"):
     config = load_config()
     return Okta(**config["profiles"][config[profile]])
+
+
+def filter_users(user_list, *, filters={}, partial=False):
+    if not filters:
+        return user_list
+
+    if not partial:
+        filters = {k: re.compile(v).fullmatch for k, v in filters.items()}
+    else:
+        filters = {k: re.compile(v).search for k, v in filters.items()}
+
+    def _match(user):
+        for k, check_func in filters.items():
+            user_value = user["profile"].get(k, None)
+            # user does not have the key? go away.
+            if user_value is None:
+                return False
+            # user has the key? let's do an exact string match
+            if not check_func(user_value):
+                return False
+        return True
+
+    return filter(_match, user_list)
