@@ -4,7 +4,7 @@ from functools import wraps
 
 import click
 
-from .api import load_config, save_config, get_manager
+from .api import load_config, save_config, get_manager, filter_users
 from .exceptions import ExitException
 
 
@@ -12,14 +12,18 @@ okta_manager = None
 config = None
 
 
-def _check_configured(func):
+def _command_wrapper(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         global okta_manager
         global config
         try:
             okta_manager = get_manager()
-            func(*args, **kwargs)
+            rv = func(*args, **kwargs)
+            if not isinstance(rv, str):
+                print(json.dumps(rv, indent=2, sort_keys=True))
+            else:
+                print(rv)
         except ExitException as e:
             print("ERROR: {}".format(str(e)))
             sys.exit(-1)
@@ -62,15 +66,58 @@ def config_list():
         print("{}  {}  {}".format(name, conf["url"], "*"*3+conf["token"][38:]))
 
 
-@click.group()
-def cli_std():
+@cli_config.command(name="use-profile")
+@click.argument("profile-name")
+@_command_wrapper
+def config_use_profile(profile_name):
+    global config
+    config = load_config()
+    if profile_name not in config["profiles"]:
+        raise ExitException("Unknown profile name: '{}'.".format(profile_name))
+    config["default"] = profile_name
+    save_config(config)
+    return "Default profile set to '{}'.".format(profile_name)
+
+
+@cli_config.command(name="current-profile")
+@_command_wrapper
+def config_current_profile():
+    config = load_config()
+    if "default" not in config:
+        return "No profile set."
+    return "Current profile set to '{}'.".format(config["default"])
+
+
+@click.group(name="users")
+def cli_users():
     pass
 
 
-@cli_std.command(name="list-users")
-@_check_configured
-def std_list_users():
-    print(json.dumps(okta_manager.list_users(), indent=2, sort_keys=True))
+@cli_users.command(name="list")
+@click.option("-f", "--filter", 'filters', multiple=True)
+@click.option("-p", "--partial", is_flag=True,
+              help="Accept partial matches for filters.")
+@_command_wrapper
+def users_list(filters, partial):
+    filters_dict = {k: v for k, v in map(lambda x: x.split("="), filters)}
+    users = okta_manager.list_users()
+    return list(filter_users(users, filters=filters_dict, partial=partial))
+
+
+@cli_users.command(name="search")
+@click.argument("query", nargs=-1)
+@_command_wrapper
+def users_search(query):
+    return okta_manager.search_user(" ".join(query))
+
+
+@cli_users.command(name="update")
+@click.argument('id')
+@click.option('-s', '--set', 'set_fields', multiple=True)
+@_command_wrapper
+def users_update(id, set_fields):
+    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    return okta_manager.update_user(id, **fields_dict)
 
 
 @click.group()
@@ -79,4 +126,4 @@ def cli():
 
 
 cli.add_command(cli_config)
-cli.add_command(std_list_users)
+cli.add_command(cli_users)
