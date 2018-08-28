@@ -94,21 +94,18 @@ def cli_users():
 
 
 @cli_users.command(name="list")
-@click.option("-f", "--filter", 'filters', multiple=True)
+@click.option("-m", "--match", 'matches', multiple=True)
 @click.option("-p", "--partial", is_flag=True,
-              help="Accept partial matches for filters.")
+              help="Accept partial matches for match queries.")
+@click.option("-f", "--filter", 'api_filter', default="")
+@click.option("-s", "--search", 'api_search', default="")
 @_command_wrapper
-def users_list(filters, partial):
-    filters_dict = {k: v for k, v in map(lambda x: x.split("="), filters)}
-    users = okta_manager.list_users()
+def users_list(matches, partial, api_filter, api_search):
+    users = okta_manager.list_users(
+            filter_query=api_filter,
+            search_query=api_search)
+    filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     return list(filter_users(users, filters=filters_dict, partial=partial))
-
-
-@cli_users.command(name="search")
-@click.argument("query", nargs=-1)
-@_command_wrapper
-def users_search(query):
-    return okta_manager.search_user(" ".join(query))
 
 
 @cli_users.command(name="update")
