@@ -66,10 +66,10 @@ def config_list():
         print("{}  {}  {}".format(name, conf["url"], "*"*3+conf["token"][38:]))
 
 
-@cli_config.command(name="use-profile")
+@cli_config.command(name="use-context")
 @click.argument("profile-name")
 @_command_wrapper
-def config_use_profile(profile_name):
+def config_use_context(profile_name):
     global config
     config = load_config()
     if profile_name not in config["profiles"]:
