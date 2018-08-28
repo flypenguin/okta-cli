@@ -2,6 +2,13 @@
 # let's ignore all the top-level .json/.csv files
 /*.json
 /*.csv
+/*.sh
+/logs*
+*.tb2
+*.tgz
+*.tar
+*.xz
+*.bz2
 
 
 # Created by https://www.gitignore.io/api/python
