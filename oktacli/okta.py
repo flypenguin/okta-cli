@@ -17,10 +17,17 @@ class Okta:
         })
 
     def list_users(self):
-        rsp = self.session.get(self.url + "users/")
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
-        return rsp.json()
+        rv = []
+        url = self.url + "users/"
+        while True:
+            rsp = self.session.get(url)
+            if rsp.status_code >= 400:
+                raise requests.HTTPError(json.dumps(rsp.json()))
+            rv += rsp.json()
+            url = rsp.links.get("next", {"url": ""})["url"]
+            if not url:
+                break
+        return rv
 
     def update_user(self, user_id, **fields):
         body = json.dumps({'profile': fields}).encode("utf-8")
