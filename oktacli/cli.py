@@ -57,6 +57,7 @@ def _dict_flat_to_nested(flat_dict, defaults={}):
 
 @click.group(name="config")
 def cli_config():
+    """Manage okta-cli configuration"""
     pass
 
 
@@ -115,6 +116,7 @@ def config_current_context():
 
 @click.group(name="users")
 def cli_users():
+    """Add, update (etc.) users"""
     pass
 
 
@@ -183,6 +185,13 @@ def users_update(set_fields, read_csv, activate, provider, nextlogin):
 
 @click.group()
 def cli():
+    """
+    Okta CLI helper.
+
+    See subcommands for help: "okta-cli users --help" etc.
+
+    If in doubt start with: "okta-cli config new --help"
+    """
     pass
 
 
