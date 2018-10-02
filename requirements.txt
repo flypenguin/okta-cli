@@ -1,4 +1,1 @@
-appdirs
-click
-requests
-dotted
+-e .
