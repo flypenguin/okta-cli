@@ -10,6 +10,10 @@
 *.xz
 *.bz2
 
+# ignore all private-* files, but only top-level
+/PRIVATE-*
+/private-*
+
 
 # Created by https://www.gitignore.io/api/python
 
