@@ -195,5 +195,11 @@ def cli():
     pass
 
 
+@cli.command(name="version")
+def cli_version():
+    """Prints version number and exit"""
+    print(VERSION)
+
+
 cli.add_command(cli_config)
 cli.add_command(cli_users)
