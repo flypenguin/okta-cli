@@ -10,7 +10,7 @@ The current featureset is purely based on the author's needs, which currently ar
 ## Quickstart
 
 ```bash
-$ pip install okta-cli (NOT YET WORKING CAUSE NOT YET PUBLISHED SORRY :)
+$ pip install okta-cli
 $ okta-cli config new -n my-profile -u https://my.okta.url -t API_TOKEN
 $ okta-cli users list -f 'email eq "my@email.com"'
 $ okta-cli users update id012345678 --set email=my@other.email.com --set phone=01234/5678
