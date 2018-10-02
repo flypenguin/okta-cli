@@ -35,6 +35,15 @@ class Okta:
             rsp = self.session.get(url)
         return rv
 
+    def add_user(self, query_params, **fields):
+        body = json.dumps(fields).encode("utf-8")
+        rsp = self.session.post(self.url + "users/",
+                                params=query_params,
+                                data=body)
+        if rsp.status_code >= 400:
+            raise requests.HTTPError(json.dumps(rsp.json()))
+        return rsp.json()
+
     def update_user(self, user_id, **fields):
         body = json.dumps({'profile': fields}).encode("utf-8")
         rsp = self.session.post(self.url + "users/" + user_id,

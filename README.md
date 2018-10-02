@@ -16,3 +16,9 @@ $ okta-cli users list -f 'email eq "my@email.com"'
 $ okta-cli users update id012345678 --set email=my@other.email.com --set phone=01234/5678
 ```
 
+## References
+
+This project uses a couple of nice other projects:
+
+* [Click](https://click.palletsprojects.com)
+* [Dotted](https://pypi.org/project/dotted/)

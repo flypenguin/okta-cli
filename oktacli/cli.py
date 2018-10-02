@@ -1,12 +1,16 @@
 import json
 import sys
+import csv
 from functools import wraps
 
 import click
+from dotted.collection import DottedDict
 
 from .api import load_config, save_config, get_manager, filter_users
 from .exceptions import ExitException
 
+
+VERSION = "1.0.0"
 
 okta_manager = None
 config = None
@@ -28,6 +32,27 @@ def _command_wrapper(func):
             print("ERROR: {}".format(str(e)))
             sys.exit(-1)
     return wrapper
+
+
+def _dict_flat_to_nested(flat_dict, defaults={}):
+    """
+    Takes a "flat" dictionary, whose keys are of the form "one.two.three".
+    It will return a nested dictionary with this content:
+    {one: {two: {three: value}}}.
+
+    :param flat_dict: The dictionary to convert to a nested one
+    :param defaults: Default values to use if flat_dict does not provide them
+    :return: A nested python dictionary
+    """
+    tmp = DottedDict()
+    # values from flat_dict have precedence over default values
+    for key, val in defaults.items():
+        tmp[key] = val
+    for key, val in flat_dict.items():
+        # key can be "one.two", so keys with a dot in their name are not
+        # permitted, cause they are interpreted ...
+        tmp[key] = val
+    return tmp.to_python()
 
 
 @click.group(name="config")
@@ -114,7 +139,46 @@ def users_list(matches, partial, api_filter, api_search):
 @_command_wrapper
 def users_update(id, set_fields):
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    return okta_manager.update_user(id, **fields_dict)
+    nested_dict = _dict_flat_to_nested(fields_dict)
+    return okta_manager.update_user(id, **nested_dict)
+
+
+@cli_users.command(name="add")
+@click.option('-s', '--set', 'set_fields', multiple=True)
+@click.option('-r', '--read-csv', help="Read from CSV file", default=None)
+@click.option('-a', '--activate/--no-activate',
+              help="Set 'activation' flag, see Okta API docs")
+@click.option('-p', '--provider/--no-provider',
+              help="Set 'provider' flag, see Okta API docs")
+@click.option('-n', '--nextlogin/--no-nextlogin',
+              help="Set 'nextLogin' to 'changePassword', see Okta API docs")
+@_command_wrapper
+def users_update(set_fields, read_csv, activate, provider, nextlogin):
+    # first use and clean the fields dict from the command line
+    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    # query parameters
+    params = {}
+    # set the flags
+    if activate:
+        params['activate'] = str(activate).upper()
+    if provider:
+        params['provider'] = str(provider).upper()
+    if nextlogin:
+        params['nextlogin'] = "changePassword"
+    # when reading from csv, we iterate
+    if read_csv:
+        added = []
+        with open(read_csv, "r", encoding="utf-8") as infile:
+            dr = csv.DictReader(infile)
+            for row in dr:
+                final_dict = _dict_flat_to_nested(
+                    row, defaults=fields_dict)
+                added.append(okta_manager.add_user(params, **final_dict))
+        return added
+    # when creating directly, we don't :)
+    else:
+        final_dict = _dict_flat_to_nested(fields_dict)
+        return okta_manager.add_user(params, **final_dict)
 
 
 @click.group()
