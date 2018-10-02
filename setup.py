@@ -4,7 +4,7 @@ from setuptools import setup
 
 
 BASE_URL = "https://github.com/CognotektGmbH/okta-cli"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 #long_description = (
 #    io.open('DESCRIPTION.rst', encoding='utf-8').read() + '\n'

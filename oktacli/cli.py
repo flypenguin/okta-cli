@@ -10,7 +10,7 @@ from .api import load_config, save_config, get_manager, filter_users
 from .exceptions import ExitException
 
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 okta_manager = None
 config = None
