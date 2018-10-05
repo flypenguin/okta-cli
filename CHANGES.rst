@@ -1,3 +1,10 @@
+v2.0.0
+======
+
+* 'users update' can now update all fields, including security question and
+  password (BREAKING CHANGE)
+* add 'pw reset' command
+
 v1.0.2
 ======
 
