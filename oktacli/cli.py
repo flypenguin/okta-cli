@@ -142,7 +142,7 @@ def users_list(matches, partial, api_filter, api_search):
 def users_update(id, set_fields):
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     nested_dict = _dict_flat_to_nested(fields_dict)
-    return okta_manager.update_user(id, **nested_dict)
+    return okta_manager.update_user(user_id, nested_dict)
 
 
 @cli_users.command(name="add")
@@ -175,12 +175,12 @@ def users_update(set_fields, read_csv, activate, provider, nextlogin):
             for row in dr:
                 final_dict = _dict_flat_to_nested(
                     row, defaults=fields_dict)
-                added.append(okta_manager.add_user(params, **final_dict))
+                added.append(okta_manager.add_user(params, final_dict))
         return added
     # when creating directly, we don't :)
     else:
         final_dict = _dict_flat_to_nested(fields_dict)
-        return okta_manager.add_user(params, **final_dict)
+        return okta_manager.add_user(params, final_dict)
 
 
 @click.group()
