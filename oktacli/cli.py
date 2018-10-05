@@ -150,11 +150,43 @@ def users_list(matches, partial, api_filter, api_search):
 
 
 @cli_users.command(name="update")
-@click.argument('id')
+@click.argument('user_id')
 @click.option('-s', '--set', 'set_fields', multiple=True)
+@click.option('-c', '--context', default=None,
+              help="Set a context (profile, credentials) to save typing")
 @_command_wrapper
-def users_update(id, set_fields):
+def users_update(user_id, set_fields, context):
+    """Update a user object. see https://is.gd/DWHEvA for details.
+
+    This is equivalent:
+
+    \b
+    okta-cli users update 012345 -s profile.lastName=Doe
+    okta-cli users update 012345         -s lastName=Doe -c profile
+
+    EXAMPLE: Update a profile field:
+
+    \b
+    okta-cli users update 012345 \\
+       -s profile.email=me@myself.com
+
+    EXAMPLE: Set a new password:
+
+    \b
+    okta-cli users update 012345 \\
+       -s credentials.password.value="SoopaS3cret!"
+
+    EXAMPLE: Update a recovery question:
+
+    \b
+    okta-cli users update 012345 \\
+       -p credentials.recovery_question \\
+       -s question="Who let the dogs out?" \\
+       -s answer="Me."
+    """
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    if context:
+        fields_dict = {context + "." + k: v for k, v in fields_dict.items()}
     nested_dict = _dict_flat_to_nested(fields_dict)
     return okta_manager.update_user(user_id, nested_dict)
 
