@@ -114,6 +114,20 @@ def config_current_context():
     return "Current profile set to '{}'.".format(config["default"])
 
 
+@click.group(name="pw")
+def cli_pw():
+    """Manage passwords"""
+    pass
+
+
+@cli_pw.command(name="reset")
+@click.argument("user-id")
+@click.option("-n", "--no-email", is_flag=True)
+@_command_wrapper
+def pw_reset(user_id, no_email):
+    return okta_manager.reset_password(user_id, send_email=not no_email)
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
@@ -203,3 +217,4 @@ def cli_version():
 
 cli.add_command(cli_config)
 cli.add_command(cli_users)
+cli.add_command(cli_pw)
