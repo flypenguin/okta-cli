@@ -82,12 +82,8 @@ class Okta:
         return rsp.json()
 
     def update_user(self, user_id, body_object):
-        body = json.dumps(body_object).encode("utf-8")
-        rsp = self.session.post(self.url + "users/" + user_id,
-                                data=body)
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
-        return rsp.json()
+        path = "/users/" + user_id
+        return self._call_okta(path, REST.post, body_obj=body_object)
 
     def reset_password(self, user_id, *, send_email=True):
         url = self.url + f"/users/{user_id}/lifecycle/reset_password"
