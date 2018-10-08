@@ -57,23 +57,13 @@ class Okta:
         return self._call_okta("/groups", REST.get, params=params)
 
     def list_users(self, filter_query="", search_query=""):
-        rv = []
-        url = self.url + "users/"
-        params = {}
         if filter_query:
-            params["filter"] = filter_query
-        if search_query:
-            params["search"] = search_query
-        rsp = self.session.get(url, params=params)
-        while True:
-            if rsp.status_code >= 400:
-                raise requests.HTTPError(json.dumps(rsp.json()))
-            rv += rsp.json()
-            url = rsp.links.get("next", {"url": ""})["url"]
-            if not url:
-                break
-            rsp = self.session.get(url)
-        return rv
+            params = {"filter": filter_query}
+        elif search_query:
+            params = {"search": search_query}
+        else:
+            params = {}
+        return self._call_okta("/users", REST.get, params=params)
 
     def add_user(self, query_params, body_object):
         body = json.dumps(body_object).encode("utf-8")
