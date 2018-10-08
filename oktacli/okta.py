@@ -24,23 +24,30 @@ class Okta:
         })
 
     def _call_okta(self, path, method, params={}, body_obj=None):
-        rv = []
         call_method = getattr(self.session, method.value)
         call_params = {
             "params": params,
         }
         if method == REST.post and body_obj:
-            params["body"] = json.dumps(body_obj)
+            call_params["data"] = json.dumps(body_obj)
         rsp = call_method(self.url + path, **call_params)
-        # make sure we follow all the "next" links ...
+        rv = rsp.json()
+        # NOW, we either have a SINGLE DICT in the rv variable,
+        #     *OR*
+        # a list.
         while True:
+            # raise if there was an error
             if rsp.status_code >= 400:
                 raise requests.HTTPError(json.dumps(rsp.json()))
-            rv += rsp.json()
+            # now, let's get all the "next" links. if we do NOT have a list,
+            # we do not have "next" links :) . handy!
             url = rsp.links.get("next", {"url": ""})["url"]
             if not url:
                 break
             rsp = self.session.get(url)
+            # now the += operation is safe, cause we have a list.
+            # this is a liiiitle bit implicit, but should work smoothly.
+            rv += rsp.json()
         # filter out _links items from the final result list
         if isinstance(rv, list):
             rv = list(filter(lambda x: x.pop("_links", None), rv))
