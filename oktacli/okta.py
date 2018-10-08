@@ -90,7 +90,7 @@ class Okta:
         return rsp.json()
 
     def reset_password(self, user_id, *, send_email=True):
-        url = self.url + f"users/{user_id}/lifecycle/reset_password"
+        url = self.url + f"/users/{user_id}/lifecycle/reset_password"
         rsp = self.session.post(
                 url,
                 params={'sendEmail': f"{str(send_email).lower()}"}
