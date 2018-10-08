@@ -108,6 +108,7 @@ def config_use_context(profile_name):
 @cli_config.command(name="current-context")
 @_command_wrapper
 def config_current_context():
+    global config
     config = load_config()
     if "default" not in config:
         return "No profile set."
