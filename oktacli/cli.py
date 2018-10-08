@@ -1,12 +1,14 @@
 import json
 import sys
 import csv
+import re
 from functools import wraps
 
 import click
 from dotted.collection import DottedDict
 
 from .api import load_config, save_config, get_manager, filter_users
+from .okta import REST
 from .exceptions import ExitException
 
 
@@ -142,6 +144,49 @@ def cli_groups():
 def groups_list(api_filter, api_query):
     """List all defined groups"""
     return okta_manager.list_groups(filter=api_filter, query=api_query)
+
+
+@click.group(name="apps")
+def cli_apps():
+    """Application operations"""
+    pass
+
+
+@cli_apps.command(name="list")
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--filter", 'api_filter', default="")
+@_command_wrapper
+def apps_list(api_filter, partial_name):
+    """List all defined applications. If you give an optional command line
+    argument, the apps are filtered by name using this string."""
+    params = {}
+    if api_filter:
+        params = {"filter": api_filter}
+    rv = okta_manager.call_okta("/apps", REST.get, params=params)
+    # now filter by name, if given
+    if partial_name:
+        matcher = re.compile(partial_name)
+        rv = list(filter(lambda x: matcher.search(x["name"]), rv))
+    return rv
+
+
+@cli_apps.command(name="users")
+@click.argument("app_id")
+@click.option("-n", "--use-name", is_flag=True,
+              help="Look for app by name instead of Okta app ID")
+@_command_wrapper
+def apps_users(app_id, use_name):
+    """List all users for an application"""
+    if use_name:
+        apps = okta_manager.call_okta("/apps", REST.get)
+        matcher = re.compile(app_id.lower())
+        apps = list(filter(lambda x: matcher.search(x["name"].lower()), apps))
+        if len(apps) != 1:
+            raise ExitException(f"Found {len(apps)} matching apps. Must be 1!")
+        use_app_id = apps[0]["id"]
+    else:
+        use_app_id = app_id
+    return okta_manager.call_okta(f"/apps/{use_app_id}/users", REST.get)
 
 
 @click.group(name="users")
@@ -306,3 +351,4 @@ cli.add_command(cli_config)
 cli.add_command(cli_users)
 cli.add_command(cli_pw)
 cli.add_command(cli_groups)
+cli.add_command(cli_apps)
