@@ -207,6 +207,45 @@ def users_update(user_id, set_fields, context):
     return okta_manager.update_user(user_id, nested_dict)
 
 
+@cli_users.command(name="update-csv")
+@click.argument('csv-file')
+@click.option('-s', '--set', 'set_fields', multiple=True,
+              help="Set default field values for updates")
+@click.option('-i', '--jump-to-index', metavar="IDX",
+              default=0,
+              help="Start with index IDX (0-based) and skip previous entries")
+@click.option('-u', '--jump-to-user', metavar="USER_ID",
+              default=None,
+              help="Same as --jump-to-index, but starts from a specific user "
+                   "ID instead of an index")
+@click.option('-l', '--limit', metavar="NUM",
+              default=-1,
+              help="Stop after NUM updates")
+@_command_wrapper
+def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
+    """Bulk-update users from a CSV file"""
+    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    rv = []
+    counter = 0
+    with open(csv_file, "r", encoding="utf-8") as infile:
+        dr = csv.DictReader(infile)
+        for _ in range(jump_to_index):
+            next(dr)
+        for row in dr:
+            if counter >= limit:
+                break
+            if jump_to_user and row["profile.login"] != jump_to_user:
+                continue
+            else:
+                jump_to_user = None
+            user_id = row.pop("profile.login")
+            final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
+            rv.append(okta_manager.update_user(user_id, final_dict))
+            #rv.append({user_id: final_dict})
+            counter += 1
+    return rv
+
+
 @cli_users.command(name="add")
 @click.option('-s', '--set', 'set_fields', multiple=True)
 @click.option('-r', '--read-csv', help="Read from CSV file", default=None)
