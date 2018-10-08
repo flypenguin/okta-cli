@@ -23,7 +23,7 @@ class Okta:
             'Authorization': 'SSWS ' + token,
         })
 
-    def _call_okta(self, path, method, params={}, body_obj=None):
+    def call_okta(self, path, method, *, params={}, body_obj=None):
         call_method = getattr(self.session, method.value)
         call_params = {
             "params": params,
@@ -61,7 +61,7 @@ class Okta:
             params["query"] = query
         if filter:
             params["filter"] = filter
-        return self._call_okta("/groups", REST.get, params=params)
+        return self.call_okta("/groups", REST.get, params=params)
 
     def list_users(self, filter_query="", search_query=""):
         if filter_query:
@@ -70,7 +70,7 @@ class Okta:
             params = {"search": search_query}
         else:
             params = {}
-        return self._call_okta("/users", REST.get, params=params)
+        return self.call_okta("/users", REST.get, params=params)
 
     def add_user(self, query_params, body_object):
         body = json.dumps(body_object).encode("utf-8")
@@ -83,7 +83,7 @@ class Okta:
 
     def update_user(self, user_id, body_object):
         path = "/users/" + user_id
-        return self._call_okta(path, REST.post, body_obj=body_object)
+        return self.call_okta(path, REST.post, body_obj=body_object)
 
     def reset_password(self, user_id, *, send_email=True):
         url = self.url + f"/users/{user_id}/lifecycle/reset_password"
