@@ -129,6 +129,21 @@ def pw_reset(user_id, no_email):
     return okta_manager.reset_password(user_id, send_email=not no_email)
 
 
+@click.group(name="groups")
+def cli_groups():
+    """Group operations"""
+    pass
+
+
+@cli_groups.command(name="list")
+@click.option("-f", "--filter", 'api_filter', default="")
+@click.option("-q", "--query", 'api_query', default="")
+@_command_wrapper
+def groups_list(api_filter, api_query):
+    """List all defined groups"""
+    return okta_manager.list_groups(filter=api_filter, query=api_query)
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
@@ -251,3 +266,4 @@ def cli_version():
 cli.add_command(cli_config)
 cli.add_command(cli_users)
 cli.add_command(cli_pw)
+cli.add_command(cli_groups)
