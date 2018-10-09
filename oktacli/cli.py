@@ -264,7 +264,7 @@ def users_update(user_id, set_fields, context):
               help="Same as --jump-to-index, but starts from a specific user "
                    "ID instead of an index")
 @click.option('-l', '--limit', metavar="NUM",
-              default=-1,
+              default=0,
               help="Stop after NUM updates")
 @_command_wrapper
 def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
@@ -277,12 +277,13 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
         for _ in range(jump_to_index):
             next(dr)
         for row in dr:
-            if counter >= limit:
+            if limit and counter > limit:
                 break
-            if jump_to_user and row["profile.login"] != jump_to_user:
-                continue
-            else:
-                jump_to_user = None
+            if jump_to_user:
+                if row["profile.login"] != jump_to_user:
+                    continue
+                else:
+                    jump_to_user = None
             user_id = row.pop("profile.login")
             final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
             rv.append(okta_manager.update_user(user_id, final_dict))
