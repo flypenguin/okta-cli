@@ -1,3 +1,11 @@
+v2.1.0
+======
+
+* add 'users update-csv' command
+* add 'groups list' command
+* add 'apps list' command
+* add 'apps users' command
+
 v2.0.0
 ======
 
