@@ -18,6 +18,9 @@ VERSION = "2.0.0"
 okta_manager = None
 config = None
 
+FILTER_PATTERN = '(eq|sw|gt|ge|lt|le) ([^ )"]+)'
+FILTER_MATCHER = re.compile(FILTER_PATTERN)
+
 
 def _command_wrapper(func):
     @wraps(func)
@@ -56,6 +59,10 @@ def _dict_flat_to_nested(flat_dict, defaults={}):
         # permitted, cause they are interpreted ...
         tmp[key] = val
     return tmp.to_python()
+
+
+def _prepare_okta_filter_string(filter_string):
+    return re.sub(FILTER_MATCHER, '\g<1> "\g<2>"', filter_string)
 
 
 @click.group(name="config")
@@ -205,8 +212,8 @@ def cli_users():
 @_command_wrapper
 def users_list(matches, partial, api_filter, api_search):
     users = okta_manager.list_users(
-            filter_query=api_filter,
-            search_query=api_search)
+            filter_query=_prepare_okta_filter_string(api_filter),
+            search_query=_prepare_okta_filter_string(api_search))
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     return list(filter_users(users, filters=filters_dict, partial=partial))
 
