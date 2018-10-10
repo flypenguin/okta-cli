@@ -13,7 +13,7 @@ from .okta import REST
 from .exceptions import ExitException
 
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 okta_manager = None
 config = None
