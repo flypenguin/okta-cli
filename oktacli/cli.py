@@ -6,6 +6,7 @@ from functools import wraps
 
 import click
 from dotted.collection import DottedDict
+from requests.exceptions import HTTPError as RequestsHTTPError
 
 from .api import load_config, save_config, get_manager, filter_users
 from .okta import REST
@@ -271,12 +272,16 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
     """Bulk-update users from a CSV file"""
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     rv = []
+    errors = []
     counter = 0
     with open(csv_file, "r", encoding="utf-8") as infile:
         dr = csv.DictReader(infile)
         for _ in range(jump_to_index):
             next(dr)
+        print("0..", file=sys.stderr, end="")
         for row in dr:
+            if counter and counter % 50 == 0:
+                print(f"..{counter}", file=sys.stderr, flush=True, end="")
             if limit and counter > limit:
                 break
             if jump_to_user:
@@ -286,10 +291,13 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
                     jump_to_user = None
             user_id = row.pop("profile.login")
             final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
-            rv.append(okta_manager.update_user(user_id, final_dict))
-            #rv.append({user_id: final_dict})
+            try:
+                rv.append(okta_manager.update_user(user_id, final_dict))
+            except RequestsHTTPError as e:
+                errors.append((counter + jump_to_index, final_dict, str(e)))
             counter += 1
-    return rv
+    print("", file=sys.stderr)
+    return {"done": rv, "errors": errors}
 
 
 @cli_users.command(name="add")
