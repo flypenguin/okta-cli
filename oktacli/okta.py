@@ -74,7 +74,7 @@ class Okta:
 
     def add_user(self, query_params, body_object):
         body = json.dumps(body_object).encode("utf-8")
-        rsp = self.session.post(self.url + "users/",
+        rsp = self.session.post(self.url + "/users/",
                                 params=query_params,
                                 data=body)
         if rsp.status_code >= 400:
