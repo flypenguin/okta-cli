@@ -1,3 +1,8 @@
+v3.0.0
+======
+
+* add table output to some commands and make it default
+
 v2.3.1
 ======
 
