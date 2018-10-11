@@ -134,11 +134,12 @@ def cli_pw():
 
 
 @cli_pw.command(name="reset")
-@click.argument("user-id")
+@click.argument("login-or-id")
 @click.option("-n", "--no-email", is_flag=True)
 @_command_wrapper
-def pw_reset(user_id, no_email):
-    return okta_manager.reset_password(user_id, send_email=not no_email)
+def pw_reset(login_or_id, no_email):
+    """Reset the password of a user"""
+    return okta_manager.reset_password(login_or_id, send_email=not no_email)
 
 
 @click.group(name="groups")
