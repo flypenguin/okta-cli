@@ -1,3 +1,9 @@
+v2.3.0
+======
+
+* add 'groups users' command
+* add 'groups clear' command
+
 v2.2.0
 ======
 
