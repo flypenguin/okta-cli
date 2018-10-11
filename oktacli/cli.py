@@ -21,6 +21,8 @@ config = None
 FILTER_PATTERN = '(eq|sw|gt|ge|lt|le) ([^ )"]+)'
 FILTER_MATCHER = re.compile(FILTER_PATTERN)
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 
 def _command_wrapper(func):
     @wraps(func)
@@ -84,7 +86,7 @@ def cli_config():
     pass
 
 
-@cli_config.command(name="new")
+@cli_config.command(name="new", context_settings=CONTEXT_SETTINGS)
 @click.option("-n", "--name", required=True, prompt=True,
               help="Name of the configuration to add.")
 @click.option("-u", "--url", required=True, prompt=True,
@@ -107,7 +109,7 @@ def config_new(name, url, token):
     print("Profile '{}' added.".format(name))
 
 
-@cli_config.command(name="list")
+@cli_config.command(name="list", context_settings=CONTEXT_SETTINGS)
 def config_list():
     global config
     config = load_config()
@@ -115,7 +117,7 @@ def config_list():
         print("{}  {}  {}".format(name, conf["url"], "*"*3+conf["token"][38:]))
 
 
-@cli_config.command(name="use-context")
+@cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
 @click.argument("profile-name")
 @_command_wrapper
 def config_use_context(profile_name):
@@ -128,7 +130,7 @@ def config_use_context(profile_name):
     return "Default profile set to '{}'.".format(profile_name)
 
 
-@cli_config.command(name="current-context")
+@cli_config.command(name="current-context", context_settings=CONTEXT_SETTINGS)
 @_command_wrapper
 def config_current_context():
     global config
@@ -144,7 +146,7 @@ def cli_pw():
     pass
 
 
-@cli_pw.command(name="reset")
+@cli_pw.command(name="reset", context_settings=CONTEXT_SETTINGS)
 @click.argument("login-or-id")
 @click.option("-n", "--no-email", is_flag=True)
 @_command_wrapper
@@ -153,7 +155,7 @@ def pw_reset(login_or_id, no_email):
     return okta_manager.reset_password(login_or_id, send_email=not no_email)
 
 
-@cli_pw.command(name="expire")
+@cli_pw.command(name="expire", context_settings=CONTEXT_SETTINGS)
 @click.argument("login-or-id")
 @click.option("-t", "--temp-password", is_flag=True)
 @_command_wrapper
@@ -169,7 +171,7 @@ def cli_groups():
     pass
 
 
-@cli_groups.command(name="list")
+@cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-q", "--query", 'api_query', default="")
 @_command_wrapper
@@ -178,7 +180,7 @@ def groups_list(api_filter, api_query):
     return okta_manager.list_groups(filter=api_filter, query=api_query)
 
 
-@cli_groups.command(name="users")
+@cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
               help="Use Okta group ID instead of the group name")
@@ -190,7 +192,7 @@ def groups_list_users(name_or_id, use_id):
     return okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
 
 
-@cli_groups.command(name="clear")
+@cli_groups.command(name="clear", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
               help="Use Okta group ID instead of the group name")
@@ -218,7 +220,7 @@ def cli_apps():
     pass
 
 
-@cli_apps.command(name="list")
+@cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
 @click.option("-f", "--filter", 'api_filter', default="")
 @_command_wrapper
@@ -236,7 +238,7 @@ def apps_list(api_filter, partial_name):
     return rv
 
 
-@cli_apps.command(name="users")
+@cli_apps.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("app_id")
 @click.option("-n", "--use-name", is_flag=True,
               help="Look for app by name instead of Okta app ID")
@@ -261,7 +263,7 @@ def cli_users():
     pass
 
 
-@cli_users.command(name="list")
+@cli_users.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.option("-m", "--match", 'matches', multiple=True)
 @click.option("-p", "--partial", is_flag=True,
               help="Accept partial matches for match queries.")
@@ -277,7 +279,7 @@ def users_list(matches, partial, api_filter, api_search):
     return list(filter_users(users, filters=filters_dict, partial=partial))
 
 
-@cli_users.command(name="get")
+@cli_users.command(name="get", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-i", "--use-id", 'use_id', is_flag=True,
               help="Search by Okta ID instead of login field")
@@ -292,7 +294,7 @@ def users_get(login_or_id, use_id):
     return rv
 
 
-@cli_users.command(name="deactivate")
+@cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
               help="Send email to admins if set")
@@ -316,7 +318,7 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
     return rv
 
 
-@cli_users.command(name="delete")
+@cli_users.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
               help="Send email to admins if set")
@@ -339,7 +341,7 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
     return rv
 
 
-@cli_users.command(name="suspend")
+@cli_users.command(name="suspend", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @_command_wrapper
 def users_suspend(login_or_id):
@@ -349,7 +351,7 @@ def users_suspend(login_or_id):
     return rv
 
 
-@cli_users.command(name="update")
+@cli_users.command(name="update", context_settings=CONTEXT_SETTINGS)
 @click.argument('user_id')
 @click.option('-s', '--set', 'set_fields', multiple=True)
 @click.option('-c', '--context', default=None,
@@ -391,7 +393,7 @@ def users_update(user_id, set_fields, context):
     return okta_manager.update_user(user_id, nested_dict)
 
 
-@cli_users.command(name="update-csv")
+@cli_users.command(name="update-csv", context_settings=CONTEXT_SETTINGS)
 @click.argument('csv-file')
 @click.option('-s', '--set', 'set_fields', multiple=True,
               help="Set default field values for updates")
@@ -440,7 +442,7 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
     return {"done": rv, "errors": errors}
 
 
-@cli_users.command(name="add")
+@cli_users.command(name="add", context_settings=CONTEXT_SETTINGS)
 @click.option('-s', '--set', 'set_fields', multiple=True)
 @click.option('-r', '--read-csv', help="Read from CSV file", default=None)
 @click.option('-a', '--activate/--no-activate',
@@ -481,7 +483,7 @@ def users_add(set_fields, read_csv, activate, provider, nextlogin):
         return okta_manager.add_user(params, final_dict)
 
 
-@click.group()
+@click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
     """
     Okta CLI helper.
@@ -493,7 +495,7 @@ def cli():
     pass
 
 
-@cli.command(name="version")
+@cli.command(name="version", context_settings=CONTEXT_SETTINGS)
 def cli_version():
     """Prints version number and exit"""
     print(VERSION)

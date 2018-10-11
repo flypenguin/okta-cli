@@ -1,3 +1,8 @@
+v_next
+======
+
+* make -h work everywhere
+
 v2.3.0
 ======
 
