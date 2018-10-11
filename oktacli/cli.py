@@ -67,6 +67,17 @@ def _prepare_okta_filter_string(filter_string):
     return re.sub(FILTER_MATCHER, '\g<1> "\g<2>"', filter_string)
 
 
+def _okta_get_groups_by_name(name, unique=False):
+    groups = okta_manager.list_groups()
+    groups = list(filter(
+            lambda x: x["profile"]["name"].lower().find(name.lower()) != -1,
+            groups))
+    if unique and len(groups) != 1:
+        raise ExitException("Group name must be unique. "
+                            f"(found '{len(groups)}' matching groups).")
+    return groups
+
+
 @click.group(name="config")
 def cli_config():
     """Manage okta-cli configuration"""
@@ -165,6 +176,40 @@ def cli_groups():
 def groups_list(api_filter, api_query):
     """List all defined groups"""
     return okta_manager.list_groups(filter=api_filter, query=api_query)
+
+
+@cli_groups.command(name="users")
+@click.argument("name-or-id")
+@click.option("-i", "--id", 'use_id', is_flag=True, default=False,
+              help="Use Okta group ID instead of the group name")
+@_command_wrapper
+def groups_list_users(name_or_id, use_id):
+    """List all users in a group"""
+    if not use_id:
+        name_or_id = _okta_get_groups_by_name(name_or_id, unique=True)[0]["id"]
+    return okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
+
+
+@cli_groups.command(name="clear")
+@click.argument("name-or-id")
+@click.option("-i", "--id", 'use_id', is_flag=True, default=False,
+              help="Use Okta group ID instead of the group name")
+@_command_wrapper
+def groups_clear(name_or_id, use_id):
+    """Remove all users from a group.
+
+    This can take a while if the group is big."""
+    if not use_id:
+        name_or_id = _okta_get_groups_by_name(name_or_id, unique=True)[0]["id"]
+    users = okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
+    for user in users:
+        user_id = user['id']
+        user_login = user['profile']['login']
+        print(f"Removing user {user_login} ... ", file=sys.stderr, end="")
+        path = f"/groups/{name_or_id}/users/{user_id}"
+        okta_manager.call_okta_raw(path, REST.delete)
+        print("ok", file=sys.stderr)
+    return "All users removed"
 
 
 @click.group(name="apps")
