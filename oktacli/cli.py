@@ -28,7 +28,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def _get_field_lengths(arr, fields):
     col_lengths = []
     for col in fields:
-        col_lengths.append(max([len(DottedDict(item)[col]) for item in arr]))
+        col_lengths.append(max([len(str(DottedDict(item)[col]))
+                                for item in arr]))
     return col_lengths
 
 
@@ -39,7 +40,7 @@ def _print_table_from(print_obj, fields):
     lengths = _get_field_lengths(arr, fields)
     for row in arr:
         for col_idx, col in enumerate(fields):
-            print(f"{row[col]:{lengths[col_idx]}}  ", end="")
+            print(f"{str(row[col]):{lengths[col_idx]}}  ", end="")
         print("")
 
 
