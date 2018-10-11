@@ -5,7 +5,7 @@ import re
 from functools import wraps
 
 import click
-from dotted.collection import DottedDict
+from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 
 from .api import load_config, save_config, get_manager, filter_users
@@ -25,6 +25,24 @@ FILTER_MATCHER = re.compile(FILTER_PATTERN)
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+def _get_field_lengths(arr, fields):
+    col_lengths = []
+    for col in fields:
+        col_lengths.append(max([len(DottedDict(item)[col]) for item in arr]))
+    return col_lengths
+
+
+def _print_table_from(print_obj, fields):
+    if isinstance(print_obj, dict):
+        print_obj = [print_obj]
+    arr = DottedCollection.factory(print_obj)
+    lengths = _get_field_lengths(arr, fields)
+    for row in arr:
+        for col_idx, col in enumerate(fields):
+            print(f"{row[col]:{lengths[col_idx]}}  ", end="")
+        print("")
+
+
 def _command_wrapper(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -34,7 +52,12 @@ def _command_wrapper(func):
             okta_manager = get_manager()
             rv = func(*args, **kwargs)
             if not isinstance(rv, str):
-                print(json.dumps(rv, indent=2, sort_keys=True))
+                # auto pretty-print things
+                if kwargs.get("print_yaml", True) is False \
+                        and 'text_fields' in kwargs:
+                    _print_table_from(rv, kwargs["text_fields"].split(","))
+                else:
+                    print(json.dumps(rv, indent=2, sort_keys=True))
             else:
                 print(rv)
         except ExitException as e:
@@ -175,8 +198,12 @@ def cli_groups():
 @cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-q", "--query", 'api_query', default="")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields", default="id,profile.name",
+              help="Override default fields in table format")
 @_command_wrapper
-def groups_list(api_filter, api_query):
+def groups_list(api_filter, api_query, print_yaml, text_fields):
     """List all defined groups"""
     return okta_manager.list_groups(filter=api_filter, query=api_query)
 
@@ -185,8 +212,13 @@ def groups_list(api_filter, api_query):
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
               help="Use Okta group ID instead of the group name")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields",
+              default="id,profile.firstName,profile.lastName,profile.email",
+              help="Override default fields in table format")
 @_command_wrapper
-def groups_list_users(name_or_id, use_id):
+def groups_list_users(name_or_id, use_id, **kwargs):
     """List all users in a group"""
     if not use_id:
         name_or_id = _okta_get_groups_by_name(name_or_id, unique=True)[0]["id"]
@@ -224,8 +256,12 @@ def cli_apps():
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
 @click.option("-f", "--filter", 'api_filter', default="")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields", default="id,name,label",
+              help="Override default fields in table format")
 @_command_wrapper
-def apps_list(api_filter, partial_name):
+def apps_list(api_filter, partial_name, **kwargs):
     """List all defined applications. If you give an optional command line
     argument, the apps are filtered by name using this string."""
     params = {}
@@ -241,12 +277,17 @@ def apps_list(api_filter, partial_name):
 
 @cli_apps.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("app_id")
-@click.option("-n", "--use-name", is_flag=True,
-              help="Look for app by name instead of Okta app ID")
+@click.option("-i", "--id", "use_id", is_flag=True,
+              help="Use Okta app ID instead of app name")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields",
+              default="id,syncState",
+              help="Override default fields in table format")
 @_command_wrapper
-def apps_users(app_id, use_name):
+def apps_users(app_id, use_id, **kwargs):
     """List all users for an application"""
-    if use_name:
+    if not use_id:
         apps = okta_manager.call_okta("/apps", REST.get)
         matcher = re.compile(app_id.lower())
         apps = list(filter(lambda x: matcher.search(x["name"].lower()), apps))
@@ -270,8 +311,14 @@ def cli_users():
               help="Accept partial matches for match queries.")
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-s", "--search", 'api_search', default="")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields",
+              default="id,profile.login,profile.firstName,profile.lastName,"
+                      "profile.email",
+              help="Override default fields in table format")
 @_command_wrapper
-def users_list(matches, partial, api_filter, api_search):
+def users_list(matches, partial, api_filter, api_search, **kwargs):
     """Lists users (all or using various filters)"""
     users = okta_manager.list_users(
             filter_query=_prepare_okta_filter_string(api_filter),
@@ -284,8 +331,14 @@ def users_list(matches, partial, api_filter, api_search):
 @click.argument('login_or_id')
 @click.option("-i", "--use-id", 'use_id', is_flag=True,
               help="Search by Okta ID instead of login field")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields",
+              default="id,profile.login,profile.firstName,profile.lastName,"
+                      "profile.email",
+              help="Override default fields in table format")
 @_command_wrapper
-def users_get(login_or_id, use_id):
+def users_get(login_or_id, use_id, **kwargs):
     """List ONE user by login or Okta ID"""
     if use_id:
         rv = okta_manager.call_okta(f"/users/{login_or_id}", REST.get)
