@@ -220,6 +220,21 @@ def users_list(matches, partial, api_filter, api_search):
     return list(filter_users(users, filters=filters_dict, partial=partial))
 
 
+@cli_users.command(name="get")
+@click.argument('login_or_id')
+@click.option("-i", "--use-id", 'use_id', is_flag=True,
+              help="Search by Okta ID instead of login field")
+@_command_wrapper
+def users_get(login_or_id, use_id):
+    """List ONE user by login or Okta ID"""
+    if use_id:
+        rv = okta_manager.call_okta(f"/users/{login_or_id}", REST.get)
+    else:
+        query = f'profile.login eq "{login_or_id}"'
+        rv = okta_manager.list_users(filter_query=query)
+    return rv
+
+
 @cli_users.command(name="update")
 @click.argument('user_id')
 @click.option('-s', '--set', 'set_fields', multiple=True)
