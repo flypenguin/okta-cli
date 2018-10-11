@@ -24,14 +24,20 @@ class Okta:
             'Authorization': 'SSWS ' + token,
         })
 
-    def call_okta(self, path, method, *, params={}, body_obj=None):
+    def call_okta_raw(self, path, method, *, params=None, body_obj=None):
         call_method = getattr(self.session, method.value)
         call_params = {
-            "params": params,
+            "params": params if params is not None else {},
         }
         if method == REST.post and body_obj:
             call_params["data"] = json.dumps(body_obj)
         rsp = call_method(self.url + path, **call_params)
+        if rsp.status_code >= 400:
+            raise requests.HTTPError(json.dumps(rsp.json()))
+        return rsp
+
+    def call_okta(self, path, method, *, params=None, body_obj=None):
+        rsp = self.call_okta_raw(path, method, params=params, body_obj=body_obj)
         rv = rsp.json()
         # NOW, we either have a SINGLE DICT in the rv variable,
         #     *OR*
