@@ -1,3 +1,12 @@
+v2.2.0
+======
+
+* add 'users get' command (lists ONE user by login or Okta ID)
+* add 'users deactivate' command
+* add 'users suspend' command
+* add 'users delete' command
+* add 'pw expire' command which expires a password of a user
+
 v2.1.0
 ======
 
