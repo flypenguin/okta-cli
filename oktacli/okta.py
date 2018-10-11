@@ -7,7 +7,7 @@ import requests
 class REST(enum.Enum):
     get = "get"
     post = "post"
-
+    delete = "delete"
 
 class Okta:
 

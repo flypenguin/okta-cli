@@ -247,6 +247,63 @@ def users_get(login_or_id, use_id):
     return rv
 
 
+@cli_users.command(name="deactivate")
+@click.argument('login_or_id')
+@click.option("-e", "--send-email", is_flag=True,
+              help="Send email to admins if set")
+@click.option("--no-confirmation", is_flag=True,
+              help="Don't ask - DANGER!!")
+@_command_wrapper
+def users_deactivate(login_or_id, send_email, no_confirmation):
+    """Deactivate a user (DESTRUCTIVE OPERATION)"""
+    params = {}
+    if send_email:
+        params["sendEmail"] = "TRUE"
+    if not no_confirmation:
+        check = input("DANGER!! Do you REALLY want to do this "
+                      "(maybe use 'suspend' instead)?\n\n"
+                      f"Then enter '{login_or_id}': ")
+        if check != login_or_id:
+            raise ExitException("Aborted.")
+    rv = okta_manager.call_okta(
+            f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
+            params=params)
+    return rv
+
+
+@cli_users.command(name="delete")
+@click.argument('login_or_id')
+@click.option("-e", "--send-email", is_flag=True,
+              help="Send email to admins if set")
+@click.option("--no-confirmation", is_flag=True,
+              help="Don't ask - DANGER!!")
+@_command_wrapper
+def users_deactivate(login_or_id, send_email, no_confirmation):
+    """Delete a user (DESTRUCTIVE OPERATION)"""
+    params = {}
+    if send_email:
+        params["sendEmail"] = "TRUE"
+    if not no_confirmation:
+        check = input("DANGER!! Do you REALLY want to do this?\n\n"
+                      f"Then enter '{login_or_id}': ")
+        if check != login_or_id:
+            raise ExitException("Aborted.")
+    rv = okta_manager.call_okta(
+            f"/users/{login_or_id}/lifecycle/delete", REST.delete,
+            params=params)
+    return rv
+
+
+@cli_users.command(name="suspend")
+@click.argument('login_or_id')
+@_command_wrapper
+def users_suspend(login_or_id):
+    """Suspend a user"""
+    path = f"/users/{login_or_id}/lifecycle/suspend"
+    rv = okta_manager.call_okta(path, REST.post)
+    return rv
+
+
 @cli_users.command(name="update")
 @click.argument('user_id')
 @click.option('-s', '--set', 'set_fields', multiple=True)
