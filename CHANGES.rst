@@ -1,7 +1,8 @@
-v_next
+v2.3.1
 ======
 
 * make -h work everywhere
+* fix users delete / deactivate commands
 
 v2.3.0
 ======
