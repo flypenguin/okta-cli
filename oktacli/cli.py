@@ -361,7 +361,9 @@ def users_add(set_fields, read_csv, activate, provider, nextlogin):
     if read_csv:
         added = []
         with open(read_csv, "r", encoding="utf-8") as infile:
-            dr = csv.DictReader(infile)
+            dialect = csv.Sniffer().sniff(infile.read(4096))
+            infile.seek(0)
+            dr = csv.DictReader(infile, dialect=dialect)
             for row in dr:
                 final_dict = _dict_flat_to_nested(
                     row, defaults=fields_dict)
