@@ -224,6 +224,7 @@ def cli_users():
 @click.option("-s", "--search", 'api_search', default="")
 @_command_wrapper
 def users_list(matches, partial, api_filter, api_search):
+    """Lists users (all or using various filters)"""
     users = okta_manager.list_users(
             filter_query=_prepare_okta_filter_string(api_filter),
             search_query=_prepare_okta_filter_string(api_search))
@@ -348,6 +349,7 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
               help="Set 'nextLogin' to 'changePassword', see Okta API docs")
 @_command_wrapper
 def users_add(set_fields, read_csv, activate, provider, nextlogin):
+    """Add a user to Okta"""
     # first use and clean the fields dict from the command line
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     # query parameters
