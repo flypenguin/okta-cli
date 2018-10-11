@@ -40,7 +40,7 @@ def _command_wrapper(func):
     return wrapper
 
 
-def _dict_flat_to_nested(flat_dict, defaults={}):
+def _dict_flat_to_nested(flat_dict, defaults=None):
     """
     Takes a "flat" dictionary, whose keys are of the form "one.two.three".
     It will return a nested dictionary with this content:
@@ -51,6 +51,8 @@ def _dict_flat_to_nested(flat_dict, defaults={}):
     :return: A nested python dictionary
     """
     tmp = DottedDict()
+    if defaults is None:
+        defaults = {}
     # values from flat_dict have precedence over default values
     for key, val in defaults.items():
         tmp[key] = val
