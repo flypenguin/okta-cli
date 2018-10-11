@@ -95,3 +95,12 @@ class Okta:
             raise requests.HTTPError(json.dumps(rsp.json()))
         return rsp.json()
 
+    def expire_password(self, user_id, *, temp_password=False):
+        url = self.url + f"/users/{user_id}/lifecycle/expire_password"
+        rsp = self.session.post(
+                url,
+                params={'tempPassword': f"{str(temp_password).lower()}"}
+        )
+        if rsp.status_code >= 400:
+            raise requests.HTTPError(json.dumps(rsp.json()))
+        return rsp.json()

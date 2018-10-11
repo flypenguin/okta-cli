@@ -142,6 +142,16 @@ def pw_reset(login_or_id, no_email):
     return okta_manager.reset_password(login_or_id, send_email=not no_email)
 
 
+@cli_pw.command(name="expire")
+@click.argument("login-or-id")
+@click.option("-t", "--temp-password", is_flag=True)
+@_command_wrapper
+def pw_expire(login_or_id, temp_password):
+    """Expire the password of a user"""
+    return okta_manager.expire_password(login_or_id,
+                                        temp_password=temp_password)
+
+
 @click.group(name="groups")
 def cli_groups():
     """Group operations"""
