@@ -13,6 +13,10 @@
 # ignore all private-* files, but only top-level
 /PRIVATE-*
 /private-*
+/temp-*
+/temp_*
+/tmp-*
+/tmp_*
 
 
 # Created by https://www.gitignore.io/api/python
