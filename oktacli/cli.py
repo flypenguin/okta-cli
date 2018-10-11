@@ -319,7 +319,7 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
 @click.option('-n', '--nextlogin/--no-nextlogin',
               help="Set 'nextLogin' to 'changePassword', see Okta API docs")
 @_command_wrapper
-def users_update(set_fields, read_csv, activate, provider, nextlogin):
+def users_add(set_fields, read_csv, activate, provider, nextlogin):
     # first use and clean the fields dict from the command line
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     # query parameters
