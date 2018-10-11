@@ -310,7 +310,9 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
     errors = []
     counter = 0
     with open(csv_file, "r", encoding="utf-8") as infile:
-        dr = csv.DictReader(infile)
+        dialect = csv.Sniffer().sniff(infile.read(4096))
+        infile.seek(0)
+        dr = csv.DictReader(infile, dialect=dialect)
         for _ in range(jump_to_index):
             next(dr)
         print("0..", file=sys.stderr, end="")
