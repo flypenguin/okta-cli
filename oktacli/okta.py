@@ -9,6 +9,7 @@ class REST(enum.Enum):
     post = "post"
     delete = "delete"
 
+
 class Okta:
 
     def __init__(self, url, token):
