@@ -308,14 +308,14 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
         params["sendEmail"] = "TRUE"
     if not no_confirmation:
         check = input("DANGER!! Do you REALLY want to do this "
-                      "(maybe use 'suspend' instead)?\n\n"
+                      "(maybe use 'suspend' instead)?\n"
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    rv = okta_manager.call_okta(
-            f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
-            params=params)
-    return rv
+    okta_manager.call_okta(
+        f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
+        params=params)
+    return f"User '{login_or_id}' deactivated."
 
 
 @cli_users.command(name="delete", context_settings=CONTEXT_SETTINGS)
@@ -325,20 +325,20 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
 @click.option("--no-confirmation", is_flag=True,
               help="Don't ask - DANGER!!")
 @_command_wrapper
-def users_deactivate(login_or_id, send_email, no_confirmation):
+def users_delete(login_or_id, send_email, no_confirmation):
     """Delete a user (DESTRUCTIVE OPERATION)"""
     params = {}
     if send_email:
         params["sendEmail"] = "TRUE"
     if not no_confirmation:
-        check = input("DANGER!! Do you REALLY want to do this?\n\n"
+        check = input("DANGER!! Do you REALLY want to do this?\n"
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    rv = okta_manager.call_okta(
-            f"/users/{login_or_id}/lifecycle/delete", REST.delete,
-            params=params)
-    return rv
+    okta_manager.call_okta_raw(
+        f"/users/{login_or_id}", REST.delete,
+        params=params)
+    return f"User '{login_or_id}' deleted."
 
 
 @cli_users.command(name="suspend", context_settings=CONTEXT_SETTINGS)
