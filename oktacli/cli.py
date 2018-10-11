@@ -21,6 +21,7 @@ config = None
 FILTER_PATTERN = '(eq|sw|gt|ge|lt|le) ([^ )"]+)'
 FILTER_MATCHER = re.compile(FILTER_PATTERN)
 
+# https://is.gd/T1enMM
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
