@@ -201,12 +201,26 @@ def cli_groups():
 @click.option("-q", "--query", 'api_query', default="")
 @click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
               help="Print raw YAML output")
-@click.option("--text-fields", default="id,profile.name",
+@click.option("--text-fields", default="id,type,profile.name",
               help="Override default fields in table format")
 @_command_wrapper
-def groups_list(api_filter, api_query, print_yaml, text_fields):
+def groups_list(api_filter, api_query, **kwargs):
     """List all defined groups"""
     return okta_manager.list_groups(filter=api_filter, query=api_query)
+
+
+@cli_groups.command(name="get", context_settings=CONTEXT_SETTINGS)
+@click.argument("name-or-id")
+@click.option("-i", "--id", 'use_id', is_flag=True, default=False,
+              help="Use Okta group ID instead of the group name")
+@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+              help="Print raw YAML output")
+@click.option("--text-fields", default="id,type,profile.name",
+              help="Override default fields in table format")
+@_command_wrapper
+def groups_get(name_or_id, **kwargs):
+    """Print only one group"""
+    return _okta_get_groups_by_name(name_or_id, unique=True)[0]
 
 
 @cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
