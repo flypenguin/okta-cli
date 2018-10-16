@@ -2,6 +2,8 @@ v3.0.0
 ======
 
 * add table output to some commands and make it default
+* fix wrongly named "--yaml" parameter (now "--json")
+* add command 'users unlock'
 
 v2.3.1
 ======
