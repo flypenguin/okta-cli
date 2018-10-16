@@ -390,6 +390,15 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
     return f"User '{login_or_id}' deactivated."
 
 
+@cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
+@click.argument('login_or_id')
+@_command_wrapper
+def users_unlock(login_or_id):
+    """Unlock a locked user"""
+    okta_manager.call_okta(f"/users/{login_or_id}/lifecycle/unlock", REST.post)
+    return f"User '{login_or_id}' unlocked."
+
+
 @cli_users.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
