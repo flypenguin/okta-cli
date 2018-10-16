@@ -7,6 +7,10 @@ The current featureset is purely based on the author's needs, which currently ar
 * list users (using API `search=` and `query=` functionality, and local filtering)
 * update users
 
+## NOTE
+
+*REQUIRES* Python 3.6+
+
 ## Quickstart
 
 ```bash
