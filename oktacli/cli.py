@@ -53,11 +53,14 @@ def _command_wrapper(func):
             okta_manager = get_manager()
             rv = func(*args, **kwargs)
             if not isinstance(rv, str):
-                # auto pretty-print things
-                if kwargs.get("print_yaml", True) is False \
-                        and 'text_fields' in kwargs:
+                if kwargs.get("print_json", False) is True:
+                    print(json.dumps(rv, indent=2, sort_keys=True))
+                elif kwargs.get("print_yaml", False) is True:
+                    raise ExitException("YAML printing not (yet) implemented.")
+                elif "text_fields" in kwargs and len(rv) > 0:
                     _print_table_from(rv, kwargs["text_fields"].split(","))
                 else:
+                    # default fallback setting - print json.
                     print(json.dumps(rv, indent=2, sort_keys=True))
             else:
                 print(rv)
@@ -199,7 +202,7 @@ def cli_groups():
 @cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-q", "--query", 'api_query', default="")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields", default="id,type,profile.name",
               help="Override default fields in table format")
@@ -213,7 +216,7 @@ def groups_list(api_filter, api_query, **kwargs):
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
               help="Use Okta group ID instead of the group name")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields", default="id,type,profile.name",
               help="Override default fields in table format")
@@ -227,7 +230,7 @@ def groups_get(name_or_id, **kwargs):
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
               help="Use Okta group ID instead of the group name")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields",
               default="id,profile.firstName,profile.lastName,profile.email",
@@ -271,7 +274,7 @@ def cli_apps():
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
 @click.option("-f", "--filter", 'api_filter', default="")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields", default="id,name,label",
               help="Override default fields in table format")
@@ -294,7 +297,7 @@ def apps_list(api_filter, partial_name, **kwargs):
 @click.argument("app_id")
 @click.option("-i", "--id", "use_id", is_flag=True,
               help="Use Okta app ID instead of app name")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields",
               default="id,syncState",
@@ -326,7 +329,7 @@ def cli_users():
               help="Accept partial matches for match queries.")
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-s", "--search", 'api_search', default="")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields",
               default="id,profile.login,profile.firstName,profile.lastName,"
@@ -346,7 +349,7 @@ def users_list(matches, partial, api_filter, api_search, **kwargs):
 @click.argument('login_or_id')
 @click.option("-i", "--use-id", 'use_id', is_flag=True,
               help="Search by Okta ID instead of login field")
-@click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+@click.option("-j", "--json", 'print_json', is_flag=True, default=False,
               help="Print raw YAML output")
 @click.option("--text-fields",
               default="id,profile.login,profile.firstName,profile.lastName,"
