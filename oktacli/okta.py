@@ -92,6 +92,16 @@ class Okta:
         path = "/users/" + user_id
         return self.call_okta(path, REST.post, body_obj=body_object)
 
+    def deactivate_user(self, user_id):
+        raise NotImplementedError("This was never tested!")
+        path = "/users/" + user_id + "/lifecycle/deactivate"
+        return self.call_okta(path, REST.post)
+
+    def delete_user(self, user_id):
+        raise NotImplementedError("This was never tested!")
+        path = "/users/" + user_id
+        return self.call_okta(path, REST.delete)
+
     def reset_password(self, user_id, *, send_email=True):
         url = self.url + f"/users/{user_id}/lifecycle/reset_password"
         rsp = self.session.post(
