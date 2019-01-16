@@ -5,6 +5,7 @@ import re
 from functools import wraps
 
 import click
+import yaml
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 
@@ -25,22 +26,26 @@ FILTER_MATCHER = re.compile(FILTER_PATTERN)
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-def _get_field_lengths(arr, fields):
-    col_lengths = []
-    for col in fields:
-        col_lengths.append(max([len(str(DottedDict(item)[col]))
-                                for item in arr]))
-    return col_lengths
-
-
 def _print_table_from(print_obj, fields):
     if isinstance(print_obj, dict):
         print_obj = [print_obj]
     arr = DottedCollection.factory(print_obj)
-    lengths = _get_field_lengths(arr, fields)
+    col_lengths = []
+    for col in fields:
+        try:
+            col_lengths.append(max([len(str(DottedDict(item)[col]))
+                                for item in arr if col in item]))
+        except ValueError:
+            # we don't have a "col" field or it's not used.
+            # and we can't use 0 as width cause this will cause a weird
+            # exception
+            col_lengths.append(1)
+            print(f"WARNING: field {col} either never filled or non-existant.",
+                  file=sys.stderr)
     for row in arr:
         for col_idx, col in enumerate(fields):
-            print(f"{str(row[col]):{lengths[col_idx]}}  ", end="")
+            val = str(row[col]) if col in row else ""
+            print(f"{val:{col_lengths[col_idx]}}  ", end="")
         print("")
 
 
@@ -77,7 +82,7 @@ def _dict_flat_to_nested(flat_dict, defaults=None):
     {one: {two: {three: value}}}.
 
     :param flat_dict: The dictionary to convert to a nested one
-    :param defaults: Default values to use if flat_dict does not provide them
+    :param defaults: Defau  lt values to use if flat_dict does not provide them
     :return: A nested python dictionary
     """
     tmp = DottedDict()
@@ -467,7 +472,7 @@ def users_update(user_id, set_fields, context):
        -s question="Who let the dogs out?" \\
        -s answer="Me."
     """
-    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    fields_dict = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
     if context:
         fields_dict = {context + "." + k: v for k, v in fields_dict.items()}
     nested_dict = _dict_flat_to_nested(fields_dict)
