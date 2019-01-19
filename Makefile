@@ -51,3 +51,11 @@ minor: clean checkclean bump_minor build push upload
 
 .PHONY: patch
 patch: clean checkclean bump_patch build push upload
+
+dockertest:
+	@IMG="temp/$$(basename $$(pwd)):$$(date +%s)" ; \
+	echo $$IMG ; \
+	docker build . --no-cache --tag $$IMG ; \
+	docker run $$IMG
+.PHONY: test
+	
