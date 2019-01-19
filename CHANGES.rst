@@ -1,4 +1,9 @@
-v3.0.0
+v3.0.1
+======
+
+* internal change in handling "--json/--text-fields" parameters
+
+3.0.0
 ======
 
 * add table output to some commands and make it default
