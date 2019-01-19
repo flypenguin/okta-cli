@@ -34,7 +34,7 @@ def _print_table_from(print_obj, fields):
     for col in fields:
         try:
             col_lengths.append(max([len(str(DottedDict(item)[col]))
-                                for item in arr if col in item]))
+                               for item in arr if col in item]))
         except ValueError:
             # we don't have a "col" field or it's not used.
             # and we can't use 0 as width cause this will cause a weird
@@ -124,7 +124,7 @@ def _okta_get_groups_by_name(name, unique=False):
             groups))
     if unique and len(groups) != 1:
         raise ExitException("Group name must be unique. "
-                            f"(found '{len(groups)}' matching groups).")
+                            f"(found {len(groups)} matching groups).")
     return groups
 
 
