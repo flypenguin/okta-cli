@@ -5,7 +5,6 @@ import re
 from functools import wraps
 
 import click
-import yaml
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 

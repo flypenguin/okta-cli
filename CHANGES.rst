@@ -2,6 +2,7 @@ v3.0.1
 ======
 
 * internal change in handling "--json/--text-fields" parameters
+* fix missing import (which shouldn't be there)
 
 3.0.0
 ======
