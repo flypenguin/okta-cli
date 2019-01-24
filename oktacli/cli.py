@@ -48,6 +48,23 @@ def _print_table_from(print_obj, fields):
         print("")
 
 
+def _print_csv_from(print_obj, fields=None):
+    if isinstance(print_obj, dict):
+        print_obj = [print_obj]
+    # extract all the column fields from the result set
+    tmp_dict = {}
+    for obj in print_obj:
+        tmp_dict.update(dict.fromkeys(_dict_get_dotted_keys(obj)))
+    fieldlist = list(sorted(tmp_dict.keys()))
+    # iterate through the list and print it
+    writer = csv.DictWriter(sys.stdout,
+                            fieldnames=fieldlist,
+                            extrasaction='ignore')
+    writer.writeheader()
+    for obj in print_obj:
+        writer.writerow(obj)
+
+
 def _command_wrapper(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -61,8 +78,10 @@ def _command_wrapper(func):
                     print(json.dumps(rv, indent=2, sort_keys=True))
                 elif kwargs.get("print_yaml", False) is True:
                     raise ExitException("YAML printing not (yet) implemented.")
-                elif "text_fields" in kwargs and len(rv) > 0:
-                    _print_table_from(rv, kwargs["text_fields"].split(","))
+                elif kwargs.get("print_csv", False) is True:
+                    _print_csv_from(rv)
+                elif "output_fields" in kwargs and len(rv) > 0:
+                    _print_table_from(rv, kwargs["output_fields"].split(","))
                 else:
                     # default fallback setting - print json.
                     print(json.dumps(rv, indent=2, sort_keys=True))
@@ -79,7 +98,10 @@ def _output_type_command_wrapper(default_fields):
         @wraps(func)
         @click.option("-j", "--json", 'print_json', is_flag=True, default=False,
                       help="Print raw YAML output")
-        @click.option("--text-fields",
+        @click.option("--csv", "print_csv", is_flag=True, default=False,
+                      help="Print output as CSV format. Will ignore "
+                           "--output-fields parameter if set")
+        @click.option("--output-fields",
                       default=default_fields,
                       help="Override default fields in table format")
         @_command_wrapper
@@ -110,6 +132,17 @@ def _dict_flat_to_nested(flat_dict, defaults=None):
         # permitted, cause they are interpreted ...
         tmp[key] = val
     return tmp.to_python()
+
+
+def _dict_get_dotted_keys(dict_inst, pre_path=""):
+    rv = []
+    for key in dict_inst.keys():
+        tmp = dict_inst[key]
+        if isinstance(tmp, dict):
+            rv += _dict_get_dotted_keys(tmp, pre_path + key + ".")
+        else:
+            rv.append(pre_path + key)
+    return rv
 
 
 def _prepare_okta_filter_string(filter_string):
