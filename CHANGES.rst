@@ -1,3 +1,9 @@
+v4.0.0
+======
+
+* add CSV output
+* rename --text-fields parameter to --output-fields
+
 v3.0.1
 ======
 
