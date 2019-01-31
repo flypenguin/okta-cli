@@ -1,3 +1,8 @@
+v4.0.1
+======
+
+* fix bug in CSV output (was "" for all nested fields, e.g. "profile.login")
+
 v4.0.0
 ======
 

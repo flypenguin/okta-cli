@@ -1,5 +1,6 @@
 import json
 import sys
+import collections
 import csv
 import re
 from functools import wraps
@@ -62,7 +63,7 @@ def _print_csv_from(print_obj, fields=None):
                             extrasaction='ignore')
     writer.writeheader()
     for obj in print_obj:
-        writer.writerow(obj)
+        writer.writerow(_dict_nested_to_flat(obj))
 
 
 def _command_wrapper(func):
@@ -132,6 +133,18 @@ def _dict_flat_to_nested(flat_dict, defaults=None):
         # permitted, cause they are interpreted ...
         tmp[key] = val
     return tmp.to_python()
+
+
+# from here: https://stackoverflow.com/a/6027615
+def _dict_nested_to_flat(nested_dict, parent_key="", sep="."):
+    items = []
+    for k, v in nested_dict.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(_dict_nested_to_flat(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 def _dict_get_dotted_keys(dict_inst, pre_path=""):
