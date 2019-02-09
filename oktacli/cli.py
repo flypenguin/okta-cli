@@ -607,7 +607,7 @@ def users_add(set_fields, read_csv, activate, provider, nextlogin):
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-def cli():
+def cli_main():
     """
     Okta CLI helper.
 
@@ -618,14 +618,14 @@ def cli():
     pass
 
 
-@cli.command(name="version", context_settings=CONTEXT_SETTINGS)
+@cli_main.command(name="version", context_settings=CONTEXT_SETTINGS)
 def cli_version():
     """Prints version number and exit"""
     print(VERSION)
 
 
-cli.add_command(cli_config)
-cli.add_command(cli_users)
-cli.add_command(cli_pw)
-cli.add_command(cli_groups)
-cli.add_command(cli_apps)
+cli_main.add_command(cli_config)
+cli_main.add_command(cli_users)
+cli_main.add_command(cli_pw)
+cli_main.add_command(cli_groups)
+cli_main.add_command(cli_apps)

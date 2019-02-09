@@ -1,5 +1,5 @@
-from oktacli import cli
+from oktacli import cli_main
 
 
 if __name__ == "__main__":
-    cli()
+    cli_main()

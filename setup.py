@@ -108,7 +108,7 @@ setup(
         # py_modules=['mypackage'],
 
         entry_points={
-            'console_scripts': ['okta-cli=oktacli:cli'],
+            'console_scripts': ['okta-cli=oktacli:cli_main'],
         },
         install_requires=REQUIRED,
         extras_require=EXTRAS,
