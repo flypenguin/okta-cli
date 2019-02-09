@@ -524,7 +524,11 @@ def users_update(user_id, set_fields, context):
               help="Stop after NUM updates")
 @_command_wrapper
 def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
-    """Bulk-update users from a CSV file"""
+    """
+    Bulk-update users from a CSV file.
+
+    Note that the CSV file *must* contain a "profile.login" column.
+    """
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     rv = []
     errors = []
