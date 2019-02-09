@@ -91,6 +91,10 @@ def _command_wrapper(func):
         except ExitException as e:
             print("ERROR: {}".format(str(e)))
             sys.exit(-1)
+        except Exception as e:
+            print(f"SOMETHING REALLY BAD HAPPENED\n{str(type(e))}"
+                  f"!\nERROR: {e}")
+            sys.exit(-2)
     return wrapper
 
 
