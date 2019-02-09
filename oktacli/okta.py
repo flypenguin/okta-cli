@@ -92,6 +92,10 @@ class Okta:
         path = "/users/" + user_id
         return self.call_okta(path, REST.post, body_obj=body_object)
 
+    def get_profile_schema(self):
+        path = "/meta/schemas/user/default/"
+        return self.call_okta(path, REST.get)
+
     def deactivate_user(self, user_id):
         raise NotImplementedError("This was never tested!")
         path = "/users/" + user_id + "/lifecycle/deactivate"
