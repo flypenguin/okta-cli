@@ -13,7 +13,6 @@ from .api import load_config, save_config, get_manager, filter_users
 from .okta import REST
 from .exceptions import ExitException
 
-
 VERSION = "4.0.1"
 
 okta_manager = None
@@ -34,7 +33,7 @@ def _print_table_from(print_obj, fields):
     for col in fields:
         try:
             col_lengths.append(max([len(str(DottedDict(item)[col]))
-                               for item in arr if col in item]))
+                                    for item in arr if col in item]))
         except ValueError:
             # we don't have a "col" field or it's not used.
             # and we can't use 0 as width cause this will cause a weird
@@ -95,6 +94,7 @@ def _command_wrapper(func):
             print(f"SOMETHING REALLY BAD HAPPENED\n{str(type(e))}"
                   f"!\nERROR: {e}")
             sys.exit(-2)
+
     return wrapper
 
 
@@ -112,7 +112,9 @@ def _output_type_command_wrapper(default_fields):
         @_command_wrapper
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
         return wrapper
+
     return _output_type_command_wrapper_inner
 
 
@@ -211,7 +213,8 @@ def config_list():
     global config
     config = load_config()
     for name, conf in config["profiles"].items():
-        print("{}  {}  {}".format(name, conf["url"], "*"*3+conf["token"][38:]))
+        print("{}  {}  {}".format(name, conf["url"],
+                                  "*" * 3 + conf["token"][38:]))
 
 
 @cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
@@ -423,8 +426,8 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
         if check != login_or_id:
             raise ExitException("Aborted.")
     okta_manager.call_okta(
-        f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
-        params=params)
+            f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
+            params=params)
     return f"User '{login_or_id}' deactivated."
 
 
@@ -455,8 +458,8 @@ def users_delete(login_or_id, send_email, no_confirmation):
         if check != login_or_id:
             raise ExitException("Aborted.")
     okta_manager.call_okta_raw(
-        f"/users/{login_or_id}", REST.delete,
-        params=params)
+            f"/users/{login_or_id}", REST.delete,
+            params=params)
     return f"User '{login_or_id}' deleted."
 
 
@@ -597,7 +600,7 @@ def users_add(set_fields, read_csv, activate, provider, nextlogin):
             dr = csv.DictReader(infile, dialect=dialect)
             for row in dr:
                 final_dict = _dict_flat_to_nested(
-                    row, defaults=fields_dict)
+                        row, defaults=fields_dict)
                 added.append(okta_manager.add_user(params, final_dict))
         return added
     # when creating directly, we don't :)
