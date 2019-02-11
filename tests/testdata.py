@@ -349,3 +349,96 @@ okta_user_schema = {
         }
     }
 }
+
+okta_groups_list = [
+    {
+        "id":                    "group1",
+        "created":               "2018-09-13T12:51:16.000Z",
+        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
+        "objectClass":           [
+            "okta:user_group"
+        ],
+        "type":                  "OKTA_GROUP",
+        "profile":               {
+            "name":        "Group One",
+            "description": ""
+        },
+        "_links":                {
+            "logo":  [
+                {
+                    "name": "medium",
+                    "href": "https://some.logo",
+                    "type": "image/png"
+                },
+                {
+                    "name": "large",
+                    "href": "https://some_large.logo",
+                    "type": "image/png"
+                }
+            ],
+            "users": {"href": "http://okta/api/v1/groups/group1/users"},
+            "apps":  {"href": "http://okta/api/v1/groups/group1/apps"},
+        }
+    },
+    {
+        "id":                    "group2",
+        "created":               "2018-09-13T12:51:16.000Z",
+        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
+        "objectClass":           [
+            "okta:user_group"
+        ],
+        "type":                  "OKTA_GROUP",
+        "profile":               {
+            "name":        "Group Two",
+            "description": ""
+        },
+        "_links":                {
+            "logo":  [
+                {
+                    "name": "medium",
+                    "href": "https://some.logo",
+                    "type": "image/png"
+                },
+                {
+                    "name": "large",
+                    "href": "https://some_large.logo",
+                    "type": "image/png"
+                }
+            ],
+            "users": {"href": "http://okta/api/v1/groups/group2/users"},
+            "apps":  {"href": "http://okta/api/v1/groups/group2/apps"},
+        }
+    },
+    {
+        "id":                    "group3",
+        "created":               "2018-09-13T12:51:16.000Z",
+        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
+        "objectClass":           [
+            "okta:user_group"
+        ],
+        "type":                  "OKTA_GROUP",
+        "profile":               {
+            "name":        "Group 3",
+            "description": ""
+        },
+        "_links":                {
+            "logo":  [
+                {
+                    "name": "medium",
+                    "href": "https://some.logo",
+                    "type": "image/png"
+                },
+                {
+                    "name": "large",
+                    "href": "https://some_large.logo",
+                    "type": "image/png"
+                }
+            ],
+            "users": {"href": "http://okta/api/v1/groups/group3/users"},
+            "apps":  {"href": "http://okta/api/v1/groups/group3/apps"},
+        }
+    },
+]
