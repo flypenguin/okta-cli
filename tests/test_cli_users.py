@@ -28,7 +28,7 @@ def test_user_update(get_manager):
     # set up test
     get_manager.return_value = Okta("http://okta", "12ab")
     runner = CliRunner()
-    responses.add(responses.POST, re.compile('.+/userrs/[0-9a-z]+$'),
+    responses.add(responses.POST, re.compile('.+/users/[0-9a-z]+$'),
                   json={"test": "ok"}, status=200)
     # run command
     result = runner.invoke(cli.cli_users, params0)
