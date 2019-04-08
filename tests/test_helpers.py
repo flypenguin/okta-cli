@@ -17,17 +17,6 @@ def test_dict_nested_to_flat():
     assert wanted == _dict_nested_to_flat(input)
 
 
-def test_filter_prep():
-    base = "profile.firstname eq heinz and id gt asdf"
-    good = "profile.firstname eq \"heinz\" and id gt \"asdf\""
-    assert good == _prepare_okta_filter_string(base)
-    assert good == _prepare_okta_filter_string(good)
-    base = "(a eq b or c eq d) and e eq f"
-    good = '(a eq "b" or c eq "d") and e eq "f"'
-    assert good == _prepare_okta_filter_string(base)
-    assert good == _prepare_okta_filter_string(good)
-
-
 test_dict = {
     "hi": {
         "ho": {

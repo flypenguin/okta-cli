@@ -18,9 +18,6 @@ VERSION = "4.0.1"
 okta_manager = None
 config = None
 
-FILTER_PATTERN = '(eq|sw|gt|ge|lt|le) ([^ )"]+)'
-FILTER_MATCHER = re.compile(FILTER_PATTERN)
-
 # https://is.gd/T1enMM
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -162,10 +159,6 @@ def _dict_get_dotted_keys(dict_inst, pre_path=""):
         else:
             rv.append(pre_path + key)
     return rv
-
-
-def _prepare_okta_filter_string(filter_string):
-    return re.sub(FILTER_MATCHER, '\g<1> "\g<2>"', filter_string)
 
 
 def _okta_get_groups_by_name(name, unique=False):
@@ -405,8 +398,8 @@ def cli_users():
 def users_list(matches, partial, api_filter, api_search, **kwargs):
     """Lists users (all or using various filters)"""
     users = okta_manager.list_users(
-            filter_query=_prepare_okta_filter_string(api_filter),
-            search_query=_prepare_okta_filter_string(api_search))
+            filter_query=api_filter,
+            search_query=api_search)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     return list(filter_users(users, filters=filters_dict, partial=partial))
 
