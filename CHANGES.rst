@@ -1,3 +1,11 @@
+v5.0.1
+======
+
+* add missing changes docs for 5.0.0 (everything below is 5.0.0)
+* add 'groups adduser' command
+* remove filter expression convenience optimizer (major bump)
+* various internal fixes
+
 v4.0.1
 ======
 
