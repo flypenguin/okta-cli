@@ -45,7 +45,7 @@ def _print_table_from(print_obj, fields):
         print("")
 
 
-def _print_csv_from(print_obj, fields=None):
+def _print_csv_from(print_obj, dialect, fields=None):
     if isinstance(print_obj, dict):
         print_obj = [print_obj]
     # extract all the column fields from the result set
@@ -56,7 +56,8 @@ def _print_csv_from(print_obj, fields=None):
     # iterate through the list and print it
     writer = csv.DictWriter(sys.stdout,
                             fieldnames=fieldlist,
-                            extrasaction='ignore')
+                            extrasaction='ignore',
+                            dialect=dialect)
     writer.writeheader()
     for obj in print_obj:
         writer.writerow(_dict_nested_to_flat(obj))
@@ -76,7 +77,7 @@ def _command_wrapper(func):
                 elif kwargs.get("print_yaml", False) is True:
                     raise ExitException("YAML printing not (yet) implemented.")
                 elif kwargs.get("print_csv", False) is True:
-                    _print_csv_from(rv)
+                    _print_csv_from(rv, kwargs['csv_dialect'])
                 elif "output_fields" in kwargs and len(rv) > 0:
                     _print_table_from(rv, kwargs["output_fields"].split(","))
                 else:
@@ -103,6 +104,8 @@ def _output_type_command_wrapper(default_fields):
         @click.option("--csv", "print_csv", is_flag=True, default=False,
                       help="Print output as CSV format. Will ignore "
                            "--output-fields parameter if set")
+        @click.option("--csv-dialect", default='excel',
+                      help="Use this CSV dialect with CSV output")
         @click.option("--output-fields",
                       default=default_fields,
                       help="Override default fields in table format")
