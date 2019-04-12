@@ -307,6 +307,26 @@ def groups_adduser(group, user, **kwargs):
     return f"User {user} added to group {group}"
 
 
+@cli_groups.command(name="removeuser", context_settings=CONTEXT_SETTINGS)
+@click.option("-g", "--group", required=True,
+              metavar="UID",
+              help="The group ID to add a user to")
+@click.option("-u", "--user", required=True,
+              metavar="GID",
+              help="The user ID to remove from the group")
+@_command_wrapper
+def groups_removeuser(group, user, **kwargs):
+    """
+    Removes a user from a group.
+
+    Note that you must use Okta's user and group IDs.
+    """
+    rsp = okta_manager.call_okta_raw(
+            f"/groups/{group}/users/{user}",
+            REST.delete)
+    return f"User {user} removed from group {group}"
+
+
 @cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
 @click.option("-i", "--id", 'use_id', is_flag=True, default=False,
