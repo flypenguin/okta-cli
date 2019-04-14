@@ -1,3 +1,9 @@
+v5.1.0
+======
+
+* add 'groups removeuser' command
+* add 'users groups' command
+
 v5.0.1
 ======
 
