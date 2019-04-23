@@ -562,8 +562,8 @@ def users_update(user_id, set_fields, context):
     return okta_manager.update_user(user_id, nested_dict)
 
 
-@cli_users.command(name="update-csv", context_settings=CONTEXT_SETTINGS)
-@click.argument('csv-file')
+@cli_users.command(name="bulk-update", context_settings=CONTEXT_SETTINGS)
+@click.argument('file')
 @click.option('-s', '--set', 'set_fields', multiple=True,
               help="Set default field values for updates")
 @click.option('-i', '--jump-to-index', metavar="IDX",
@@ -579,9 +579,10 @@ def users_update(user_id, set_fields, context):
 @_command_wrapper
 def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
     """
-    Bulk-update users from a CSV file.
+    Bulk-update users from a CSV or Excel (.xlsx) file.
 
-    Note that the CSV file *must* contain a "profile.login" column.
+    Note that the CSV file *must* contain a "profile.login" or a "profile.id"
+    column.
     """
 
     def excel_reader():

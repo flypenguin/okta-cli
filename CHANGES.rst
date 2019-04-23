@@ -1,3 +1,8 @@
+v6.0.0
+======
+
+* rename "users update-csv" to "users bulk-update"
+
 v5.2.0
 ======
 
