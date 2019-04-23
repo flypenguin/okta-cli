@@ -591,25 +591,30 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
         dr = csv.DictReader(infile, dialect=dialect)
         for _ in range(jump_to_index):
             next(dr)
-        print("0..", file=sys.stderr, end="")
         for row in dr:
-            if counter and counter % 50 == 0:
-                print(f"..{counter}", file=sys.stderr, flush=True, end="")
+            if counter % 50 == 0:
+                print(f"{counter}..", file=sys.stderr, flush=True, end="")
             if limit and counter > limit:
                 break
             if jump_to_user:
-                if row["profile.login"] != jump_to_user:
+                if jump_to_user not in (row["profile.login"], row["id"]):
                     continue
-                else:
-                    jump_to_user = None
-            user_id = row.pop("profile.login")
+                jump_to_user = None
+            # use profile.login or id as index field
+            for field in ("profile.login", "id"):
+                if field in row:
+                    user_id = row.pop(field)
+            # you can't set top-level fields. pop all of them.
+            for field in row.keys():
+                if field.search(".") == -1:
+                    row.pop(field)
             final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
             try:
                 rv.append(okta_manager.update_user(user_id, final_dict))
             except RequestsHTTPError as e:
                 errors.append((counter + jump_to_index, final_dict, str(e)))
             counter += 1
-    print("", file=sys.stderr)
+    print("done", file=sys.stderr)
     return {"done": rv, "errors": errors}
 
 
