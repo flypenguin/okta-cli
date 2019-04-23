@@ -1,3 +1,8 @@
+v5.2.0
+======
+
+* add excel file reading for 'users update-csv'
+
 v5.1.0
 ======
 
