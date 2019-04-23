@@ -4,10 +4,12 @@ import collections
 import csv
 import re
 from functools import wraps
+from os.path import splitext
 
 import click
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
+from openpyxl import load_workbook
 
 from .api import load_config, save_config, get_manager, filter_users
 from .okta import REST
@@ -581,39 +583,58 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
 
     Note that the CSV file *must* contain a "profile.login" column.
     """
+
+    def excel_reader():
+        wb = load_workbook(filename=csv_file)
+        rows = wb.active.rows
+
+        # Get the header values as keys and move the iterator to the next item
+        keys = [c.value for c in next(rows)]
+        num_keys = len(keys)
+        for row in rows:
+            values = [c.value for c in row]
+            yield dict(zip(keys, values[:num_keys]))
+
+    def csv_reader():
+        with open(csv_file, "r", encoding="utf-8") as infile:
+            dialect = csv.Sniffer().sniff(infile.read(4096))
+            infile.seek(0)
+            dr = csv.DictReader(infile, dialect=dialect)
+            yield(next(dr))
+
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     rv = []
     errors = []
     counter = 0
-    with open(csv_file, "r", encoding="utf-8") as infile:
-        dialect = csv.Sniffer().sniff(infile.read(4096))
-        infile.seek(0)
-        dr = csv.DictReader(infile, dialect=dialect)
-        for _ in range(jump_to_index):
-            next(dr)
-        for row in dr:
-            if counter % 50 == 0:
-                print(f"{counter}..", file=sys.stderr, flush=True, end="")
-            if limit and counter > limit:
-                break
-            if jump_to_user:
-                if jump_to_user not in (row["profile.login"], row["id"]):
-                    continue
-                jump_to_user = None
-            # use profile.login or id as index field
-            for field in ("profile.login", "id"):
-                if field in row:
-                    user_id = row.pop(field)
-            # you can't set top-level fields. pop all of them.
-            for field in row.keys():
-                if field.search(".") == -1:
-                    row.pop(field)
-            final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
-            try:
-                rv.append(okta_manager.update_user(user_id, final_dict))
-            except RequestsHTTPError as e:
-                errors.append((counter + jump_to_index, final_dict, str(e)))
-            counter += 1
+
+    dr = excel_reader() \
+        if splitext(csv_file)[1].lower() == ".xlsx" else csv_reader()
+
+    for _ in range(jump_to_index):
+        next(dr)
+    for row in dr:
+        if counter % 50 == 0:
+            print(f"{counter}..", file=sys.stderr, flush=True, end="")
+        if limit and counter > limit:
+            break
+        if jump_to_user:
+            if jump_to_user not in (row["profile.login"], row["id"]):
+                continue
+            jump_to_user = None
+        # use profile.login or id as index field
+        for field in ("profile.login", "id"):
+            if field in row:
+                user_id = row.pop(field)
+        # you can't set top-level fields. pop all of them.
+        for field in row.keys():
+            if field.find(".") == -1:
+                row.pop(field)
+        final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
+        try:
+            rv.append(okta_manager.update_user(user_id, final_dict))
+        except RequestsHTTPError as e:
+            errors.append((counter + jump_to_index, final_dict, str(e)))
+        counter += 1
     print("done", file=sys.stderr)
     return {"done": rv, "errors": errors}
 
