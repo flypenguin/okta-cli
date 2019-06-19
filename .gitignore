@@ -253,3 +253,6 @@ media
 staticfiles/
 
 # End of https://www.gitignore.io/api/django
+
+template
+build
