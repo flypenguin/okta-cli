@@ -577,16 +577,16 @@ def users_update(user_id, set_fields, context):
               default=0,
               help="Stop after NUM updates")
 @_command_wrapper
-def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
+def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
     """
     Bulk-update users from a CSV or Excel (.xlsx) file.
 
-    Note that the CSV file *must* contain a "profile.login" or a "profile.id"
+    Note that the CSV file *must* contain a "profile.login" OR an "id"
     column.
     """
 
     def excel_reader():
-        wb = load_workbook(filename=csv_file)
+        wb = load_workbook(filename=file)
         rows = wb.active.rows
 
         # Get the header values as keys and move the iterator to the next item
@@ -597,11 +597,12 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
             yield dict(zip(keys, values[:num_keys]))
 
     def csv_reader():
-        with open(csv_file, "r", encoding="utf-8") as infile:
+        with open(file, "r", encoding="utf-8") as infile:
             dialect = csv.Sniffer().sniff(infile.read(4096))
             infile.seek(0)
             dr = csv.DictReader(infile, dialect=dialect)
-            yield(next(dr))
+            for row in dr:
+                yield row
 
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     rv = []
@@ -609,7 +610,7 @@ def users_bulk_update(csv_file, set_fields, jump_to_index, jump_to_user, limit):
     counter = 0
 
     dr = excel_reader() \
-        if splitext(csv_file)[1].lower() == ".xlsx" else csv_reader()
+        if splitext(file)[1].lower() == ".xlsx" else csv_reader()
 
     for _ in range(jump_to_index):
         next(dr)
