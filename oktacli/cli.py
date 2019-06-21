@@ -3,6 +3,7 @@ import sys
 import collections
 import csv
 import re
+from datetime import datetime as dt
 from functools import wraps
 from os.path import splitext
 
@@ -605,8 +606,8 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
                 yield row
 
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    rv = []
-    errors = []
+    upd_ok = []
+    upd_err = []
     counter = 0
 
     dr = excel_reader() \
@@ -633,12 +634,23 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
                 row.pop(field)
         final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
         try:
-            rv.append(okta_manager.update_user(user_id, final_dict))
+            upd_ok.append(okta_manager.update_user(user_id, final_dict))
         except RequestsHTTPError as e:
-            errors.append((counter + jump_to_index, final_dict, str(e)))
+            upd_err.append((counter + jump_to_index, final_dict, str(e)))
         counter += 1
     print("done", file=sys.stderr)
-    return {"done": rv, "errors": errors}
+    tmp = {"ok": upd_ok, "errors": upd_err}
+    timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
+    rv = ""
+    for name, results in tmp.items():
+        if len(results):
+            file_name = f"okta-bulk-update-{timestamp_str}-{name}.json"
+            with open(file_name, "w") as outfile:
+                outfile.write(json.dumps(results, indent=2, sort_keys=True))
+                rv += f"{len(results):>4} {name:6} - {file_name}\n"
+        else:
+            rv += f"{len(results):>4} {name:6}\n"
+    return rv + f"{len(upd_ok) + len(upd_err)} total"
 
 
 @cli_users.command(name="add", context_settings=CONTEXT_SETTINGS)
