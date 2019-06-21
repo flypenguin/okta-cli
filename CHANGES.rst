@@ -1,3 +1,8 @@
+v7.0.0
+======
+
+* write output of bulk-update to log files instead of stdout
+
 v6.0.0
 ======
 
