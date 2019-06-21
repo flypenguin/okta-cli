@@ -1,5 +1,6 @@
 import enum
 import json
+import time
 
 import requests
 
@@ -32,7 +33,19 @@ class Okta:
         }
         if method == REST.post and body_obj:
             call_params["data"] = json.dumps(body_obj)
+
         rsp = call_method(self.url + path, **call_params)
+
+        # rate limit exceeded?
+        while rsp.status_code == 429:
+            # get header with "we're good again" date (epoch time)
+            until = int(rsp.headers.get("X-Rate-Limit-Reset"))
+            delay = max(1, int(until - time.time()))
+            time.sleep(delay)
+
+            # now try again
+            rsp = call_method(self.url + path, **call_params)
+
         if rsp.status_code >= 400:
             raise requests.HTTPError(json.dumps(rsp.json()))
         return rsp
