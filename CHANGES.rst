@@ -1,3 +1,8 @@
+v7.0.1
+======
+
+* (invisible) update internal communications path for querying okta
+
 v7.0.0
 ======
 

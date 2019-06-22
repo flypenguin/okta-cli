@@ -26,25 +26,26 @@ class Okta:
             'Authorization': 'SSWS ' + token,
         })
 
-    def call_okta_raw(self, path, method, *, params=None, body_obj=None):
+    def call_okta_raw(self, path, method, *, params=None, body_obj=None,
+                      implicit_url=True):
         call_method = getattr(self.session, method.value)
-        call_params = {
-            "params": params if params is not None else {},
-        }
+        call_params = {"params": params if params is not None else {}}
+        call_path = self.url + path if implicit_url else path
         if method == REST.post and body_obj:
             call_params["data"] = json.dumps(body_obj)
 
-        rsp = call_method(self.url + path, **call_params)
+        while True:
+            rsp = call_method(call_path, **call_params)
 
-        # rate limit exceeded?
-        while rsp.status_code == 429:
+            if rsp.status_code != 429:
+                # not throttled? break the loop.
+                break
+
             # get header with "we're good again" date (epoch time)
             until = int(rsp.headers.get("X-Rate-Limit-Reset"))
             delay = max(1, int(until - time.time()))
             time.sleep(delay)
-
             # now try again
-            rsp = call_method(self.url + path, **call_params)
 
         if rsp.status_code >= 400:
             raise requests.HTTPError(json.dumps(rsp.json()))
@@ -65,7 +66,7 @@ class Okta:
             url = rsp.links.get("next", {"url": ""})["url"]
             if not url:
                 break
-            rsp = self.session.get(url)
+            rsp = self.call_okta_raw(url, REST.get, implicit_url=False)
             # now the += operation is safe, cause we have a list.
             # this is a liiiitle bit implicit, but should work smoothly.
             rv += rsp.json()
