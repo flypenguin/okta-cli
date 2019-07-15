@@ -640,9 +640,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
             if field in row:
                 user_id = row.pop(field)
         # you can't set top-level fields. pop all of them.
-        for field in row.keys():
-            if field.find(".") == -1:
-                row.pop(field)
+        row = {k: v for k, v in row.items() if k.find(".") > -1}
         final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
         try:
             upd_ok.append(okta_manager.update_user(user_id, final_dict))
