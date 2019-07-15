@@ -647,7 +647,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
         except RequestsHTTPError as e:
             upd_err.append((counter + jump_to_index, final_dict, str(e)))
         counter += 1
-    print("done", file=sys.stderr)
+    print(f"{counter} - done.", file=sys.stderr)
     tmp = {"ok": upd_ok, "errors": upd_err}
     timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
     rv = ""
