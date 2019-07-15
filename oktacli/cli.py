@@ -626,15 +626,16 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
     for _ in range(jump_to_index):
         next(dr)
     for row in dr:
-        if counter % 50 == 0:
-            print(f"{counter}..", file=sys.stderr, flush=True, end="")
         if limit and counter > limit:
             break
         if jump_to_user:
             if jump_to_user not in (row["profile.login"], row["id"]):
                 continue
             jump_to_user = None
-        # use profile.login or id as index field
+        # print out counter info HERE
+        if counter % 50 == 0:
+            print(f"{counter}..", file=sys.stderr, flush=True, end="")
+        # use profile.login or id as index field, with preference on the latter
         for field in ("profile.login", "id"):
             if field in row:
                 user_id = row.pop(field)
