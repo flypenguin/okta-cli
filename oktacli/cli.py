@@ -129,24 +129,31 @@ def _dict_flat_to_nested(flat_dict, defaults=None):
     {one: {two: {three: value}}}.
 
     :param flat_dict: The dictionary to convert to a nested one
-    :param defaults: Defau  lt values to use if flat_dict does not provide them
+    :param defaults: Default values for nested dict in (with flat (!) keys)
     :return: A nested python dictionary
     """
     tmp = DottedDict()
     if defaults is None:
         defaults = {}
-    # values from flat_dict have precedence over default values
     for key, val in defaults.items():
         tmp[key] = val
     for key, val in flat_dict.items():
-        # key can be "one.two", so keys with a dot in their name are not
-        # permitted, cause they are interpreted ...
         tmp[key] = val
     return tmp.to_python()
 
 
 # from here: https://stackoverflow.com/a/6027615
 def _dict_nested_to_flat(nested_dict, parent_key="", sep="."):
+    """
+    Takes a nested dictionary and converts it into a flat one.
+
+    Like this: `{"one": {"two": "three}}` will become `{"one.two": "three"}`
+
+    :param nested_dict:
+    :param parent_key:
+    :param sep:
+    :return:
+    """
     items = []
     for k, v in nested_dict.items():
         new_key = parent_key + sep + k if parent_key else k
