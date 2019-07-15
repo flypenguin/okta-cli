@@ -595,7 +595,9 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
         num_keys = len(keys)
         for row in rows:
             values = [c.value for c in row]
-            yield dict(zip(keys, values[:num_keys]))
+            rv = dict(zip(keys, values[:num_keys]))
+            if any(rv.values()):
+                yield rv
 
     def csv_reader():
         with open(file, "r", encoding="utf-8") as infile:
@@ -603,7 +605,8 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
             infile.seek(0)
             dr = csv.DictReader(infile, dialect=dialect)
             for row in dr:
-                yield row
+                if any(row.values()):
+                    yield row
 
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
     upd_ok = []
