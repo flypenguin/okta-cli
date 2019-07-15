@@ -1,3 +1,9 @@
+v7.0.2
+======
+
+* (invisible) some internal updates
+* bulk-update prints final number of upd. users at the end
+
 v7.0.1
 ======
 
