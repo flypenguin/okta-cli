@@ -14,7 +14,7 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-VERSION = "7.0.2"
+VERSION = "7.1.0"
 
 NAME = 'okta-cli'
 DESCRIPTION = 'An Okta command line interface for scripting and quickly performing routine tasks'

@@ -17,7 +17,7 @@ from .api import load_config, save_config, get_manager, filter_users
 from .okta import REST
 from .exceptions import ExitException
 
-VERSION = "7.0.2"
+VERSION = "7.1.0"
 
 okta_manager = None
 config = None
