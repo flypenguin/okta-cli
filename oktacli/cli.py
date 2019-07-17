@@ -6,6 +6,7 @@ import re
 from datetime import datetime as dt
 from functools import wraps
 from os.path import splitext
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
 from dotted.collection import DottedDict, DottedCollection
@@ -584,8 +585,12 @@ def users_update(user_id, set_fields, context):
 @click.option('-l', '--limit', metavar="NUM",
               default=0,
               help="Stop after NUM updates")
+@click.option('-w', '--workers', metavar="NUM",
+              default=25,
+              help="use this many threads parallel, default:25")
 @_command_wrapper
-def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
+def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
+                      workers):
     """
     Bulk-update users from a CSV or Excel (.xlsx) file.
 
@@ -615,39 +620,52 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit):
                 if any(row.values()):
                     yield row
 
-    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    upd_ok = []
-    upd_err = []
-    counter = 0
-
-    dr = excel_reader() \
-        if splitext(file)[1].lower() == ".xlsx" else csv_reader()
-
-    for _ in range(jump_to_index):
-        next(dr)
-    for row in dr:
-        if limit and counter > limit:
-            break
+    def file_reader():
+        dr = excel_reader() \
+            if splitext(file)[1].lower() == ".xlsx" else csv_reader()
         if jump_to_user:
-            if jump_to_user not in (row["profile.login"], row["id"]):
-                continue
-            jump_to_user = None
-        # print out counter info HERE
-        if counter % 50 == 0:
-            print(f"{counter}..", file=sys.stderr, flush=True, end="")
-        # use profile.login or id as index field, with preference on the latter
+            tmp = next(dr)
+            while jump_to_user not in (tmp.get("profile.login", ""), tmp.get("id", "")):
+                tmp = next(dr)
+        elif jump_to_index:
+            # prevent both being used at the same time :)
+            for _ in range(jump_to_index):
+                next(dr)
+        _cnt = 0
+        for row in dr:
+            if limit and _cnt == limit:
+                break
+            yield row
+            _cnt += 1
+
+    def update_user_parallel(_row, index):
+        # this is a closure, let's use the outer scope's variables
         for field in ("profile.login", "id"):
-            if field in row:
-                user_id = row.pop(field)
+            if field in _row:
+                user_id = _row.pop(field)
         # you can't set top-level fields. pop all of them.
-        row = {k: v for k, v in row.items() if k.find(".") > -1}
-        final_dict = _dict_flat_to_nested(row, defaults=fields_dict)
+        _row = {k: v for k, v in _row.items() if k.find(".") > -1}
+        # fields_dict - from outer scope.
+        final_dict = _dict_flat_to_nested(_row, defaults=fields_dict)
         try:
             upd_ok.append(okta_manager.update_user(user_id, final_dict))
         except RequestsHTTPError as e:
-            upd_err.append((counter + jump_to_index, final_dict, str(e)))
-        counter += 1
-    print(f"{counter} - done.", file=sys.stderr)
+            upd_err.append((index + jump_to_index, final_dict, str(e)))
+
+    print("Bulk update might take a while. Please be patient.", flush=True)
+
+    upd_ok = []
+    upd_err = []
+    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    dr = file_reader()
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        runs = {idx: ex.submit(update_user_parallel, row, idx)
+                for idx, row in enumerate(dr)}
+        for job in as_completed(runs.values()):
+            pass
+
+    print(f"{len(runs)} - done.", file=sys.stderr)
     tmp = {"ok": upd_ok, "errors": upd_err}
     timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
     rv = ""
