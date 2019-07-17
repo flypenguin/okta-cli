@@ -1,3 +1,8 @@
+v7.1.0
+======
+
+* parallelize user bulk-update calls to be much faster
+
 v7.0.2
 ======
 
