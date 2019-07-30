@@ -285,7 +285,7 @@ def cli_groups():
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_list(api_filter, api_query, **kwargs):
     """List all defined groups"""
-    return okta_manager.list_groups(filter=api_filter, query=api_query)
+    return okta_manager.list_groups(filter_ex=api_filter, query_ex=api_query)
 
 
 @cli_groups.command(name="get", context_settings=CONTEXT_SETTINGS)

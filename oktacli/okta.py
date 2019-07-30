@@ -77,12 +77,12 @@ class Okta:
             rv.pop("_links", None)
         return rv
 
-    def list_groups(self, query="", filter=""):
+    def list_groups(self, query_ex="", filter_ex=""):
         params = {}
-        if query:
-            params["query"] = query
-        if filter:
-            params["filter"] = filter
+        if query_ex:
+            params["query"] = query_ex
+        if filter_ex:
+            params["filter"] = filter_ex
         return self.call_okta("/groups", REST.get, params=params)
 
     def list_users(self, filter_query="", search_query=""):
