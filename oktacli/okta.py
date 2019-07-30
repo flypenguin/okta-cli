@@ -94,6 +94,9 @@ class Okta:
             params = {}
         return self.call_okta("/users", REST.get, params=params)
 
+    def list_apps(self):
+        return self.call_okta("/apps", REST.get)
+
     def add_user(self, query_params, body_object):
         body = json.dumps(body_object).encode("utf-8")
         rsp = self.session.post(self.url + "/users/",
