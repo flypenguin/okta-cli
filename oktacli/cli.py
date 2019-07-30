@@ -49,7 +49,7 @@ def _print_table_from(print_obj, fields):
         print("")
 
 
-def _print_csv_from(print_obj, dialect, fields=None):
+def _dump_csv(print_obj, *, dialect=None, out=sys.stdout, fields=None):
     if isinstance(print_obj, dict):
         print_obj = [print_obj]
     # extract all the column fields from the result set
@@ -58,7 +58,7 @@ def _print_csv_from(print_obj, dialect, fields=None):
         tmp_dict.update(dict.fromkeys(_dict_get_dotted_keys(obj)))
     fieldlist = list(sorted(tmp_dict.keys()))
     # iterate through the list and print it
-    writer = csv.DictWriter(sys.stdout,
+    writer = csv.DictWriter(out,
                             fieldnames=fieldlist,
                             extrasaction='ignore',
                             dialect=dialect)
@@ -81,7 +81,7 @@ def _command_wrapper(func):
                 elif kwargs.get("print_yaml", False) is True:
                     raise ExitException("YAML printing not (yet) implemented.")
                 elif kwargs.get("print_csv", False) is True:
-                    _print_csv_from(rv, kwargs['csv_dialect'])
+                    _dump_csv(rv, dialect=kwargs['csv_dialect'])
                 elif "output_fields" in kwargs and len(rv) > 0:
                     _print_table_from(rv, kwargs["output_fields"].split(","))
                 else:
