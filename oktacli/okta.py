@@ -17,6 +17,8 @@ class Okta:
     def __init__(self, url, token):
         self.token = token
         self.path_base = "/api/v1"
+
+        # TODO: use urljoin or something for this
         self.url = url + self.path_base
 
         self.session = requests.Session()
@@ -58,9 +60,6 @@ class Okta:
         #     *OR*
         # a list.
         while True:
-            # raise if there was an error
-            if rsp.status_code >= 400:
-                raise requests.HTTPError(json.dumps(rsp.json()))
             # now, let's get all the "next" links. if we do NOT have a list,
             # we do not have "next" links :) . handy!
             url = rsp.links.get("next", {"url": ""})["url"]
