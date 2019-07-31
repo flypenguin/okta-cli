@@ -1,4 +1,6 @@
 .vscode/
+dump*
+okta-dump*
 
 ## App ignore settings
 # let's ignore all the top-level .json/.csv files
