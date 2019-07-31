@@ -473,19 +473,13 @@ def users_list_groups(name_or_id, **kwargs):
 @_command_wrapper
 def users_deactivate(login_or_id, send_email, no_confirmation):
     """Deactivate a user (DESTRUCTIVE OPERATION)"""
-    params = {}
-    if send_email:
-        params["sendEmail"] = "TRUE"
     if not no_confirmation:
         check = input("DANGER!! Do you REALLY want to do this "
                       "(maybe use 'suspend' instead)?\n"
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    okta_manager.call_okta(
-            f"/users/{login_or_id}/lifecycle/deactivate", REST.post,
-            params=params)
-    return f"User '{login_or_id}' deactivated."
+    return okta_manager.deactivate_user(login_or_id, send_email)
 
 
 @cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
@@ -506,18 +500,12 @@ def users_unlock(login_or_id):
 @_command_wrapper
 def users_delete(login_or_id, send_email, no_confirmation):
     """Delete a user (DESTRUCTIVE OPERATION)"""
-    params = {}
-    if send_email:
-        params["sendEmail"] = "TRUE"
     if not no_confirmation:
         check = input("DANGER!! Do you REALLY want to do this?\n"
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    okta_manager.call_okta_raw(
-            f"/users/{login_or_id}", REST.delete,
-            params=params)
-    return f"User '{login_or_id}' deleted."
+    return okta_manager.delete_user(login_or_id, send_email)
 
 
 @cli_users.command(name="suspend", context_settings=CONTEXT_SETTINGS)
