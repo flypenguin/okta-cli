@@ -479,7 +479,8 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    return okta_manager.deactivate_user(login_or_id, send_email)
+    okta_manager.deactivate_user(login_or_id, send_email)
+    return f"User {login_or_id} deactivated."
 
 
 @cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
@@ -505,7 +506,9 @@ def users_delete(login_or_id, send_email, no_confirmation):
                       f"Then enter '{login_or_id}': ")
         if check != login_or_id:
             raise ExitException("Aborted.")
-    return okta_manager.delete_user(login_or_id, send_email)
+    okta_manager.delete_user(login_or_id, send_email)
+    # .delete_user() does not return anything
+    return f"User {login_or_id} deleted."
 
 
 @cli_users.command(name="suspend", context_settings=CONTEXT_SETTINGS)

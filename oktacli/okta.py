@@ -113,15 +113,27 @@ class Okta:
         path = "/meta/schemas/user/default/"
         return self.call_okta(path, REST.get)
 
-    def deactivate_user(self, user_id):
-        raise NotImplementedError("This was never tested!")
+    def deactivate_user(self, user_id, send_email=True):
+        """
+        Deactivates a user.
+        :param user_id: The user ID
+        :param send_email: On True admins will be notified
+        :return: None
+        """
         path = "/users/" + user_id + "/lifecycle/deactivate"
-        return self.call_okta(path, REST.post)
+        params = {"sendEmail": "true"} if send_email else {}
+        return self.call_okta_raw(path, REST.post, params=params)
 
-    def delete_user(self, user_id):
-        raise NotImplementedError("This was never tested!")
+    def delete_user(self, user_id, send_email=True):
+        """
+        Deletes a user.
+        :param user_id: The user ID
+        :param send_email: On True admins will be notified
+        :return: None
+        """
         path = "/users/" + user_id
-        return self.call_okta(path, REST.delete)
+        params = {"sendEmail": "true"} if send_email else {}
+        return self.call_okta_raw(path, REST.delete, params=params)
 
     def reset_password(self, user_id, *, send_email=True):
         url = self.url + f"/users/{user_id}/lifecycle/reset_password"
