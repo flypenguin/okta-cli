@@ -1,3 +1,9 @@
+v7.2.0
+======
+
+* add 'dump' command which dumps users, and apps / groups with their users
+* internal cleanups
+
 v7.1.0
 ======
 
