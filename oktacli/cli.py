@@ -5,7 +5,8 @@ import csv
 import re
 from datetime import datetime as dt
 from functools import wraps
-from os.path import splitext
+from os.path import splitext, join, isdir
+from os import mkdir
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
@@ -731,6 +732,89 @@ def cli_main():
     If in doubt start with: "okta-cli config new --help"
     """
     pass
+
+
+@cli_main.command(name="dump", context_settings=CONTEXT_SETTINGS)
+@click.option('-d', '--dir', 'target_dir',
+              help="Save in this directory", default=None)
+@click.option("--no-user-list", is_flag=True)
+@click.option("--no-app-users", is_flag=True)
+@click.option("--no-group-users", is_flag=True)
+@_command_wrapper
+def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
+    """Dumps users, groups and applications (incl. users) into CSV files"""
+
+    def save_in(save_dir, save_file, obj):
+        if not isdir(save_dir):
+            mkdir(save_dir)
+        final_file = join(save_dir, save_file)
+        with open(final_file, "w") as outfile:
+            _dump_csv(obj, out=outfile)
+
+    def save_in_csv(save_dir, save_file, obj, headers):
+        if not isdir(save_dir):
+            mkdir(save_dir)
+        final_file = join(save_dir, save_file)
+        with open(final_file, "w") as outfile:
+            writer = csv.writer(outfile)
+            writer.writerow(headers)
+            for row in obj:
+                writer.writerow(row)
+
+    def get_users_for(obj_list, rest_path, workers=1):
+        table = []
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            runs = {
+                ex.submit(okta_manager.call_okta,
+                          f"/{rest_path}/{obj['id']}/users",
+                          REST.get):
+                obj["id"]
+                for obj in obj_list}
+            for result in runs:
+                gid = runs[result]
+                table += [(gid, u["id"]) for u in result.result()]
+        return table
+
+    default_workers = 25
+
+    if target_dir is None:
+        target_dir = dt.strftime(dt.now(), "okta-dump-%Y%m%d%H%M%S")
+
+    print("Please be patient, this can several minutes.")
+
+    if no_user_list:
+        print("Skipping list of users.")
+    else:
+        print("Saving user list ... ", end="", flush=True)
+        dump_me = okta_manager.list_users()
+        save_in(target_dir, "users.csv", dump_me)
+        print("done.")
+
+    print("Saving group list ... ", end="", flush=True)
+    dump_me = okta_manager.list_groups()
+    save_in(target_dir, "groups.csv", dump_me)
+    print("done.")
+
+    if no_group_users:
+        print("Skipping list of group users.")
+    else:
+        print("Saving group users ... ", end="", flush=True)
+        table = get_users_for(dump_me, "groups", workers=default_workers)
+        save_in_csv(target_dir, "group_users.csv", table, ("group", "user"))
+        print("done.")
+
+    print("Saving apps list ... ", end="", flush=True)
+    dump_me = okta_manager.list_apps()
+    save_in(target_dir, "apps.csv", dump_me)
+    print("done.")
+
+    if no_app_users:
+        print("Skipping list of app users.")
+    else:
+        print("Saving app users ... ", end="", flush=True)
+        table = get_users_for(dump_me, "apps", workers=default_workers)
+        save_in_csv(target_dir, "app_users.csv", table, ("app", "user"))
+        print("done.")
 
 
 @cli_main.command(name="version", context_settings=CONTEXT_SETTINGS)
