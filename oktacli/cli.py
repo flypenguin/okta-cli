@@ -767,7 +767,8 @@ def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
             runs = {
                 ex.submit(okta_manager.call_okta,
                           f"/{rest_path}/{obj['id']}/users",
-                          REST.get):
+                          REST.get,
+                          params={"limit": 1000}):
                 obj["id"]
                 for obj in obj_list}
             for result in runs:
@@ -790,31 +791,22 @@ def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
         save_in(target_dir, "users.csv", dump_me)
         print("done.")
 
-    print("Saving group list ... ", end="", flush=True)
-    dump_me = okta_manager.list_groups()
-    save_in(target_dir, "groups.csv", dump_me)
-    print("done.")
-
-    if no_group_users:
-        print("Skipping list of group users.")
-    else:
-        print("Saving group users ... ", end="", flush=True)
-        table = get_users_for(dump_me, "groups", workers=default_workers)
-        save_in_csv(target_dir, "group_users.csv", table, ("group", "user"))
+    for func, what, no_detail in (
+            (okta_manager.list_groups, "group", no_group_users),
+            (okta_manager.list_apps, "app", no_app_users)
+    ):
+        print(f"Saving {what} list ... ", end="", flush=True)
+        dump_me = func()
+        save_in(target_dir, f"{what}s.csv", dump_me)
         print("done.")
 
-    print("Saving apps list ... ", end="", flush=True)
-    dump_me = okta_manager.list_apps()
-    save_in(target_dir, "apps.csv", dump_me)
-    print("done.")
-
-    if no_app_users:
-        print("Skipping list of app users.")
-    else:
-        print("Saving app users ... ", end="", flush=True)
-        table = get_users_for(dump_me, "apps", workers=default_workers)
-        save_in_csv(target_dir, "app_users.csv", table, ("app", "user"))
-        print("done.")
+        if no_detail:
+            print(f"Skipping list of {what} users.")
+        else:
+            print(f"Saving {what} users ... ", end="", flush=True)
+            table = get_users_for(dump_me, f"{what}s", workers=default_workers)
+            save_in_csv(target_dir, f"{what}_users.csv", table, (what, "user"))
+            print("done.")
 
 
 @cli_main.command(name="version", context_settings=CONTEXT_SETTINGS)
