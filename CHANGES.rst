@@ -1,3 +1,8 @@
+v7.2.1
+======
+
+* make "users list" a bit faster
+
 v7.2.0
 ======
 
