@@ -91,6 +91,7 @@ class Okta:
             params = {"search": search_query}
         else:
             params = {}
+        params.update({"limit": 1000})
         return self.call_okta("/users", REST.get, params=params)
 
     def list_apps(self):
