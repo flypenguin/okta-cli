@@ -1,3 +1,8 @@
+v7.3.0
+======
+
+* add "pw set -g" and "pw set -p" commands. "-g" auto-generated a password based on word lists
+
 v7.2.1
 ======
 
