@@ -1,3 +1,8 @@
+v7.3.1
+======
+
+* fix inclusion of word file database
+
 v7.3.0
 ======
 
