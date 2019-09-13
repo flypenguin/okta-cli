@@ -275,6 +275,33 @@ def pw_expire(login_or_id, temp_password):
                                         temp_password=temp_password)
 
 
+@cli_pw.command(name="set", context_settings=CONTEXT_SETTINGS)
+@click.argument("login-or-id")
+@click.option("-s", "--set", "set_password", help="set password to this")
+@click.option("-g", "--generate", help="generate a random password", is_flag=True)
+@click.option("-l", "--language", help="use a word list from this language", default="en")
+@click.option("-m", "--min-length", help="minimal password length", type=int, default=14)
+@_command_wrapper
+def pw_set(login_or_id, set_password, generate, language, min_length):
+    """Expire the password of a user"""
+    # import here cause it takes time it seems ...
+    from .pwgen import generate_password
+    default_password_length = 5
+    num_words = max(3, int(min_length / default_password_length + 3))
+    if generate:
+        words = generate_password(num_words, lang=language)
+        for i in range(3, num_words):
+            set_password = " ".join(words[:i])
+            if len(set_password) >= min_length:
+                break
+    elif not set_password:
+        raise ExitException("Either use -s or -g!")
+    profile_dict = {"credentials.password.value": set_password}
+    nested_dict = _dict_flat_to_nested(profile_dict)
+    okta_manager.update_user(login_or_id, nested_dict)
+    return set_password
+
+
 @click.group(name="groups")
 def cli_groups():
     """Group operations"""
