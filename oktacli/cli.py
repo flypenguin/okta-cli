@@ -219,7 +219,7 @@ def config_list():
     config = load_config()
     for name, conf in config["profiles"].items():
         print("{}  {}  {}".format(name, conf["url"],
-                                  "*" * 3 + conf["token"][38:]))
+                                  "*" * 3 + conf["token"][-4:]))
 
 
 @cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
