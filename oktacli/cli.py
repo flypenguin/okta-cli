@@ -207,13 +207,8 @@ def config_new(name, url, token):
     try:
         config = load_config()
     except ExitException:
-        config = dict(
-                profiles={}
-        )
-    config["profiles"][name] = dict(
-            url=url,
-            token=token,
-    )
+        config = dict(profiles={})
+    config["profiles"][name] = dict(url=url, token=token)
     save_config(config)
     print("Profile '{}' added.".format(name))
 
