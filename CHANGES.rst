@@ -1,3 +1,10 @@
+v7.4.0
+======
+
+* add command "config delete" (delete a config)
+* add command "config file" (print location of config file)
+* move default profile check to where it's needed, fix a bug by doing this
+
 v7.3.1
 ======
 
