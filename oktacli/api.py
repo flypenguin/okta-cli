@@ -14,10 +14,6 @@ def _check_config(config):
     # set this as the active one
     if len(config["profiles"]) == 1:
         config["default"] = list(config["profiles"].keys())[0]
-    # now, check if the "active" config exists. we might have deleted it ...
-    if config["default"] not in config["profiles"]:
-        raise ExitException("Default profile '{}' not configured. "
-                            "Use use-profile command to change it.")
     return config
 
 
@@ -43,9 +39,12 @@ def save_config(config_to_save):
         fh.write(json.dumps(config_to_save))
 
 
-def get_manager(profile="default"):
+def get_manager():
     config = load_config()
-    return Okta(**config["profiles"][config[profile]])
+    if "default" not in config or config["default"] not in config["profiles"]:
+        raise ExitException("Default profile '{}' not configured. "
+                            "Use use-profile command to change it.")
+    return Okta(**config["profiles"][config["default"]])
 
 
 def filter_users(user_list, *, filters={}, partial=False):
