@@ -14,7 +14,7 @@ from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
 
-from .api import load_config, save_config, get_manager, filter_users
+from .api import load_config, save_config, get_manager, filter_users, get_config_file
 from .okta import REST
 from .exceptions import ExitException
 
@@ -233,6 +233,38 @@ def config_use_context(profile_name):
     config["default"] = profile_name
     save_config(config)
     return "Default profile set to '{}'.".format(profile_name)
+
+
+@cli_config.command(name="delete", context_settings=CONTEXT_SETTINGS)
+@click.argument("profile-name")
+@_command_wrapper
+def config_delete(profile_name):
+    global config
+    rv = []
+    config = load_config()
+    if profile_name not in config["profiles"]:
+        raise ExitException("Unknown profile name: '{}'.".format(profile_name))
+    del config["profiles"][profile_name]
+    rv.append("Profile '{}' deleted.".format(profile_name))
+    if config["default"] == profile_name:
+        if len(config["profiles"]):
+            new_default = list(config["profiles"].keys())[0]
+            config["default"] = new_default
+            rv.append("New default profile: {}".format(new_default))
+        else:
+            del config["default"]
+            rv.append("No more profiles left.")
+    save_config(config)
+    return "\n".join(rv)
+
+
+@cli_config.command(name="file", context_settings=CONTEXT_SETTINGS)
+@_command_wrapper
+def config_file():
+    """
+    Prints the locations of the configuration file.
+    """
+    return get_config_file()
 
 
 @cli_config.command(name="current-context", context_settings=CONTEXT_SETTINGS)
