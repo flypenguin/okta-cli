@@ -641,8 +641,11 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
     """
     Bulk-update users from a CSV or Excel (.xlsx) file.
 
-    Note that the CSV file *must* contain a "profile.login" OR an "id"
-    column.
+    The CSV file *must* contain a "profile.login" OR an "id" column.
+
+    All columns which do not contain a dot (".") are ignored. You can only
+    update fields of sub-structures, not top level fields in okta (e.g. you
+    *can* update "profile.site", but you *cannot* update "id").
     """
 
     def excel_reader():
