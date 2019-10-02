@@ -9,6 +9,9 @@ The feature set is quite complete, but based on the authors needs, which current
   - update users
   - bulk-update users, with parallel threads (hundreds of updates in seconds)
 - group functions (add users, remove users, list groups, list members)
+- handling of multiple Okta instances (e.g. a test cell, a production cell, a personal cell, ...)
+- updates and (now really fast) bulk-updates of user profiles (using CSV or Excel files)
+- export of profile data (into CSV or JSON)
 
 ## NOTE
 
