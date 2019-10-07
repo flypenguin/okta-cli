@@ -1,6 +1,7 @@
 v7.5.0
 ======
 
+* make 'dump' include DEPROVISIONED users
 * update cli help texts
 * fix 'okta-cli version'
 
