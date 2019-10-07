@@ -203,6 +203,9 @@ def cli_config():
 @click.option("-t", "--token", required=True, prompt=True,
               help="The API token to use")
 def config_new(name, url, token):
+    """
+    Create a new configuration profile
+    """
     global config
     try:
         config = load_config()
@@ -215,6 +218,7 @@ def config_new(name, url, token):
 
 @cli_config.command(name="list", context_settings=CONTEXT_SETTINGS)
 def config_list():
+    """List all configuration profiles"""
     global config
     config = load_config()
     for name, conf in config["profiles"].items():
@@ -226,6 +230,9 @@ def config_list():
 @click.argument("profile-name")
 @_command_wrapper
 def config_use_context(profile_name):
+    """
+    Set a config profile as default profile
+    """
     global config
     config = load_config()
     if profile_name not in config["profiles"]:
@@ -239,6 +246,9 @@ def config_use_context(profile_name):
 @click.argument("profile-name")
 @_command_wrapper
 def config_delete(profile_name):
+    """
+    Delete a config profile
+    """
     global config
     rv = []
     config = load_config()
@@ -262,7 +272,7 @@ def config_delete(profile_name):
 @_command_wrapper
 def config_file():
     """
-    Prints the locations of the configuration file.
+    Print the locations of the configuration file
     """
     return get_config_file()
 
@@ -270,6 +280,9 @@ def config_file():
 @cli_config.command(name="current-context", context_settings=CONTEXT_SETTINGS)
 @_command_wrapper
 def config_current_context():
+    """
+    Print the current default profile
+    """
     global config
     config = load_config()
     if "default" not in config:
@@ -487,7 +500,7 @@ def cli_users():
 @_output_type_command_wrapper("id,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
 def users_list(matches, partial, api_filter, api_search, **kwargs):
-    """Lists users (all or using various filters).
+    """Lists users (all or using various filters)
 
     NOTE: The simple 'users list' command will NOT contain DEPROVISIONED users,
     they are just not returned by the Okta API. If you want a list including
@@ -588,7 +601,9 @@ def users_suspend(login_or_id):
               help="Set a context (profile, credentials) to save typing")
 @_command_wrapper
 def users_update(user_id, set_fields, context):
-    """Update a user object. see https://is.gd/DWHEvA for details.
+    """Update a user object.
+
+    See https://is.gd/DWHEvA for details.
 
     This is equivalent:
 
@@ -644,7 +659,7 @@ def users_update(user_id, set_fields, context):
 def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
                       workers):
     """
-    Bulk-update users from a CSV or Excel (.xlsx) file.
+    Bulk-update users from a CSV or Excel (.xlsx) file
 
     The CSV file *must* contain a "profile.login" OR an "id" column.
 
@@ -795,8 +810,9 @@ def cli_main():
 @click.option("--no-app-users", is_flag=True)
 @click.option("--no-group-users", is_flag=True)
 @_command_wrapper
-def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
-    """Dumps users, groups and applications (incl. users) into CSV files.
+def dump(target_dir, no_user_list, no_app_users, no_group_users):
+    """
+    Dump basically everything into CSV files for further processing
 
     NOTE: In contrast to 'users list' the 'dump' command will include
     users in the DEPROVISIONED state by default.
@@ -872,7 +888,7 @@ def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
 
 @cli_main.command(name="version", context_settings=CONTEXT_SETTINGS)
 def cli_version():
-    """Prints version number and exit"""
+    """Print version number and exit"""
     print(VERSION)
 
 
