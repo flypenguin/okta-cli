@@ -1,3 +1,9 @@
+v7.5.0
+======
+
+* update cli help texts
+* fix 'okta-cli version'
+
 v7.4.0
 ======
 
