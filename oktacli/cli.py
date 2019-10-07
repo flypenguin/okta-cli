@@ -487,7 +487,12 @@ def cli_users():
 @_output_type_command_wrapper("id,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
 def users_list(matches, partial, api_filter, api_search, **kwargs):
-    """Lists users (all or using various filters)"""
+    """Lists users (all or using various filters).
+
+    NOTE: The simple 'users list' command will NOT contain DEPROVISIONED users,
+    they are just not returned by the Okta API. If you want a list including
+    those either use the 'dump' command, or use 'users list' twice, the 2nd
+    time adding this query: '-s "status eq \\"DEPROVISIONED\\""'."""
     users = okta_manager.list_users(
             filter_query=api_filter,
             search_query=api_search)
@@ -791,7 +796,11 @@ def cli_main():
 @click.option("--no-group-users", is_flag=True)
 @_command_wrapper
 def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
-    """Dumps users, groups and applications (incl. users) into CSV files"""
+    """Dumps users, groups and applications (incl. users) into CSV files.
+
+    NOTE: In contrast to 'users list' the 'dump' command will include
+    users in the DEPROVISIONED state by default.
+    """
 
     def save_in(save_dir, save_file, obj):
         if not isdir(save_dir):
@@ -837,6 +846,9 @@ def cli_version(target_dir, no_user_list, no_app_users, no_group_users):
     else:
         print("Saving user list ... ", end="", flush=True)
         dump_me = okta_manager.list_users()
+        # deprovisioned users are NOT included in the listing by default
+        tmp_str = "status eq \"DEPROVISIONED\""
+        dump_me += okta_manager.list_users(search_query=tmp_str)
         save_in(target_dir, "users.csv", dump_me)
         print("done.")
 
