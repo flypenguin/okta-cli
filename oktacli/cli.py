@@ -9,6 +9,7 @@ from os.path import splitext, join, isdir
 from os import mkdir
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import requests
 import click
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
@@ -355,6 +356,37 @@ def cli_groups():
 def groups_list(api_filter, api_query, **kwargs):
     """List all defined groups"""
     return okta_manager.list_groups(filter_ex=api_filter, query_ex=api_query)
+
+
+@cli_groups.command(name="add", context_settings=CONTEXT_SETTINGS)
+@click.option("-n", "--name", required=True)
+@click.option("-d", "--description", default=None)
+@_output_type_command_wrapper("id,type,profile.name")
+def groups_add(name, description, **kwargs):
+    """Create a new group"""
+    new_group = {"profile": {"name": name, "description": description}}
+    return okta_manager.call_okta(f"/groups", REST.post, body_obj=new_group)
+
+
+@cli_groups.command(name="delete", context_settings=CONTEXT_SETTINGS)
+@click.argument("name-or-id")
+@_output_type_command_wrapper("id,type,profile.name")
+def groups_delete(name_or_id, **kwargs):
+    """Delete a group
+
+    When you give a name a name substring match will be performed. If more
+    than one group matches execution will be aborted.
+    """
+    group = None
+    try:
+        group = okta_manager.call_okta(f"/groups/{name_or_id}", REST.get)
+    except requests.HTTPError:
+        pass
+    if not group:
+        group = _okta_get_groups_by_name(name_or_id, unique=True)
+    group_id = group[0]['id']
+    okta_manager.call_okta_raw(f"/groups/{group_id}", REST.delete)
+    return f"group {group_id} deleted"
 
 
 @cli_groups.command(name="get", context_settings=CONTEXT_SETTINGS)

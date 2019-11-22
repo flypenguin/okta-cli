@@ -1,3 +1,8 @@
+v7.6.0
+======
+
+* add group {add,delete} commands
+
 v7.5.0
 ======
 
