@@ -196,6 +196,20 @@ def _okta_get_and_filter(name,
     return things
 
 
+def _okta_get_by_id_or(label_or_id, unique=False, thing="groups",
+                       lookup=lambda x: x["profile"]["name"]):
+    things = None
+    try:
+        # we should always return a list.
+        things = [okta_manager.call_okta(f"/{thing}/{label_or_id}", REST.get)]
+    except requests.HTTPError:
+        pass
+    if not things:
+        things = _okta_get_and_filter(
+                label_or_id, unique=unique, lookup=lookup, thing=thing)
+    return things
+
+
 @click.group(name="config")
 def cli_config():
     """Manage okta-cli configuration"""
@@ -484,6 +498,141 @@ def groups_clear(name_or_id, use_id):
 def cli_apps():
     """Application operations"""
     pass
+
+
+APP_DEFAULTS = {
+    "bookmark": (
+        ("sa.requestIntegration", "false"),
+        ("sa.url", "http://not.me"),
+    ),
+}
+
+
+APP_TYPES = [
+    "bookmark",
+    "template_basic_auth",
+    "template_swa",
+    "template_swa3field",
+    "template_sps",
+    "oidc_client",
+    "template_wsfed",
+]
+
+
+SIGNON_TYPES = [
+    "BOOKMARK",
+    "BASIC_AUTH",
+    "BROWSER_PLUGIN",
+    "SECURE_PASSWORD_STORE",
+    "SAML_2_0",
+    "WS_FEDERATION",
+    "AUTO_LOGIN",
+    "OPENID_CONNECT",
+    "Custom",
+]
+
+
+SIGNON_DEFAULTS = {
+    "bookmark":                 "BOOKMARK",
+    "template_basic_auth":      "BASIC_AUTH",
+    "template_swa":             "BROWSER_PLUGIN",
+    "template_swa3field":       "BROWSER_PLUGIN",
+    "template_sps":             "SECURE_PASSWORD_STORE",
+    "oidc_client":              "OPENID_CONNECT",
+    "template_wsfed":           "WS_FEDERATION",
+}
+
+
+PREF_SHORTCUTS = (
+    ("sa", "settings.app"),
+    ("v",  "visibility"),
+    ("f",  "features"),
+    ("c",  "credentials"),
+)
+
+
+@cli_apps.command(name="add", context_settings=CONTEXT_SETTINGS)
+@click.option("-n", "--name", help="The application name",
+              type=click.Choice(APP_TYPES), default=None)
+@click.option("-m", "--signonmode",
+              help="Sign on mode of the app, you should not need to set this "
+                   "manually",
+              type=click.Choice(SIGNON_TYPES), default=None)
+@click.option("-l", "--label", help="The application label")
+@click.option("-s", "--set", "set_fields",
+              help="Set app parameter. You can use prefix shortcuts "
+                   "(sa=settings.apps, v=visibility, "
+                   "f=features, c=credentials)",
+              multiple=True)
+@_command_wrapper
+def apps_add(name, signonmode, label, set_fields):
+    """Add a new application
+
+    See https://is.gd/E3mFYj for details.
+    """
+    def unshorten(setting_item):
+        key, val = setting_item
+        for short, long in PREF_SHORTCUTS:
+            key = re.sub(f"^{short}\.", long + ".", key)
+        return key, val
+    settings = list(APP_DEFAULTS[name]) if name in APP_DEFAULTS else []
+    settings += [x.split("=", 1) for x in set_fields]
+    settings = list(map(unshorten, settings))
+    new_app = dict(settings)
+    if name and name in SIGNON_DEFAULTS:
+        signonmode = SIGNON_DEFAULTS[name]
+    for check, setme in \
+            ((name, "name"), (label, "label"), (signonmode, "signOnMode")):
+        if check is not None:
+            new_app[setme] = check
+    new_app = _dict_flat_to_nested(new_app)
+    return okta_manager.call_okta("/apps", REST.post, body_obj=new_app)
+
+
+@cli_apps.command(name="activate", context_settings=CONTEXT_SETTINGS)
+@click.argument("label-or-id")
+@_command_wrapper
+def apps_activate(label_or_id):
+    """Activate an application"""
+    app = _okta_get_by_id_or(label_or_id,
+                             unique=True,
+                             lookup=lambda x: x["label"],
+                             thing="apps")
+    app_id = app[0]['id']
+    path = f"/apps/{app_id}/lifecycle/activate"
+    okta_manager.call_okta_raw(path, REST.post)
+    return f"application {app_id} activated"
+
+
+@cli_apps.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
+@click.argument("label-or-id")
+@_command_wrapper
+def apps_deactivate(label_or_id):
+    """Deactivate an application
+
+    Must be done before deletion"""
+    app = _okta_get_by_id_or(label_or_id,
+                             unique=True,
+                             lookup=lambda x: x["label"],
+                             thing="apps")
+    app_id = app[0]['id']
+    path = f"/apps/{app_id}/lifecycle/deactivate"
+    okta_manager.call_okta_raw(path, REST.post)
+    return f"application {app_id} deactivated"
+
+
+@cli_apps.command(name="delete", context_settings=CONTEXT_SETTINGS)
+@click.argument("label-or-id")
+@_command_wrapper
+def apps_delete(label_or_id):
+    """Delete an application"""
+    app = _okta_get_by_id_or(label_or_id,
+                             unique=True,
+                             lookup=lambda x: x["label"],
+                             thing="apps")
+    app_id = app[0]['id']
+    okta_manager.call_okta_raw(f"/apps/{app_id}", REST.delete)
+    return f"application {app_id} deleted"
 
 
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)

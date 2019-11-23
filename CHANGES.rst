@@ -1,3 +1,8 @@
+v7.7.0
+======
+
+* add apps {add,activate,deactivate,delete} commands
+
 v7.6.0
 ======
 
