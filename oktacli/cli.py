@@ -179,15 +179,21 @@ def _dict_get_dotted_keys(dict_inst, pre_path=""):
     return rv
 
 
-def _okta_get_groups_by_name(name, unique=False):
-    groups = okta_manager.list_groups()
-    groups = list(filter(
-            lambda x: x["profile"]["name"].lower().find(name.lower()) != -1,
-            groups))
-    if unique and len(groups) != 1:
-        raise ExitException("Group name must be unique. "
-                            f"(found {len(groups)} matching groups).")
-    return groups
+def _okta_get_and_filter(name,
+                         unique=False,
+                         thing="groups",
+                         lookup=lambda x: x["profile"]["name"]):
+    things = okta_manager.call_okta(f"/{thing}", REST.get)
+    things = list(filter(
+            lambda x: lookup(x).lower().find(name.lower()) != -1,
+            things))
+    if unique:
+        if len(things) > 1:
+            raise ExitException("Group name must be unique. "
+                                f"(found {len(things)} matching groups).")
+        elif len(things) == 0:
+            raise ExitException("No matching groups found.")
+    return things
 
 
 @click.group(name="config")
@@ -383,7 +389,7 @@ def groups_delete(name_or_id, **kwargs):
     except requests.HTTPError:
         pass
     if not group:
-        group = _okta_get_groups_by_name(name_or_id, unique=True)
+        group = _okta_get_and_filter(name_or_id, unique=True)
     group_id = group[0]['id']
     okta_manager.call_okta_raw(f"/groups/{group_id}", REST.delete)
     return f"group {group_id} deleted"
@@ -396,7 +402,7 @@ def groups_delete(name_or_id, **kwargs):
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_get(name_or_id, **kwargs):
     """Print only one group"""
-    return _okta_get_groups_by_name(name_or_id, unique=True)[0]
+    return _okta_get_and_filter(name_or_id, unique=True)[0]
 
 
 @cli_groups.command(name="adduser", context_settings=CONTEXT_SETTINGS)
@@ -448,7 +454,7 @@ def groups_removeuser(group, user, **kwargs):
 def groups_list_users(name_or_id, use_id, **kwargs):
     """List all users in a group"""
     if not use_id:
-        name_or_id = _okta_get_groups_by_name(name_or_id, unique=True)[0]["id"]
+        name_or_id = _okta_get_and_filter(name_or_id, unique=True)[0]["id"]
     return okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
 
 
@@ -462,7 +468,7 @@ def groups_clear(name_or_id, use_id):
 
     This can take a while if the group is big."""
     if not use_id:
-        name_or_id = _okta_get_groups_by_name(name_or_id, unique=True)[0]["id"]
+        name_or_id = _okta_get_and_filter(name_or_id, unique=True)[0]["id"]
     users = okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
     for user in users:
         user_id = user['id']
