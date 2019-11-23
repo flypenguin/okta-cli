@@ -416,8 +416,6 @@ def groups_delete(name_or_id, **kwargs):
 
 @cli_groups.command(name="get", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
-@click.option("-i", "--id", 'use_id', is_flag=True, default=False,
-              help="Use Okta group ID instead of the group name")
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_get(name_or_id, **kwargs):
     """Print only one group"""
