@@ -1,3 +1,10 @@
+v8.0.0
+======
+
+* 'groups list' - will now only print OKTA_GROUPs, unless -a is specified
+* 'groups list' - output is now sorted
+* 'groups get' - parameter '-i' removed
+
 v7.7.0
 ======
 
