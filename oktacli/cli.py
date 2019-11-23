@@ -372,10 +372,15 @@ def cli_groups():
 @cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.option("-f", "--filter", 'api_filter', default="")
 @click.option("-q", "--query", 'api_query', default="")
+@click.option("-a", "--all", "all_groups", help="Include APP_GROUPs in list")
 @_output_type_command_wrapper("id,type,profile.name")
-def groups_list(api_filter, api_query, **kwargs):
+def groups_list(api_filter, api_query, all_groups, **kwargs):
     """List all defined groups"""
-    return okta_manager.list_groups(filter_ex=api_filter, query_ex=api_query)
+    groups = okta_manager.list_groups(filter_ex=api_filter, query_ex=api_query)
+    if not all_groups:
+        groups = filter(lambda x: x["type"] == "OKTA_GROUP", groups)
+    groups = sorted(groups, key=lambda x: x["profile"]["name"])
+    return groups
 
 
 @cli_groups.command(name="add", context_settings=CONTEXT_SETTINGS)
