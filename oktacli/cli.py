@@ -93,7 +93,7 @@ def _command_wrapper(func):
             else:
                 print(rv)
         except ExitException as e:
-            print("ERROR: {}".format(str(e)))
+            print("ERROR: {}".format(str(e)), file=sys.stderr)
             sys.exit(-1)
         except Exception as e:
             print(f"SOMETHING REALLY BAD HAPPENED\n{str(type(e))}"
