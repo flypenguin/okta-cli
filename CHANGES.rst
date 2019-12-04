@@ -1,3 +1,9 @@
+v9.0.0
+======
+
+* 'users get' - removed -i parameter
+* 'users get' - make it work with any profile field
+
 v8.0.0
 ======
 

@@ -704,19 +704,26 @@ def users_list(matches, partial, api_filter, api_search, **kwargs):
 
 
 @cli_users.command(name="get", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
-@click.option("-i", "--use-id", 'use_id', is_flag=True,
-              help="Search by Okta ID instead of login field")
+@click.argument('lookup_value')
+@click.option("-f", "--field", default="login",
+              help="Look users up using this profile field (default: 'login')")
 @_output_type_command_wrapper("id,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
-def users_get(login_or_id, use_id, **kwargs):
-    """List ONE user by login or Okta ID"""
-    if use_id:
-        rv = okta_manager.call_okta(f"/users/{login_or_id}", REST.get)
-    else:
-        query = f'profile.login eq "{login_or_id}"'
-        rv = okta_manager.list_users(filter_query=query)
-    return rv
+def users_get(lookup_value, field, **kwargs):
+    """Get one user uniquely using any profile field or ID"""
+    try:
+        # let's always return a list. the /users/ID will otherwise return
+        # a dict.
+        rv = [okta_manager.call_okta(f"/users/{lookup_value}", REST.get),]
+    except RequestsHTTPError as e:
+        query = f'profile.{field} eq "{lookup_value}"'
+        rv = okta_manager.list_users(search_query=query)
+    len_rv = len(rv)
+    if len_rv == 0:
+        raise ExitException(f"No user found with {field}={lookup_value}")
+    elif len_rv > 1:
+        raise ExitException(f"Criteria not unique, found {len_rv} matches")
+    return rv[0]
 
 
 @cli_users.command(name="groups", context_settings=CONTEXT_SETTINGS)
