@@ -506,7 +506,6 @@ def cli_apps():
 APP_DEFAULTS = {
     "bookmark": (
         ("sa.requestIntegration", "false"),
-        ("sa.url", "http://not.me"),
     ),
 }
 
@@ -554,6 +553,13 @@ PREF_SHORTCUTS = (
 )
 
 
+def _unshorten_app_settings(setting_item):
+    key, val = setting_item
+    for short, long in PREF_SHORTCUTS:
+        key = re.sub(f"^{short}\.", long + ".", key)
+    return key, val
+
+
 @cli_apps.command(name="add", context_settings=CONTEXT_SETTINGS)
 @click.option("-n", "--name",
               help="The application name - Okta-internal field, NOT the name "
@@ -579,14 +585,9 @@ def apps_add(name, signonmode, label, set_fields):
     EXAMPLE: Add a bookmark app:
     okta-cli apps add -n bookmark -l my_bookmark -sa.url=http://my.url
     """
-    def unshorten(setting_item):
-        key, val = setting_item
-        for short, long in PREF_SHORTCUTS:
-            key = re.sub(f"^{short}\.", long + ".", key)
-        return key, val
-    settings = list(APP_DEFAULTS[name]) if name in APP_DEFAULTS else []
+    settings = list(APP_DEFAULTS.get(name, []))
     settings += [x.split("=", 1) for x in set_fields]
-    settings = list(map(unshorten, settings))
+    settings = list(map(_unshorten_app_settings, settings))
     new_app = dict(settings)
     if name and name in SIGNON_DEFAULTS:
         signonmode = SIGNON_DEFAULTS[name]
