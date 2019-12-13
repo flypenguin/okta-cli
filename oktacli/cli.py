@@ -718,11 +718,15 @@ def users_list(matches, partial, api_filter, api_search, **kwargs):
                               "profile.lastName,profile.email")
 def users_get(lookup_value, field, **kwargs):
     """Get one user uniquely using any profile field or ID"""
-    try:
-        # let's always return a list. the /users/ID will otherwise return
-        # a dict.
-        rv = [okta_manager.call_okta(f"/users/{lookup_value}", REST.get),]
-    except RequestsHTTPError as e:
+    rv = None
+    if lookup_value[0] == "0" and len(lookup_value) == 20:
+        try:
+            # let's always return a list. the /users/ID will otherwise return
+            # a dict.
+            rv = [okta_manager.call_okta(f"/users/{lookup_value}", REST.get), ]
+        except RequestsHTTPError as e:
+            pass
+    if rv is None:
         query = f'profile.{field} eq "{lookup_value}"'
         rv = okta_manager.list_users(search_query=query)
     len_rv = len(rv)
