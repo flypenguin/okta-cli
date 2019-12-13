@@ -555,7 +555,9 @@ PREF_SHORTCUTS = (
 
 
 @cli_apps.command(name="add", context_settings=CONTEXT_SETTINGS)
-@click.option("-n", "--name", help="The application name",
+@click.option("-n", "--name",
+              help="The application name - Okta-internal field, NOT the name "
+                   "displayed in the Okta UI!",
               type=click.Choice(APP_TYPES), default=None)
 @click.option("-m", "--signonmode",
               help="Sign on mode of the app, you should not need to set this "
@@ -572,6 +574,10 @@ def apps_add(name, signonmode, label, set_fields):
     """Add a new application
 
     See https://is.gd/E3mFYj for details.
+
+    \b
+    EXAMPLE: Add a bookmark app:
+    okta-cli apps add -n bookmark -l my_bookmark -sa.url=http://my.url
     """
     def unshorten(setting_item):
         key, val = setting_item
