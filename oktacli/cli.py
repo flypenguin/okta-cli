@@ -1112,6 +1112,28 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
             print("done.")
 
 
+@click.group(name="raw")
+def cli_raw():
+    """Fire 'raw' requests against the Okta API [WIP!!]"""
+    pass
+
+
+@cli_raw.command(name="get", context_settings=CONTEXT_SETTINGS)
+@click.argument('api_endpoint')
+@click.option('-q', '--query-param', 'params', multiple=True,
+              help="Set a query field in the URL, format field=value")
+@click.option('--limit', 'limit', default=None,
+              help="Limit to about those number of results")
+@_output_type_command_wrapper(None)
+def raw_get(api_endpoint, params, limit, **kwargs):
+    """Perform a GET request against the specified API endpoint"""
+    if not api_endpoint.startswith("/"):
+        api_endpoint = "/" + api_endpoint
+    p_dict = dict([(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
+    rv = okta_manager.call_okta(api_endpoint, REST.get, params=p_dict)
+    return rv
+
+
 @cli_main.command(name="version", context_settings=CONTEXT_SETTINGS)
 def cli_version():
     """Print version number and exit"""
@@ -1119,6 +1141,7 @@ def cli_version():
 
 
 cli_main.add_command(cli_config)
+cli_main.add_command(cli_raw)
 cli_main.add_command(cli_users)
 cli_main.add_command(cli_pw)
 cli_main.add_command(cli_groups)
