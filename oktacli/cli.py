@@ -968,7 +968,6 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 @click.option('-g', '--group', 'groups', metavar="GROUP_ID",
               help="specify groups the user should be added to on creation",
               multiple=True)
-@click.option('-r', '--read-csv', help="Read from CSV file", default=None)
 @click.option('--activate/--no-activate', default=True,
               help="Set 'activation' flag, default: True")
 @click.option('--provider/--no-provider', default=False,
@@ -1010,21 +1009,8 @@ def users_add(set_fields, profile_fields, groups, read_csv, activate, provider, 
         params['nextlogin'] = "changePassword"
 
     # when reading from csv, we iterate
-    if read_csv:
-        added = []
-        with open(read_csv, "r", encoding="utf-8") as infile:
-            dialect = csv.Sniffer().sniff(infile.read(4096))
-            infile.seek(0)
-            dr = csv.DictReader(infile, dialect=dialect)
-            for row in dr:
-                final_dict = _dict_flat_to_nested(
-                        row, defaults=fields_dict)
-                added.append(okta_manager.add_user(params, final_dict))
-        return added
-    # when creating directly, we don't :)
-    else:
-        final_dict = _dict_flat_to_nested(fields_dict)
-        return okta_manager.add_user(params, final_dict)
+    final_dict = _dict_flat_to_nested(fields_dict)
+    return okta_manager.add_user(params, final_dict)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
