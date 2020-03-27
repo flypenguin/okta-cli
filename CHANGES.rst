@@ -1,3 +1,8 @@
+v10.0.0
+=======
+
+* change and clarify 'users add' semantics (docs & help, remove read from csv file)
+
 v9.0.1
 ======
 

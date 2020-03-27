@@ -959,28 +959,56 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 
 
 @cli_users.command(name="add", context_settings=CONTEXT_SETTINGS)
-@click.option('-s', '--set', 'set_fields', multiple=True)
+@click.option('-s', '--set', 'set_fields', metavar="FIELD=value",
+              help="set any user object field",
+              multiple=True)
+@click.option('-p', '--profile', 'profile_fields', metavar="FIELD=value",
+              help="same as '-s profile.FIELD=value'",
+              multiple=True)
+@click.option('-g', '--group', 'groups', metavar="GROUP_ID",
+              help="specify groups the user should be added to on creation",
+              multiple=True)
 @click.option('-r', '--read-csv', help="Read from CSV file", default=None)
-@click.option('-a', '--activate/--no-activate',
-              help="Set 'activation' flag, see Okta API docs")
-@click.option('-p', '--provider/--no-provider',
-              help="Set 'provider' flag, see Okta API docs")
-@click.option('-n', '--nextlogin/--no-nextlogin',
-              help="Set 'nextLogin' to 'changePassword', see Okta API docs")
+@click.option('--activate/--no-activate', default=True,
+              help="Set 'activation' flag, default: True")
+@click.option('--provider/--no-provider', default=False,
+              help="Set 'provider' flag, default: False")
+@click.option('--nextlogin/--no-nextlogin', default=False,
+              help="User must change password, default: False")
 @_command_wrapper
-def users_add(set_fields, read_csv, activate, provider, nextlogin):
-    """Add a user to Okta"""
-    # first use and clean the fields dict from the command line
+def users_add(set_fields, profile_fields, groups, read_csv, activate, provider, nextlogin):
+    """Add a user to Okta
+
+    Note that this is equivalent:
+
+    \b
+    users add -s profile.login=mylogin
+    users add -p login=mylogin
+    (-p profile.SETTING overrides -s SETTING if both are given)
+
+    You can also set a password upon creation:
+
+    \b
+    users add -s credentials.password.value=my.super-password
+
+    Okta documentation: https://is.gd/aUtkTo
+    """
+    # create user dict
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
+    profile_dict = {"profile."+k: v
+                    for k, v in map(lambda x: x.split("="), profile_fields)}
+    fields_dict.update(profile_dict)
+    if groups:
+        fields_dict["groupIds"] = groups
+
     # query parameters
-    params = {}
-    # set the flags
-    if activate:
-        params['activate'] = str(activate).upper()
-    if provider:
-        params['provider'] = str(provider).upper()
+    params = {
+        'activate': "True" if activate else "False",
+        'provider': "True" if provider else "False",
+    }
     if nextlogin:
         params['nextlogin'] = "changePassword"
+
     # when reading from csv, we iterate
     if read_csv:
         added = []
