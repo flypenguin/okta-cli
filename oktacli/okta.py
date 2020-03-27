@@ -53,25 +53,34 @@ class Okta:
             raise requests.HTTPError(json.dumps(rsp.json()))
         return rsp
 
-    def call_okta(self, path, method, *, params=None, body_obj=None):
+    def call_okta(self, path, method, *,
+                  params=None, body_obj=None,
+                  result_limit=None):
         rsp = self.call_okta_raw(path, method, params=params, body_obj=body_obj)
         rv = rsp.json()
         # NOW, we either have a SINGLE DICT in the rv variable,
         #     *OR*
         # a list.
+        last_url = None
         while True:
+            # let's stop if we defined a result_limit
+            if result_limit and len(rv) > result_limit:
+                break
             # now, let's get all the "next" links. if we do NOT have a list,
             # we do not have "next" links :) . handy!
             url = rsp.links.get("next", {"url": ""})["url"]
-            if not url:
+            # sanity checks
+            if not url or last_url == url:
                 break
+            last_url = url
             rsp = self.call_okta_raw(url, REST.get, implicit_url=False)
             # now the += operation is safe, cause we have a list.
             # this is a liiiitle bit implicit, but should work smoothly.
             rv += rsp.json()
         # filter out _links items from the final result list
         if isinstance(rv, list):
-            rv = list(filter(lambda x: x.pop("_links", None), rv))
+            for item in rv:
+                item.pop("_links", None)
         elif isinstance(rv, dict):
             rv.pop("_links", None)
         return rv
