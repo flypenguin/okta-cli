@@ -34,6 +34,10 @@ def _print_table_from(print_obj, fields):
         print_obj = [print_obj]
     arr = DottedCollection.factory(print_obj)
     col_lengths = []
+    if fields is None:
+        fields = [x for x in arr[0].keys()]
+    else:
+        fields = fields.split(",")
     for col in fields:
         try:
             col_lengths.append(max([len(str(DottedDict(item)[col]))
@@ -86,7 +90,7 @@ def _command_wrapper(func):
                 elif kwargs.get("print_csv", False) is True:
                     _dump_csv(rv, dialect=kwargs['csv_dialect'])
                 elif "output_fields" in kwargs and len(rv) > 0:
-                    _print_table_from(rv, kwargs["output_fields"].split(","))
+                    _print_table_from(rv, kwargs["output_fields"])
                 else:
                     # default fallback setting - print json.
                     print(json.dumps(rv, indent=2, sort_keys=True))
