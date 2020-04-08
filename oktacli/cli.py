@@ -428,10 +428,10 @@ def groups_get(name_or_id, **kwargs):
 
 @cli_groups.command(name="adduser", context_settings=CONTEXT_SETTINGS)
 @click.option("-g", "--group", required=True,
-              metavar="UID",
+              metavar="GID",
               help="The group ID to add a user to")
 @click.option("-u", "--user", required=True,
-              metavar="GID",
+              metavar="UID",
               help="The user ID to add to the group")
 @_command_wrapper
 def groups_adduser(group, user, **kwargs):
