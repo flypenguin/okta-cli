@@ -1,3 +1,8 @@
+v10.0.1
+=======
+
+* fix help output for 'groups adduser' (PR from @dhutty-numo, thanks)
+
 v10.0.0
 =======
 
