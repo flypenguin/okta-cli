@@ -14,10 +14,14 @@ from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
 
-from .api import load_config, save_config, get_manager, filter_users, get_config_file
+from .api import load_config
+from .api import save_config
+from .api import get_manager
+from .api import filter_users
+from .api import get_config_file
+
 from .okta import REST
 from .exceptions import ExitException
-
 
 VERSION = "10.0.1"
 
@@ -342,9 +346,12 @@ def pw_expire(login_or_id, temp_password):
 @cli_pw.command(name="set", context_settings=CONTEXT_SETTINGS)
 @click.argument("login-or-id")
 @click.option("-s", "--set", "set_password", help="set password to this")
-@click.option("-g", "--generate", help="generate a random password", is_flag=True)
-@click.option("-l", "--language", help="use a word list from this language", default="en")
-@click.option("-m", "--min-length", help="minimal password length", type=int, default=14)
+@click.option("-g", "--generate", help="generate a random password",
+              is_flag=True)
+@click.option("-l", "--language", help="use a word list from this language",
+              default="en")
+@click.option("-m", "--min-length", help="minimal password length", type=int,
+              default=14)
 @_command_wrapper
 def pw_set(login_or_id, set_password, generate, language, min_length):
     """Expire the password of a user"""
@@ -512,7 +519,6 @@ APP_DEFAULTS = {
     ),
 }
 
-
 APP_TYPES = [
     "bookmark",
     "template_basic_auth",
@@ -522,7 +528,6 @@ APP_TYPES = [
     "oidc_client",
     "template_wsfed",
 ]
-
 
 SIGNON_TYPES = [
     "BOOKMARK",
@@ -536,23 +541,21 @@ SIGNON_TYPES = [
     "Custom",
 ]
 
-
 SIGNON_DEFAULTS = {
-    "bookmark":                 "BOOKMARK",
-    "template_basic_auth":      "BASIC_AUTH",
-    "template_swa":             "BROWSER_PLUGIN",
-    "template_swa3field":       "BROWSER_PLUGIN",
-    "template_sps":             "SECURE_PASSWORD_STORE",
-    "oidc_client":              "OPENID_CONNECT",
-    "template_wsfed":           "WS_FEDERATION",
+    "bookmark":            "BOOKMARK",
+    "template_basic_auth": "BASIC_AUTH",
+    "template_swa":        "BROWSER_PLUGIN",
+    "template_swa3field":  "BROWSER_PLUGIN",
+    "template_sps":        "SECURE_PASSWORD_STORE",
+    "oidc_client":         "OPENID_CONNECT",
+    "template_wsfed":      "WS_FEDERATION",
 }
-
 
 PREF_SHORTCUTS = (
     ("sa", "settings.app"),
-    ("v",  "visibility"),
-    ("f",  "features"),
-    ("c",  "credentials"),
+    ("v", "visibility"),
+    ("f", "features"),
+    ("c", "credentials"),
 )
 
 
@@ -906,7 +909,8 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
             if splitext(file)[1].lower() == ".xlsx" else csv_reader()
         if jump_to_user:
             tmp = next(dr)
-            while jump_to_user not in (tmp.get("profile.login", ""), tmp.get("id", "")):
+            while jump_to_user not in (
+                    tmp.get("profile.login", ""), tmp.get("id", "")):
                 tmp = next(dr)
         elif jump_to_index:
             # prevent both being used at the same time :)
@@ -978,7 +982,8 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 @click.option('--nextlogin/--no-nextlogin', default=False,
               help="User must change password, default: False")
 @_command_wrapper
-def users_add(set_fields, profile_fields, groups, read_csv, activate, provider, nextlogin):
+def users_add(set_fields, profile_fields, groups, read_csv, activate, provider,
+              nextlogin):
     """Add a user to Okta
 
     Note that this is equivalent:
@@ -997,7 +1002,7 @@ def users_add(set_fields, profile_fields, groups, read_csv, activate, provider, 
     """
     # create user dict
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    profile_dict = {"profile."+k: v
+    profile_dict = {"profile." + k: v
                     for k, v in map(lambda x: x.split("="), profile_fields)}
     fields_dict.update(profile_dict)
     if groups:
@@ -1068,7 +1073,7 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
                           f"/{rest_path}/{obj['id']}/users",
                           REST.get,
                           params={"limit": 1000}):
-                obj["id"]
+                    obj["id"]
                 for obj in obj_list}
             for result in runs:
                 gid = runs[result]
@@ -1128,7 +1133,8 @@ def raw_get(api_endpoint, params, limit, **kwargs):
     """Perform a GET request against the specified API endpoint"""
     if not api_endpoint.startswith("/"):
         api_endpoint = "/" + api_endpoint
-    p_dict = dict([(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
+    p_dict = dict(
+            [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
     rv = okta_manager.call_okta(api_endpoint, REST.get, params=p_dict)
     return rv
 
