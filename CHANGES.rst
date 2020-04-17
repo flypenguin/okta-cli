@@ -1,3 +1,8 @@
+v11.0.0
+=======
+
+* many commands are now "smart" and filter things (groups, apps) by name and users by field
+
 v10.0.1
 =======
 
