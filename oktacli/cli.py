@@ -9,7 +9,6 @@ from os.path import splitext, join, isdir
 from os import mkdir
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import requests
 import click
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
