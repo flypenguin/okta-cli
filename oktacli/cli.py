@@ -654,7 +654,7 @@ def apps_add(name, signonmode, label, set_fields):
 
     \b
     EXAMPLE: Add a bookmark app:
-    okta-cli apps add -n bookmark -l my_bookmark -sa.url=http://my.url
+    okta-cli apps add -n bookmark -l my_bookmark -s sa.url=http://my.url
     """
     settings = list(APP_DEFAULTS.get(name, []))
     settings += [x.split("=", 1) for x in set_fields]
