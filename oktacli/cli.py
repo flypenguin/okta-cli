@@ -247,7 +247,7 @@ def _okta_get_by_id_or_query(possible_id, thing,
                             f"(found {len(rv)} matching groups).")
     elif len(rv) == 0:
         raise ExitException(
-                f"No matching {thing} found with {field}=={possible_id}.")
+            f"No matching {thing} found with {field}=={possible_id}.")
     return rv[0]
 
 
@@ -501,8 +501,8 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
                                     f"profile.{user_lookup_field}")
     user_id = user["id"]
     okta_manager.call_okta_raw(
-            f"/groups/{group_id}/users/{user_id}",
-            REST.put)
+        f"/groups/{group_id}/users/{user_id}",
+        REST.put)
     return f"User {user} added to group {group}"
 
 
@@ -532,8 +532,8 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
                                     f"profile.{user_lookup_field}")
     user_id = user["id"]
     okta_manager.call_okta_raw(
-            f"/groups/{group_id}/users/{user_id}",
-            REST.delete)
+        f"/groups/{group_id}/users/{user_id}",
+        REST.delete)
     return f"User {user} removed from group {group}"
 
 
@@ -607,13 +607,13 @@ SIGNON_TYPES = [
 ]
 
 SIGNON_DEFAULTS = {
-    "bookmark":            "BOOKMARK",
+    "bookmark": "BOOKMARK",
     "template_basic_auth": "BASIC_AUTH",
-    "template_swa":        "BROWSER_PLUGIN",
-    "template_swa3field":  "BROWSER_PLUGIN",
-    "template_sps":        "SECURE_PASSWORD_STORE",
-    "oidc_client":         "OPENID_CONNECT",
-    "template_wsfed":      "WS_FEDERATION",
+    "template_swa": "BROWSER_PLUGIN",
+    "template_swa3field": "BROWSER_PLUGIN",
+    "template_sps": "SECURE_PASSWORD_STORE",
+    "oidc_client": "OPENID_CONNECT",
+    "template_wsfed": "WS_FEDERATION",
 }
 
 PREF_SHORTCUTS = (
@@ -769,8 +769,8 @@ def users_list(matches, partial, api_filter, api_search, **kwargs):
     those either use the 'dump' command, or use 'users list' twice, the 2nd
     time adding this query: '-s "status eq \\"DEPROVISIONED\\""'."""
     users = okta_manager.list_users(
-            filter_query=api_filter,
-            search_query=api_search)
+        filter_query=api_filter,
+        search_query=api_search)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     return list(filter_users(users, filters=filters_dict, partial=partial))
 
@@ -1193,7 +1193,7 @@ def raw_get(api_endpoint, params, limit, **kwargs):
     if not api_endpoint.startswith("/"):
         api_endpoint = "/" + api_endpoint
     p_dict = dict(
-            [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
+        [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
     rv = okta_manager.call_okta(api_endpoint, REST.get, params=p_dict)
     return rv
 
