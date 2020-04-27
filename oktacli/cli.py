@@ -256,7 +256,7 @@ def _selector_profile_find(field, value):
 
 
 def _selector_profile_find_group(field, value):
-    return lambda x: (x["profile"][field].lower().find(value) != -1 and
+    return lambda x: (x["profile"][field].lower().find(value.lower()) != -1 and
                       x["type"] == "OKTA_GROUP")
 
 
