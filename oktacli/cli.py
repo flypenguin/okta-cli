@@ -1144,7 +1144,7 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
     if target_dir is None:
         target_dir = dt.strftime(dt.now(), "okta-dump-%Y%m%d%H%M%S")
 
-    print("Please be patient, this can several minutes.")
+    print("Please be patient, this can take several minutes.")
 
     if no_user_list:
         print("Skipping list of users.")
