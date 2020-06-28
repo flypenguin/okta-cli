@@ -806,7 +806,7 @@ def users_get(lookup_value, field, **kwargs):
 @click.argument("name-or-id")
 @_output_type_command_wrapper("id,profile.name,profile.description")
 def users_list_groups(name_or_id, **kwargs):
-    """List all users in a group"""
+    """List all groups belonging to a user"""
     return okta_manager.call_okta(f"/users/{name_or_id}/groups", REST.get)
 
 
