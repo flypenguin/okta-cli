@@ -1044,7 +1044,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 @click.option('--nextlogin/--no-nextlogin', default=False,
               help="User must change password, default: False")
 @_command_wrapper
-def users_add(set_fields, profile_fields, groups, read_csv, activate, provider,
+def users_add(set_fields, profile_fields, groups, activate, provider,
               nextlogin):
     """Add a user to Okta
 
