@@ -482,10 +482,10 @@ def groups_get(name_or_id, **kwargs):
 @click.option("-u", "--user", required=True,
               metavar="ID-or-FIELDVALUE",
               help="The user ID to add to the group")
-@click.option("-f", "--user-lookup-field", required=True,
+@click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
-              default=None,
-              help="Use this profile field to identify users, not the ID")
+              default="login",
+              help="If given, use this profile field for user lookup instead of the Okta ID")
 @_command_wrapper
 def groups_adduser(group, user, user_lookup_field, **kwargs):
     """
@@ -496,14 +496,16 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
     group = _okta_get_by_id_or(group, "groups",
                                _selector_profile_find_group("name", group))
     group_id = group["id"]
+    group_name = group["profile"]["name"]
     user = _okta_get_by_id_or_query(user,
                                     "users",
                                     f"profile.{user_lookup_field}")
     user_id = user["id"]
+    user_login = user["profile"]["login"]
     okta_manager.call_okta_raw(
         f"/groups/{group_id}/users/{user_id}",
         REST.put)
-    return f"User {user} added to group {group}"
+    return f"User {user_id} ({user_login}) added to group {group_id} ({group_name})"
 
 
 @cli_groups.command(name="removeuser", context_settings=CONTEXT_SETTINGS)
