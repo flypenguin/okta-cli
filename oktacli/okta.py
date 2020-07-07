@@ -103,8 +103,13 @@ class Okta:
         params.update({"limit": 1000})
         return self.call_okta("/users", REST.get, params=params)
 
-    def list_apps(self):
-        return self.call_okta("/apps", REST.get)
+    def list_apps(self, filter_query="", q_query=""):
+        params = {}
+        if filter_query:
+            params["filter"] = filter_query
+        elif q_query:
+            params["q"] = q_query
+        return self.call_okta("/apps", REST.get, params=params)
 
     def add_user(self, query_params, body_object):
         body = json.dumps(body_object).encode("utf-8")
