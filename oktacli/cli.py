@@ -23,7 +23,7 @@ from .api import get_config_file
 from .okta import REST
 from .exceptions import ExitException
 
-VERSION = "11.1.0"
+VERSION = "11.2.0"
 
 okta_manager = None
 config = None
