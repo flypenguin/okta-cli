@@ -1,6 +1,11 @@
-v11.x.y
+v11.1.0
 =======
 
+* 'apps list' - add '-m' parameter to match a specific field
+* 'apps list' - add '-q' parameter to pass query parameter to okta API
+* fix ugly bug breaking a bunch of methods
+* fix 'groups adduser' output
+* fix 'users add' command
 * fix some docs
 
 v11.0.0
