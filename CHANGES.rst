@@ -1,3 +1,8 @@
+v11.4.1
+=======
+
+* fixed that 'groups delete' would find non-"OKTA_GROUP" groups
+
 v11.4.0
 =======
 

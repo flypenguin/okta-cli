@@ -432,7 +432,7 @@ def groups_delete(name_or_id, **kwargs):
     than one group matches execution will be aborted.
     """
     group = _okta_get("groups", name_or_id,
-                      selector=_selector_profile_find("name", name_or_id))
+                      selector=_selector_profile_find_group("name", name_or_id))
     group_id = group['id']
     okta_manager.call_okta_raw(f"/groups/{group_id}", REST.delete)
     return f"group {group_id} deleted"
