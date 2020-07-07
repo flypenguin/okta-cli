@@ -186,69 +186,41 @@ def _dict_get_dotted_keys(dict_inst, pre_path=""):
     return rv
 
 
-def _okta_get_and_filter(thing="groups",
-                         selector=None,
-                         unique=False,
-                         search_query=None,
-                         filter_query=None) -> list:
-    params = {"limit": 1000}
-    if filter_query:
-        params["filter"] = filter_query
-    elif search_query:
-        params["search"] = search_query
-    things = okta_manager.call_okta(f"/{thing}", REST.get, params=params)
-    if selector:
-        things = list(filter(selector, things))
-    if unique:
-        if len(things) > 1:
-            raise ExitException(f"Name for {thing} must be unique. "
-                                f"(found {len(things)} matching groups).")
-        elif len(things) == 0:
-            raise ExitException(f"No matching {thing} found.")
-    return things
-
-
-def _okta_get_by_id_or(possible_id,
-                       thing="groups",
-                       selector=None,
-                       search_query=None,
-                       filter_query=None):
+def _okta_retrieve(thing, possible_id,
+                   *,
+                   selector=None,
+                   **kwargs):
     """Return ONE element, NOT a list"""
-    rv = None
-    if possible_id[0] == "0" and len(possible_id) == 20:
-        try:
-            rv = okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
-        except RequestsHTTPError as e:
-            pass
-    return rv or _okta_get_and_filter(thing,
-                                      selector,
-                                      unique=True,
-                                      search_query=search_query,
-                                      filter_query=filter_query)[0]
-
-
-def _okta_get_by_id_or_query(possible_id, thing,
-                             field, *,
-                             operator="eq",
-                             method="search"):
-    """Return ONE element, NOT a list"""
+    params = kwargs or {}
     try:
-        # let's just return this if possible
+        # let's just return this if possible. also, no (!) "params" parameter
+        # the params parameter contains the query, which we don't need here.
         return okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
     except RequestsHTTPError as e:
         pass
 
     # we're still here? so let's continue.
-    query = f"{field} {operator} \"{possible_id}\""
-    rv = okta_manager.call_okta(f"/{thing}", REST.get,
-                                params={method: query})
-    if len(rv) > 1:
-        raise ExitException(f"Name for {thing} must be unique. "
-                            f"(found {len(rv)} matches).")
-    elif len(rv) == 0:
-        raise ExitException(
-            f"No matching {thing} found with {field}=={possible_id}.")
-    return rv[0]
+    things = okta_manager.call_okta(f"/{thing}", REST.get, params=params)
+    if isinstance(things, list):
+        if selector:
+            things = list(filter(selector, things))
+    return things
+
+
+def _okta_get(thing, possible_id,
+              **kwargs):
+    things = _okta_retrieve(thing, possible_id, **kwargs)
+    if isinstance(things, list):
+        if len(things) > 1:
+            raise ExitException(f"Name for {thing} must be unique. "
+                                f"(found {len(things)} matches).")
+        elif len(things) == 0:
+            raise ExitException(
+                f"No matching {thing} found.")
+        # must be here - ouside of this 'if' things can (and sometimes will)
+        # be a dict
+        things = things[0]
+    return things
 
 
 def _selector_profile_find(field, value):
@@ -459,8 +431,8 @@ def groups_delete(name_or_id, **kwargs):
     When you give a name a name substring match will be performed. If more
     than one group matches execution will be aborted.
     """
-    group = _okta_get_by_id_or(name_or_id, "groups",
-                               _selector_profile_find("name", name_or_id))
+    group = _okta_get("groups", name_or_id,
+                      selector=_selector_profile_find("name", name_or_id))
     group_id = group['id']
     okta_manager.call_okta_raw(f"/groups/{group_id}", REST.delete)
     return f"group {group_id} deleted"
@@ -471,8 +443,8 @@ def groups_delete(name_or_id, **kwargs):
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_get(name_or_id, **kwargs):
     """Print only one group"""
-    return _okta_get_by_id_or(name_or_id, "groups",
-                              _selector_profile_find("name", name_or_id))
+    return _okta_get("groups", name_or_id,
+                     selector=_selector_profile_find_group("name", name_or_id))
 
 
 @cli_groups.command(name="adduser", context_settings=CONTEXT_SETTINGS)
@@ -493,13 +465,12 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
 
     You can use any Okta profile field to select users by using "-f".
     """
-    group = _okta_get_by_id_or(group, "groups",
-                               _selector_profile_find_group("name", group))
+    group = _okta_get("groups", group,
+                      selector=_selector_profile_find_group("name", group))
     group_id = group["id"]
     group_name = group["profile"]["name"]
-    user = _okta_get_by_id_or_query(user,
-                                    "users",
-                                    f"profile.{user_lookup_field}")
+    user = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
     user_id = user["id"]
     user_login = user["profile"]["login"]
     okta_manager.call_okta_raw(
@@ -526,12 +497,11 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
 
     Note that you must use Okta's user and group IDs.
     """
-    group = _okta_get_by_id_or(group, "groups",
-                               _selector_profile_find_group("name", group))
+    group = _okta_get("groups", group,
+                      selector=_selector_profile_find_group("name", group))
     group_id = group["id"]
-    user = _okta_get_by_id_or_query(user,
-                                    "users",
-                                    f"profile.{user_lookup_field}")
+    user = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
     user_id = user["id"]
     user_login = user["profile"]["login"]
     group_name = group["profile"]["name"]
@@ -547,9 +517,8 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
                               "profile.email")
 def groups_list_users(id_or_unique, **kwargs):
     """List all users in a group"""
-    group = _okta_get_by_id_or(id_or_unique, "groups",
-                               _selector_profile_find_group("name",
-                                                            id_or_unique))
+    group = _okta_get("groups", id_or_unique,
+                      selector=_selector_profile_find_group("name", id_or_unique))
     group_id = group["id"]
     return okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
 
@@ -563,9 +532,11 @@ def groups_clear(name_or_id, use_id):
     """Remove all users from a group.
 
     This can take a while if the group is big."""
-    if not use_id:
-        name_or_id = _okta_get_and_filter(name_or_id, unique=True)[0]["id"]
-    users = okta_manager.call_okta(f"/groups/{name_or_id}/users", REST.get)
+    group = _okta_get("groups", name_or_id,
+                      selector=_selector_profile_find_group("name", name_or_id))
+    group_id = group["id"]
+    group_name = group["profile"]["name"]
+    users = okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
     for user in users:
         user_id = user['id']
         user_login = user['profile']['login']
@@ -573,7 +544,7 @@ def groups_clear(name_or_id, use_id):
         path = f"/groups/{name_or_id}/users/{user_id}"
         okta_manager.call_okta_raw(path, REST.delete)
         print("ok", file=sys.stderr)
-    return "All users removed"
+    return f"All users removed from group {group_id} ({group_name})"
 
 
 @click.group(name="apps")
@@ -679,8 +650,8 @@ def apps_add(name, signonmode, label, set_fields):
 @_command_wrapper
 def apps_activate(label_or_id):
     """Activate an application"""
-    app = _okta_get_by_id_or(label_or_id, "apps",
-                             _selector_field_find("label", label_or_id))
+    app = _okta_get("apps", label_or_id,
+                    selector=_selector_field_find("label", label_or_id))
     app_id = app['id']
     app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/activate"
@@ -695,8 +666,8 @@ def apps_deactivate(label_or_id):
     """Deactivate an application
 
     Must be done before deletion"""
-    app = _okta_get_by_id_or(label_or_id, "apps",
-                             _selector_field_find("label", label_or_id))
+    app = _okta_get("apps", label_or_id,
+                    selector=_selector_field_find("label", label_or_id))
     app_id = app['id']
     app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/deactivate"
@@ -709,8 +680,8 @@ def apps_deactivate(label_or_id):
 @_command_wrapper
 def apps_delete(label_or_id):
     """Delete an application"""
-    app = _okta_get_by_id_or(label_or_id, "apps",
-                             _selector_field_find("label", label_or_id))
+    app = _okta_get("apps", label_or_id,
+                    selector=_selector_field_find("label", label_or_id))
     app_id = app['id']
     app_label = app["label"]
     okta_manager.call_okta_raw(f"/apps/{app_id}", REST.delete)

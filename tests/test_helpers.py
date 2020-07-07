@@ -1,6 +1,5 @@
 from oktacli.cli import _dict_flat_to_nested
 from oktacli.cli import _dict_nested_to_flat
-from oktacli.cli import _prepare_okta_filter_string
 from oktacli.cli import _dict_get_dotted_keys
 
 
