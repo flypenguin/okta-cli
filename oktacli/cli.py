@@ -515,9 +515,9 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
 @click.option("-u", "--user", required=True,
               metavar="ID-or-FIELDVALUE",
               help="The user ID to add to the group")
-@click.option("-f", "--user-lookup-field", required=True,
+@click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
-              default=None,
+              default="login",
               help="Use this profile field to identify users, not the ID")
 @_command_wrapper
 def groups_removeuser(group, user, user_lookup_field, **kwargs):
