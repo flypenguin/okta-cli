@@ -712,19 +712,20 @@ def apps_delete(label_or_id):
 
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--filter", 'api_filter', default="")
+@click.option("-f", "--filter", 'filter_query', default="")
+@click.option("-q", "--query", 'q_query', default="")
+@click.option("-m", "--match", 'match_field', default="name",
+              help="Match this field for name matches, default 'name'")
 @_output_type_command_wrapper("id,name,label")
-def apps_list(api_filter, partial_name, **kwargs):
+def apps_list(partial_name, filter_query, q_query, match_field, **kwargs):
     """List all defined applications. If you give an optional command line
     argument, the apps are filtered by name using this string."""
     params = {}
-    if api_filter:
-        params = {"filter": api_filter}
-    rv = okta_manager.call_okta("/apps", REST.get, params=params)
+    rv = okta_manager.list_apps(filter_query=filter_query, q_query=q_query)
     # now filter by name, if given
     if partial_name:
-        matcher = re.compile(partial_name)
-        rv = list(filter(lambda x: matcher.search(x["name"]), rv))
+        m = re.compile(partial_name.lower())
+        rv = list(filter(lambda x: m.search(x[match_field].lower()), rv))
     return rv
 
 
