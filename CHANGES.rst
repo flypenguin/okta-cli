@@ -1,3 +1,10 @@
+v11.4.0
+=======
+
+* internal code cleanup
+* change and unify text output of a couple of methods
+* probably removed some bugs
+
 v11.3.0
 =======
 
