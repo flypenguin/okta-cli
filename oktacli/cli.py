@@ -533,10 +533,12 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
                                     "users",
                                     f"profile.{user_lookup_field}")
     user_id = user["id"]
+    user_login = user["profile"]["login"]
+    group_name = group["profile"]["name"]
     okta_manager.call_okta_raw(
         f"/groups/{group_id}/users/{user_id}",
         REST.delete)
-    return f"User {user} removed from group {group}"
+    return f"User {user_id} ({user_login}) removed from group {group_id} ({group_name})"
 
 
 @cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
@@ -680,9 +682,10 @@ def apps_activate(label_or_id):
     app = _okta_get_by_id_or(label_or_id, "apps",
                              _selector_field_find("label", label_or_id))
     app_id = app['id']
+    app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/activate"
     okta_manager.call_okta_raw(path, REST.post)
-    return f"application {app_id} activated"
+    return f"application {app_id} ({app_label}) activated"
 
 
 @cli_apps.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
@@ -695,9 +698,10 @@ def apps_deactivate(label_or_id):
     app = _okta_get_by_id_or(label_or_id, "apps",
                              _selector_field_find("label", label_or_id))
     app_id = app['id']
+    app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/deactivate"
     okta_manager.call_okta_raw(path, REST.post)
-    return f"application {app_id} deactivated"
+    return f"application {app_id} ({app_label}) deactivated"
 
 
 @cli_apps.command(name="delete", context_settings=CONTEXT_SETTINGS)
@@ -708,8 +712,9 @@ def apps_delete(label_or_id):
     app = _okta_get_by_id_or(label_or_id, "apps",
                              _selector_field_find("label", label_or_id))
     app_id = app['id']
+    app_label = app["label"]
     okta_manager.call_okta_raw(f"/apps/{app_id}", REST.delete)
-    return f"application {app_id} deleted"
+    return f"application {app_id} ({app_label}) deleted"
 
 
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
