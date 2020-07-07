@@ -232,19 +232,19 @@ def _okta_get_by_id_or_query(possible_id, thing,
                              operator="eq",
                              method="search"):
     """Return ONE element, NOT a list"""
-    rv = None
-    if possible_id[0] == "0" and len(possible_id) == 20:
-        try:
-            rv = okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
-        except RequestsHTTPError as e:
-            pass
-    if not rv:
-        query = f"{field} {operator} \"{possible_id}\""
-        rv = okta_manager.call_okta(f"/{thing}", REST.get,
-                                    params={method: query})
+    try:
+        # let's just return this if possible
+        return okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
+    except RequestsHTTPError as e:
+        pass
+
+    # we're still here? so let's continue.
+    query = f"{field} {operator} \"{possible_id}\""
+    rv = okta_manager.call_okta(f"/{thing}", REST.get,
+                                params={method: query})
     if len(rv) > 1:
         raise ExitException(f"Name for {thing} must be unique. "
-                            f"(found {len(rv)} matching groups).")
+                            f"(found {len(rv)} matches).")
     elif len(rv) == 0:
         raise ExitException(
             f"No matching {thing} found with {field}=={possible_id}.")
