@@ -1,4 +1,10 @@
-v12.0.0
+v14.0.0
+=======
+
+* [BREAKING] update 'apps list' command
+* add command 'apps get'
+
+v13.0.0
 =======
 
 * [BREAKING] update 'raw' command
