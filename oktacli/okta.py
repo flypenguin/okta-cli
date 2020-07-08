@@ -1,6 +1,7 @@
 import enum
 import json
 import time
+from urllib.parse import urljoin
 
 import requests
 
@@ -16,10 +17,8 @@ class Okta:
 
     def __init__(self, url, token):
         self.token = token
-        self.path_base = "/api/v1"
-
-        # TODO: use urljoin or something for this
-        self.url = url + self.path_base
+        self.path_base = "api/v1"
+        self.url = url
 
         self.session = requests.Session()
         self.session.headers.update({
@@ -29,15 +28,23 @@ class Okta:
         })
 
     def call_okta_raw(self, path, method, *, params=None, body_obj=None,
-                      implicit_url=True):
+                      custom_url=None, custom_path_base=None):
         call_method = getattr(self.session, method.value)
         call_params = {"params": params if params is not None else {}}
-        call_path = self.url + path if implicit_url else path
+        call_url = urljoin(
+            (custom_url if custom_url is not None else self.url),
+            "/".join(filter(None, (
+                custom_path_base.strip("/")
+                if custom_path_base is not None
+                else self.path_base,
+                path.strip("/")
+            )))
+        )
         if method == REST.post and body_obj:
             call_params["data"] = json.dumps(body_obj)
 
         while True:
-            rsp = call_method(call_path, **call_params)
+            rsp = call_method(call_url, **call_params)
 
             if rsp.status_code != 429:
                 # not throttled? break the loop.
@@ -55,8 +62,11 @@ class Okta:
 
     def call_okta(self, path, method, *,
                   params=None, body_obj=None,
-                  result_limit=None):
-        rsp = self.call_okta_raw(path, method, params=params, body_obj=body_obj)
+                  result_limit=None,
+                  custom_url=None, custom_path_base=None):
+        rsp = self.call_okta_raw(path, method, params=params, body_obj=body_obj,
+                                 custom_url=custom_url,
+                                 custom_path_base=custom_path_base)
         rv = rsp.json()
         # NOW, we either have a SINGLE DICT in the rv variable,
         #     *OR*
@@ -73,7 +83,7 @@ class Okta:
             if not url or last_url == url:
                 break
             last_url = url
-            rsp = self.call_okta_raw(url, REST.get, implicit_url=False)
+            rsp = self.call_okta_raw("", REST.get, custom_url=url, custom_path_base="")
             # now the += operation is safe, cause we have a list.
             # this is a liiiitle bit implicit, but should work smoothly.
             rv += rsp.json()

@@ -1210,26 +1210,44 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
             print("done.")
 
 
-@click.group(name="raw")
-def cli_raw():
-    """Fire 'raw' requests against the Okta API [WIP!!]"""
-    pass
-
-
-@cli_raw.command(name="get", context_settings=CONTEXT_SETTINGS)
+@cli_main.command(name="raw", context_settings=CONTEXT_SETTINGS)
 @click.argument('api_endpoint')
-@click.option('-q', '--query-param', 'params', multiple=True,
+@click.option('-X', '--http-method',
+              default="get", type=click.Choice(("get", "post", "put", "delete")),
+              help="Which HTTP method to use; default: 'get'")
+@click.option('-q', '--query', 'query_params', multiple=True,
               help="Set a query field in the URL, format field=value")
-@click.option('--limit', 'limit', default=None,
-              help="Limit to about those number of results")
+@click.option('-b', '--body', 'body',
+              default=None,
+              help="Specify message body, use FILE:<filename> to read from file")
+@click.option('--base-path', 'base_path',
+              default=None,
+              help="Specify a different base path than the default (/api/v1)")
 @_output_type_command_wrapper(None)
-def raw_get(api_endpoint, params, limit, **kwargs):
-    """Perform a GET request against the specified API endpoint"""
+def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
+    """Perform a request against the specified API endpoint"""
+    methods = {
+        "get":    REST.get,
+        "post":   REST.post,
+        "delete": REST.delete,
+        "put":    REST.put,
+    }
+    use_method = methods[http_method.lower()]
+    if base_path and not base_path.startswith("/"):
+        base_path = "/" + base_path
     if not api_endpoint.startswith("/"):
         api_endpoint = "/" + api_endpoint
     p_dict = dict(
-        [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), params)])
-    rv = okta_manager.call_okta(api_endpoint, REST.get, params=p_dict)
+        [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), query_params)])
+    if body:
+        if body.startswith("FILE:"):
+            use_body = json.loads(open(body[5:], "r").read())
+        else:
+            use_body = json.loads(body)
+    else:
+        use_body = None
+    rv = okta_manager.call_okta(api_endpoint, use_method, params=p_dict, body_obj=use_body,
+                                custom_path_base=base_path)
     return rv
 
 
@@ -1240,7 +1258,6 @@ def cli_version():
 
 
 cli_main.add_command(cli_config)
-cli_main.add_command(cli_raw)
 cli_main.add_command(cli_users)
 cli_main.add_command(cli_pw)
 cli_main.add_command(cli_groups)
