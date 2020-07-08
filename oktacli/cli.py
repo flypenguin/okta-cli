@@ -726,6 +726,16 @@ def apps_users(app, **kwargs):
     return okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
 
 
+@cli_apps.command(name="get", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@_output_type_command_wrapper("id,name,label")
+def apps_get(partial_name, **kwargs):
+    """Retrieves information about one specific application"""
+    app = _okta_get("apps", partial_name,
+                    selector=_selector_field_find("label", partial_name))
+    return app
+
+
 @cli_apps.command(name="getuser", context_settings=CONTEXT_SETTINGS)
 @click.option("-a", "--app", "app")
 @click.option("-u", "--user", "user")
