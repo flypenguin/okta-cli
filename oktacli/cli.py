@@ -737,6 +737,30 @@ def apps_getuser(app, user, user_lookup_field, **kwargs):
     return okta_manager.call_okta(f"/apps/{app_id}/users/{user_id}", REST.get)
 
 
+@cli_apps.command(name="adduser", context_settings=CONTEXT_SETTINGS)
+@click.option("-a", "--app", "app")
+@click.option("-u", "--user", "user")
+@click.option("-f", "--user-lookup-field",
+              metavar="FIELDNAME",
+              default="login",
+              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option('-s', '--set', 'set_fields', multiple=True)
+@_output_type_command_wrapper("id,credentials.userName,scope,status,syncState")
+def apps_adduser(app, user, user_lookup_field, set_fields, **kwargs):
+    """Add a user to an application"""
+    appuser = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    user = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_id = user["id"]
+    app_id = app['id']
+
+    appuser["id"] = user_id
+    appuser = _dict_flat_to_nested(appuser)
+    return okta_manager.call_okta(f"/apps/{app_id}/users", REST.post, body_obj=appuser)
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
