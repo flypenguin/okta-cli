@@ -698,7 +698,6 @@ def apps_delete(label_or_id):
 def apps_list(partial_name, filter_query, q_query, match_field, **kwargs):
     """List all defined applications. If you give an optional command line
     argument, the apps are filtered by name using this string."""
-    params = {}
     rv = okta_manager.list_apps(filter_query=filter_query, q_query=q_query)
     # now filter by name, if given
     if partial_name:
