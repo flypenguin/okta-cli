@@ -1,3 +1,11 @@
+v12.0.0
+=======
+
+* [BREAKING] update 'apps users' semantics to match the rest of the commands
+* add command 'apps adduser'
+* add command 'apps getuser'
+* add command 'apps removeuser'
+
 v11.4.1
 =======
 
