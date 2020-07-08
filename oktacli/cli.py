@@ -457,7 +457,7 @@ def groups_get(name_or_id, **kwargs):
 @click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
               default="login",
-              help="If given, use this profile field for user lookup instead of the Okta ID")
+              help="Users are matched against the ID or this profile field; default: 'login'.")
 @_command_wrapper
 def groups_adduser(group, user, user_lookup_field, **kwargs):
     """
@@ -489,7 +489,7 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
 @click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
               default="login",
-              help="Use this profile field to identify users, not the ID")
+              help="Users are matched against the ID or this profile field; default: 'login'.")
 @_command_wrapper
 def groups_removeuser(group, user, user_lookup_field, **kwargs):
     """
