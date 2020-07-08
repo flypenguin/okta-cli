@@ -709,21 +709,13 @@ def apps_list(partial_name, filter_query, q_query, match_field, **kwargs):
 
 @cli_apps.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("app_id")
-@click.option("-i", "--id", "use_id", is_flag=True,
-              help="Use Okta app ID instead of app name")
 @_output_type_command_wrapper("id,syncState,credentials.userName")
-def apps_users(app_id, use_id, **kwargs):
+def apps_users(app, **kwargs):
     """List all users for an application"""
-    if not use_id:
-        apps = okta_manager.call_okta("/apps", REST.get)
-        matcher = re.compile(app_id.lower())
-        apps = list(filter(lambda x: matcher.search(x["name"].lower()), apps))
-        if len(apps) != 1:
-            raise ExitException(f"Found {len(apps)} matching apps. Must be 1!")
-        use_app_id = apps[0]["id"]
-    else:
-        use_app_id = app_id
-    return okta_manager.call_okta(f"/apps/{use_app_id}/users", REST.get)
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    app_id = app["id"]
+    return okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
 
 
 @click.group(name="users")
