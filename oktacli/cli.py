@@ -761,6 +761,28 @@ def apps_adduser(app, user, user_lookup_field, set_fields, **kwargs):
     return okta_manager.call_okta(f"/apps/{app_id}/users", REST.post, body_obj=appuser)
 
 
+@cli_apps.command(name="removeuser", context_settings=CONTEXT_SETTINGS)
+@click.option("-a", "--app", "app")
+@click.option("-u", "--user", "user")
+@click.option("-f", "--user-lookup-field",
+              metavar="FIELDNAME",
+              default="login",
+              help="Users are matched against the ID or this profile field; default: 'login'.")
+@_command_wrapper
+def apps_removeuser(app, user, user_lookup_field, **kwargs):
+    """Rempoves a user from an application"""
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    user = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_id = user["id"]
+    user_login = user["profile"]["login"]
+    app_id = app['id']
+    app_label = app["label"]
+    okta_manager.call_okta_raw(f"/apps/{app_id}/users/{user_id}", REST.delete)
+    return f"User {user_id} ({user_login}) removed from app {app_id} ({app_label})"
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
