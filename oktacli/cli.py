@@ -690,19 +690,28 @@ def apps_delete(label_or_id):
 
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--filter", 'filter_query', default="")
+@click.option("-f", "--filter", 'filter_query', default="", metavar="EXPRESSION")
 @click.option("-q", "--query", 'q_query', default="")
-@click.option("-m", "--match", 'match_field', default="name",
-              help="Match this field for name matches, default 'name'")
 @_output_type_command_wrapper("id,name,label")
-def apps_list(partial_name, filter_query, q_query, match_field, **kwargs):
+def apps_list(partial_name, filter_query, q_query, **kwargs):
     """List all defined applications. If you give an optional command line
-    argument, the apps are filtered by name using this string."""
-    rv = okta_manager.list_apps(filter_query=filter_query, q_query=q_query)
-    # now filter by name, if given
+    argument, the apps are filtered by name using this string.
+
+    \b
+    Examples:
+    okta-cli apps list
+    okta-cli apps list office       # 'full text' search, slow
+    okta-cli apps list -q Office    # 'starts with' search, fast
+    """
+    params = {}
+    if filter_query:
+        params["filter"] = filter_query
+    if q_query:
+        params["q"] = q_query
+    selector = None
     if partial_name:
-        m = re.compile(partial_name.lower())
-        rv = list(filter(lambda x: m.search(x[match_field].lower()), rv))
+        selector = _selector_field_find("label", partial_name)
+    rv = _okta_retrieve("apps", partial_name, selector=selector, **params)
     return rv
 
 
