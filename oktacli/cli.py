@@ -718,6 +718,25 @@ def apps_users(app, **kwargs):
     return okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
 
 
+@cli_apps.command(name="getuser", context_settings=CONTEXT_SETTINGS)
+@click.option("-a", "--app", "app")
+@click.option("-u", "--user", "user")
+@click.option("-f", "--user-lookup-field",
+              metavar="FIELDNAME",
+              default="login",
+              help="Users are matched against the ID or this profile field; default: 'login'.")
+@_output_type_command_wrapper("id,credentials.userName,scope,status,syncState")
+def apps_getuser(app, user, user_lookup_field, **kwargs):
+    """Retrieves information about one specific assigned user of an application"""
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    user = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_id = user["id"]
+    app_id = app['id']
+    return okta_manager.call_okta(f"/apps/{app_id}/users/{user_id}", REST.get)
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
