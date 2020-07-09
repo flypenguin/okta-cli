@@ -918,6 +918,16 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
     return f"User {login_or_id} deactivated."
 
 
+@cli_users.command(name="activate", context_settings=CONTEXT_SETTINGS)
+@click.argument('login_or_id')
+@click.option("-e", "--send-email", is_flag=True,
+              help="Send email to admins if set")
+@_output_type_command_wrapper(None)
+def users_activate(login_or_id, send_email, **kwargs):
+    """Activate a user"""
+    return okta_manager.activate_user(login_or_id, send_email)
+
+
 @cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @_command_wrapper
