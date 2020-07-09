@@ -547,7 +547,9 @@ def groups_users(id_or_unique, **kwargs):
     group = _okta_get("groups", id_or_unique,
                       selector=_selector_profile_find_group("name", id_or_unique))
     group_id = group["id"]
-    return okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
+    rv = okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
+    rv.sort(key=lambda x: x["profile"]["login"].lower())
+    return rv
 
 
 @cli_groups.command(name="clear", context_settings=CONTEXT_SETTINGS)
@@ -564,7 +566,7 @@ def groups_clear(name_or_id, use_id):
     group_id = group["id"]
     group_name = group["profile"]["name"]
     users = okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
-    for user in users:
+    for user in sorted(users, key=lambda x: x["profile"]["login"]):
         user_id = user['id']
         user_login = user['profile']['login']
         print(f"Removing user {user_login} ... ", file=sys.stderr, end="")
@@ -739,6 +741,7 @@ def apps_list(partial_name, filter_query, q_query, **kwargs):
     if partial_name:
         selector = _selector_field_find("label", partial_name)
     rv = _okta_retrieve("apps", partial_name, selector=selector, **params)
+    rv.sort(key=lambda x: x["label"].lower())
     return rv
 
 
@@ -750,7 +753,9 @@ def apps_users(app, **kwargs):
     app = _okta_get("apps", app,
                     selector=_selector_field_find("label", app))
     app_id = app["id"]
-    return okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
+    rv = okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
+    rv.sort(key=lambda x: x["credentials"]["userName"])
+    return rv
 
 
 @cli_apps.command(name="get", context_settings=CONTEXT_SETTINGS)
@@ -876,7 +881,8 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     rv = _okta_retrieve("users", None, **params)
     filters_dict = {("profile." + k): v
                     for k, v in map(lambda x: x.split("=", 1), matches)}
-    rv = list(filter_dicts(rv, filters=filters_dict, partial=partial))
+    rv = filter_dicts(rv, filters=filters_dict, partial=partial)
+    rv.sort(key=lambda x: x["profile"]["login"])
     return rv
 
 
@@ -919,8 +925,9 @@ def users_groups(user, user_lookup_field, **kwargs):
     user_obj = _okta_get("users", user,
                      search=f"profile.{user_lookup_field} eq \"{user}\"")
     user_id = user_obj["id"]
-    return okta_manager.call_okta(f"/users/{user_id}/groups", REST.get)
-
+    rv = okta_manager.call_okta(f"/users/{user_id}/groups", REST.get)
+    rv.sort(key=lambda x: x["profile"]["name"])
+    return rv
 
 @cli_users.command(name="apps", context_settings=CONTEXT_SETTINGS)
 @click.argument("user")
@@ -934,7 +941,9 @@ def users_groups(user, user_lookup_field, **kwargs):
     user_obj = _okta_get("users", user,
                      search=f"profile.{user_lookup_field} eq \"{user}\"")
     user_id = user_obj["id"]
-    return okta_manager.call_okta(f"/users/{user_id}/appLinks", REST.get)
+    rv = okta_manager.call_okta(f"/users/{user_id}/appLinks", REST.get)
+    rv.sort(key=lambda x: x["label"])
+    return rv
 
 
 @cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
@@ -1238,6 +1247,7 @@ def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
     rv = _okta_retrieve("features", None, selector=selector)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     rv = list(filter_dicts(rv, filters=filters_dict, partial=partial))
+    rv.sort(key=lambda x: x["name"])
     return rv
 
 
@@ -1299,6 +1309,7 @@ def features_dependents(partial_name, partial_name_field, force, **kwargs):
                         selector=_selector_field_find(partial_name_field, partial_name))
     feature_id = feature["id"]
     rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
+    rv.sort(key=lambda x: x["name"])
     return rv
 
 
@@ -1315,6 +1326,7 @@ def features_dependencies(partial_name, partial_name_field, force, **kwargs):
                         selector=_selector_field_find(partial_name_field, partial_name))
     feature_id = feature["id"]
     rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
+    rv.sort(key=lambda x: x["name"])
     return rv
 
 
