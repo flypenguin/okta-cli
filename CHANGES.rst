@@ -1,3 +1,9 @@
+v14.2.0
+=======
+
+* perform case-insensitive user searches for 'users list'
+* update 'users list', add "-q", "-d" parameters
+
 v14.1.0
 =======
 
