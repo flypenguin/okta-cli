@@ -840,22 +840,29 @@ def cli_users():
 
 
 @cli_users.command(name="list", context_settings=CONTEXT_SETTINGS)
-@click.option("-m", "--match", 'matches', multiple=True)
+@click.option("-m", "--match", 'matches', multiple=True,
+              metavar="FIELD=VALUE",
+              help="Filter for field values")
 @click.option("-p", "--partial", is_flag=True,
               help="Accept partial matches for match queries.")
-@click.option("-f", "--filter", 'filter_query', default="")
-@click.option("-s", "--search", 'search_query', default="")
-@click.option("-q", "--query", 'q_query', default="")
-@click.option("-d", "--deprovisioned", "deprov", default=False, is_flag=True)
+@click.option("-f", "--filter", 'filter_query', default="",
+              help="Add Okta filter query")
+@click.option("-s", "--search", 'search_query', default="",
+              help="Add Okta search query")
+@click.option("-q", "--query", 'q_query', default="",
+              help="Add Okta query string")
+@click.option("-d", "--deprovisioned", "deprov", default=False, is_flag=True,
+              help="Return only deprovisioned users")
 @_output_type_command_wrapper("id,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
 def users_list(matches, partial, filter_query, search_query, q_query, deprov, **kwargs):
     """Lists users (all or using various filters)
 
-    NOTE: The simple 'users list' command will NOT contain DEPROVISIONED users,
-    they are just not returned by the Okta API. If you want a list including
-    those either use the 'dump' command, or use 'users list' twice, the 2nd
-    time adding this query: '-s "status eq \\"DEPROVISIONED\\""'.
+    \b
+    NOTES:
+    * Does not contain deprovisioned users.
+    * '-q' is fast but case-sensitive search over multiple fields
+    * '-m' is a slow but case insensitive on a SINGLE field
 
     \b
     EXAMPLES:
@@ -866,6 +873,10 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     This is equivalent:
     okta-cli users list -s 'staus eq "DEPROVISIONED"'
     okta-cli users list -d
+
+    \b
+    See here for more info:
+        https://is.gd/RrYDOY
     """
     params = {}
     if deprov:
