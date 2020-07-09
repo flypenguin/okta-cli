@@ -141,7 +141,7 @@ class Okta:
         :param send_email: On True admins will be notified
         :return: None
         """
-        path = "/users/" + user_id + "/lifecycle/deactivate"
+        path = f"/users/{user_id}/lifecycle/deactivate"
         params = {"sendEmail": "true"} if send_email else {}
         return self.call_okta_raw(path, REST.post, params=params)
 
