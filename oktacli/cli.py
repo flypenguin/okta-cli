@@ -906,6 +906,21 @@ def users_groups(user, user_lookup_field, **kwargs):
     return okta_manager.call_okta(f"/users/{user_id}/groups", REST.get)
 
 
+@cli_users.command(name="apps", context_settings=CONTEXT_SETTINGS)
+@click.argument("user")
+@click.option("-f", "--user-lookup-field",
+              metavar="FIELDNAME",
+              default="login",
+              help="Users are matched against the ID or this profile field; default: 'login'.")
+@_output_type_command_wrapper("appInstanceId,appName,label")
+def users_groups(user, user_lookup_field, **kwargs):
+    """List all apps associated with a user"""
+    user_obj = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_id = user_obj["id"]
+    return okta_manager.call_okta(f"/users/{user_id}/appLinks", REST.get)
+
+
 @cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
