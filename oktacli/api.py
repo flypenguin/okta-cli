@@ -47,9 +47,9 @@ def get_manager():
     return Okta(**config["profiles"][config["default"]])
 
 
-def filter_users(user_list, *, filters={}, partial=False):
+def filter_dicts(dicts, *, filters={}, partial=False):
     if not filters:
-        return user_list
+        return dicts
 
     # filters dict contents:
     # key:   okta field name. CASE SENSITIVE!
@@ -62,17 +62,21 @@ def filter_users(user_list, *, filters={}, partial=False):
         filters = {k: re.compile(v.lower()).search
                    for k, v in filters.items()}
 
-    def _match(user):
+    def _match(testee):
         for k, check_func in filters.items():
-            user_value = user["profile"].get(k, None)
-            # user does not have the key? go away.
-            if user_value is None:
-                return False
+            # recursive "dot lookup" from key
+            desc = k.split(".")
+            test_value = testee
+            for k in desc:
+                test_value = test_value.get(k, None)
+                if test_value is None:
+                    # no key? go away.
+                    return False
             # user has the key? let's do an exact string match, but
             # lower case, cause we "normalize" everything to lower
             # case to get case insensitive matches.
-            if not check_func(user_value.lower()):
+            if not check_func(test_value.lower()):
                 return False
         return True
 
-    return filter(_match, user_list)
+    return filter(_match, dicts)

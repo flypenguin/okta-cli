@@ -17,7 +17,7 @@ from openpyxl import load_workbook
 from .api import load_config
 from .api import save_config
 from .api import get_manager
-from .api import filter_users
+from .api import filter_dicts
 from .api import get_config_file
 
 from .okta import REST
@@ -859,8 +859,9 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     if q_query:
         params["q"] = q_query
     rv = _okta_retrieve("users", None, **params)
-    filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
-    rv = list(filter_users(rv, filters=filters_dict, partial=partial))
+    filters_dict = {("profile." + k): v
+                    for k, v in map(lambda x: x.split("=", 1), matches)}
+    rv = list(filter_dicts(rv, filters=filters_dict, partial=partial))
     return rv
 
 
