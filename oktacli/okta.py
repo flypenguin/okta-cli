@@ -122,16 +122,12 @@ class Okta:
         return self.call_okta("/apps", REST.get, params=params)
 
     def add_user(self, query_params, body_object):
-        body = json.dumps(body_object).encode("utf-8")
-        rsp = self.session.post(self.url + "/users/",
-                                params=query_params,
-                                data=body)
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
-        return rsp.json()
+        return self.call_okta("/users", REST.post,
+                              params=query_params,
+                              body_obj=body_object)
 
     def update_user(self, user_id, body_object):
-        path = "/users/" + user_id
+        path = f"/users/{user_id}"
         return self.call_okta(path, REST.post, body_obj=body_object)
 
     def get_profile_schema(self):
@@ -156,26 +152,18 @@ class Okta:
         :param send_email: On True admins will be notified
         :return: None
         """
-        path = "/users/" + user_id
+        path = f"/users/{user_id}"
         params = {"sendEmail": "true"} if send_email else {}
         return self.call_okta_raw(path, REST.delete, params=params)
 
     def reset_password(self, user_id, *, send_email=True):
-        url = self.url + f"/users/{user_id}/lifecycle/reset_password"
-        rsp = self.session.post(
-                url,
-                params={'sendEmail': f"{str(send_email).lower()}"}
+        return self.call_okta(
+            f"/users/{user_id}/lifecycle/reset_password",
+            params={'sendEmail': f"{str(send_email).lower()}"}
         )
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
-        return rsp.json()
 
     def expire_password(self, user_id, *, temp_password=False):
-        url = self.url + f"/users/{user_id}/lifecycle/expire_password"
-        rsp = self.session.post(
-                url,
-                params={'tempPassword': f"{str(temp_password).lower()}"}
+        return self.call_okta(
+            f"/users/{user_id}/lifecycle/expire_password",
+            params={'tempPassword': f"{str(temp_password).lower()}"}
         )
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
-        return rsp.json()
