@@ -10,6 +10,7 @@ from os import mkdir
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
+import yaml
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
@@ -100,7 +101,7 @@ def _command_wrapper(func):
                     print(json.dumps(rv, indent=2, sort_keys=True,
                                      ensure_ascii=False))
                 elif kwargs.get("print_yaml", False) is True:
-                    raise ExitException("YAML printing not (yet) implemented.")
+                    print(yaml.safe_dump(rv, indent=2, encoding=None, allow_unicode=True))
                 elif kwargs.get("print_csv", False) is True:
                     _dump_csv(rv, dialect=kwargs['csv_dialect'])
                 elif "output_fields" in kwargs and len(rv) > 0:
@@ -128,6 +129,8 @@ def _output_type_command_wrapper(default_fields):
         @wraps(func)
         @click.option("-j", "--json", 'print_json', is_flag=True, default=False,
                       help="Print raw JSON output")
+        @click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
+                      help="Print raw YAML output")
         @click.option("--csv", "print_csv", is_flag=True, default=False,
                       help="Print output as CSV format. Will ignore "
                            "--output-fields parameter if set")
