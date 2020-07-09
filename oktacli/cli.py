@@ -721,7 +721,7 @@ def apps_delete(label_or_id):
 @click.argument("partial_name", required=False, default=None)
 @click.option("-f", "--filter", 'filter_query', default="", metavar="EXPRESSION")
 @click.option("-q", "--query", 'q_query', default="")
-@_output_type_command_wrapper("id,name,label")
+@_output_type_command_wrapper("id,label")
 def apps_list(partial_name, filter_query, q_query, **kwargs):
     """List all defined applications. If you give an optional command line
     argument, the apps are filtered by name using this string.
