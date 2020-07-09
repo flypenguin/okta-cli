@@ -1241,6 +1241,17 @@ def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
     return rv
 
 
+@cli_features.command(name="get", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_get(partial_name, partial_name_field, **kwargs):
+    """Retrieves information about one specific feature"""
+    rv = _okta_get("features", partial_name,
+                   selector=_selector_field_find(partial_name_field, partial_name))
+    return rv
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli_main():
     """
