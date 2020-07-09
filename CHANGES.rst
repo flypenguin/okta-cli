@@ -4,6 +4,7 @@ vNEXT
 * unify behavior of 'users groups'
 * add command 'users apps' 
 * add command 'features list'
+* add "--colwidth" parameter to table output
 
 v14.3.0
 =======

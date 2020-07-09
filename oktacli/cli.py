@@ -25,6 +25,11 @@ from .exceptions import ExitException
 
 VERSION = "14.3.0"
 
+# global constants
+TABLE_MAX_FIELD_LENGTH = None
+
+
+# variables
 okta_manager = None
 config = None
 
@@ -32,7 +37,7 @@ config = None
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-def _print_table_from(print_obj, fields):
+def _print_table_from(print_obj, fields, *, max_len=None):
     if isinstance(print_obj, dict):
         print_obj = [print_obj]
     arr = DottedCollection.factory(print_obj)
@@ -52,9 +57,14 @@ def _print_table_from(print_obj, fields):
             col_lengths.append(1)
             print(f"WARNING: field {col} either never filled or non-existant.",
                   file=sys.stderr)
+    # enforce max field length to print
+    if max_len is not None:
+        col_lengths = [min(max_len, l) for l in col_lengths]
     for row in arr:
         for col_idx, col in enumerate(fields):
             val = str(row[col]) if col in row else ""
+            if max_len and len(val) > max_len:
+                val = val[:max_len] + "..."
             print(f"{val:{col_lengths[col_idx]}}  ", end="")
         print("")
 
@@ -93,7 +103,8 @@ def _command_wrapper(func):
                 elif kwargs.get("print_csv", False) is True:
                     _dump_csv(rv, dialect=kwargs['csv_dialect'])
                 elif "output_fields" in kwargs and len(rv) > 0:
-                    _print_table_from(rv, kwargs["output_fields"])
+                    max_len = kwargs.get("max_len", None)
+                    _print_table_from(rv, kwargs["output_fields"], max_len=max_len)
                 else:
                     # default fallback setting - print json.
                     print(json.dumps(rv, indent=2, sort_keys=True))
@@ -124,6 +135,10 @@ def _output_type_command_wrapper(default_fields):
         @click.option("--output-fields",
                       default=default_fields,
                       help="Override default fields in table format")
+        @click.option("--colwidth",
+                      default=TABLE_MAX_FIELD_LENGTH, type=int,
+                      help="Limit column width; "
+                           f"default: {TABLE_MAX_FIELD_LENGTH or 'unlimited'}")
         @_command_wrapper
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
