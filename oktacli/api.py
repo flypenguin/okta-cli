@@ -51,10 +51,16 @@ def filter_users(user_list, *, filters={}, partial=False):
     if not filters:
         return user_list
 
+    # filters dict contents:
+    # key:   okta field name. CASE SENSITIVE!
+    # value: regex filter / matching function compiled with
+    #        with lowercase (!) input
     if not partial:
-        filters = {k: re.compile(v).fullmatch for k, v in filters.items()}
+        filters = {k: re.compile(v.lower()).fullmatch
+                   for k, v in filters.items()}
     else:
-        filters = {k: re.compile(v).search for k, v in filters.items()}
+        filters = {k: re.compile(v.lower()).search
+                   for k, v in filters.items()}
 
     def _match(user):
         for k, check_func in filters.items():
@@ -62,8 +68,10 @@ def filter_users(user_list, *, filters={}, partial=False):
             # user does not have the key? go away.
             if user_value is None:
                 return False
-            # user has the key? let's do an exact string match
-            if not check_func(user_value):
+            # user has the key? let's do an exact string match, but
+            # lower case, cause we "normalize" everything to lower
+            # case to get case insensitive matches.
+            if not check_func(user_value.lower()):
                 return False
         return True
 
