@@ -150,7 +150,7 @@ class Okta:
         Activates a user.
         :param user_id: The user ID
         :param send_email: On True admins will be notified
-        :return: None
+        :return: Empty object or activation data
         """
         path = f"/users/{user_id}/lifecycle/activate"
         params = {"sendEmail": "true"} if send_email else {}
