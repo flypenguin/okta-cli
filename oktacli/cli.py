@@ -540,9 +540,9 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
 
 @cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("id-or-unique")
-@_output_type_command_wrapper("id,profile.firstName,profile.lastName,"
-                              "profile.email")
-def groups_list_users(id_or_unique, **kwargs):
+@_output_type_command_wrapper("id,profile.login,profile.firstName,"
+                              "profile.lastName,profile.email")
+def groups_users(id_or_unique, **kwargs):
     """List all users in a group"""
     group = _okta_get("groups", id_or_unique,
                       selector=_selector_profile_find_group("name", id_or_unique))
