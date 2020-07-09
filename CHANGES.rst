@@ -6,6 +6,8 @@ vNEXT
 * add command 'features list'
 * add command 'features enable'
 * add command 'features disable'
+* add command 'features dependents'
+* add command 'features dependencies'
 * add "--colwidth" parameter to table output
 
 v14.3.0
