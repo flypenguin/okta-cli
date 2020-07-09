@@ -860,7 +860,7 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     \b
     This is equivalent:
     okta-cli users list -s 'staus eq "DEPROVISIONED"'
-    okta-cli users list -d 
+    okta-cli users list -d
     """
     params = {}
     if deprov:
