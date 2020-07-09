@@ -126,7 +126,7 @@ def _output_type_command_wrapper(default_fields):
     def _output_type_command_wrapper_inner(func):
         @wraps(func)
         @click.option("-j", "--json", 'print_json', is_flag=True, default=False,
-                      help="Print raw YAML output")
+                      help="Print raw JSON output")
         @click.option("--csv", "print_csv", is_flag=True, default=False,
                       help="Print output as CSV format. Will ignore "
                            "--output-fields parameter if set")
