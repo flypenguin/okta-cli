@@ -3,6 +3,7 @@ vNEXT
 
 * unify behavior of 'users groups'
 * add command 'users apps' 
+* add command 'features list'
 
 v14.3.0
 =======

@@ -1202,6 +1202,30 @@ def users_add(set_fields, profile_fields, groups, activate, provider,
     return okta_manager.add_user(params, final_dict)
 
 
+@click.group(name="features")
+def cli_features():
+    """Feature operations"""
+    pass
+
+
+@cli_features.command(name="list", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("-m", "--match", 'matches', multiple=True)
+@click.option("-p", "--partial", is_flag=True, default=True,
+              help="Accept partial matches for match queries.")
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
+    """Lists tenant features"""
+    selector = None
+    if partial_name:
+        selector=_selector_field_find(partial_name_field, partial_name)
+    rv = _okta_retrieve("features", None, selector=selector)
+    filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
+    rv = list(filter_dicts(rv, filters=filters_dict, partial=partial))
+    return rv
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli_main():
     """
@@ -1349,3 +1373,4 @@ cli_main.add_command(cli_users)
 cli_main.add_command(cli_pw)
 cli_main.add_command(cli_groups)
 cli_main.add_command(cli_apps)
+cli_main.add_command(cli_features)
