@@ -868,7 +868,7 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
             filter(None, (search_query, "status eq \"DEPROVISIONED\""))
         )
     if search_query:
-        params["filter"] = search_query
+        params["search"] = search_query
     if filter_query:
         params["filter"] = filter_query
     if q_query:
