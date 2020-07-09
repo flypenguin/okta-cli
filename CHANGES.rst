@@ -1,3 +1,9 @@
+vNEXT
+=======
+
+* unify behavior of 'users groups'
+* add command 'users apps' 
+
 v14.3.0
 =======
 
