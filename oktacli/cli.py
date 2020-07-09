@@ -225,16 +225,19 @@ def _okta_get(thing, possible_id,
 
 
 def _selector_profile_find(field, value):
-    return lambda x: x["profile"][field].lower().find(value) != -1
+    lower_value = value.lower()
+    return lambda x: x["profile"][field].lower().find(lower_value) != -1
 
 
 def _selector_profile_find_group(field, value):
-    return lambda x: (x["profile"][field].lower().find(value.lower()) != -1 and
+    lower_value = value.lower()
+    return lambda x: (x["profile"][field].lower().find(lower_value) != -1 and
                       x["type"] == "OKTA_GROUP")
 
 
 def _selector_field_find(field, value):
-    return lambda x: x[field].lower().find(value) != -1
+    lower_value = value.lower()
+    return lambda x: x[field].lower().find(lower_value) != -1
 
 
 @click.group(name="config")
@@ -414,7 +417,7 @@ def groups_list(partial_name, filter_query, q_query, all_groups, **kwargs):
         params["q"] = q_query
     selector = None
     if partial_name:
-        selector = _selector_profile_find("name", partial_name.lower())
+        selector = _selector_profile_find("name", partial_name)
     rv = _okta_retrieve("groups", None, selector=selector, **params)
     if not all_groups:
         rv = list(filter(lambda x: x["type"] == "OKTA_GROUP", rv))
