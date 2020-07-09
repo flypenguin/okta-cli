@@ -1286,6 +1286,38 @@ def features_disable(partial_name, partial_name_field, force, **kwargs):
     return rv
 
 
+@cli_features.command(name="dependents", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("--force", 'force', is_flag=True, default=False)
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_dependents(partial_name, partial_name_field, force, **kwargs):
+    """List features depending on this one"""
+    mode = "dependents"
+    params = {"mode": "force"} if force else None
+    feature = _okta_get("features", partial_name,
+                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature_id = feature["id"]
+    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
+    return rv
+
+
+@cli_features.command(name="dependencies", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("--force", 'force', is_flag=True, default=False)
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_dependencies(partial_name, partial_name_field, force, **kwargs):
+    """List dependencies of this feature"""
+    mode = "dependencies"
+    params = {"mode": "force"} if force else None
+    feature = _okta_get("features", partial_name,
+                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature_id = feature["id"]
+    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
+    return rv
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli_main():
     """
