@@ -858,7 +858,6 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
         params["filter"] = filter_query
     if q_query:
         params["q"] = q_query
-    print(f"search_query={search_query}")
     rv = _okta_retrieve("users", None, **params)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     rv = list(filter_users(rv, filters=filters_dict, partial=partial))
