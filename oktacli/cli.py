@@ -97,7 +97,8 @@ def _command_wrapper(func):
             rv = func(*args, **kwargs)
             if not isinstance(rv, str):
                 if kwargs.get("print_json", False) is True:
-                    print(json.dumps(rv, indent=2, sort_keys=True))
+                    print(json.dumps(rv, indent=2, sort_keys=True,
+                                     ensure_ascii=False))
                 elif kwargs.get("print_yaml", False) is True:
                     raise ExitException("YAML printing not (yet) implemented.")
                 elif kwargs.get("print_csv", False) is True:
