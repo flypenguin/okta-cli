@@ -1,3 +1,9 @@
+v14.1.0
+=======
+
+* (MINOR) adjust (and enhance) 'groups list' command to behave like 'apps list', specifically in regards to the partial name filtering
+* unify case-insensitive filtering
+
 v14.0.1
 =======
 
