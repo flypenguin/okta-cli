@@ -1,3 +1,8 @@
+v14.3.0
+=======
+
+* add command 'users activate'
+
 v14.2.1
 =======
 
