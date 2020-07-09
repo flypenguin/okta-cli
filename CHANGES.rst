@@ -1,3 +1,8 @@
+v14.0.1
+=======
+
+* fix several internal bugs which broke 'pw reset', 'pw expire' and 'users add'
+
 v14.0.0
 =======
 
