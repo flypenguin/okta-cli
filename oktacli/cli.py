@@ -190,16 +190,17 @@ def _okta_retrieve(thing, possible_id,
                    *,
                    selector=None,
                    **kwargs):
-    """Return ONE element, NOT a list"""
-    params = kwargs or {}
-    try:
-        # let's just return this if possible. also, no (!) "params" parameter
-        # the params parameter contains the query, which we don't need here.
-        return okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
-    except RequestsHTTPError as e:
-        pass
+    """Returns anything between nothing and a list of items"""
+    if possible_id is not None:
+        try:
+            # let's just return this if possible. also, no (!) "params" parameter
+            # the params parameter contains the query, which we don't need here.
+            return okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
+        except RequestsHTTPError as e:
+            pass
 
     # we're still here? so let's continue.
+    params = kwargs or {}
     things = okta_manager.call_okta(f"/{thing}", REST.get, params=params)
     if isinstance(things, list):
         if selector:
