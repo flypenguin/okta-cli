@@ -892,11 +892,18 @@ def users_get(lookup_value, field, **kwargs):
 
 
 @cli_users.command(name="groups", context_settings=CONTEXT_SETTINGS)
-@click.argument("name-or-id")
+@click.argument("user")
+@click.option("-f", "--user-lookup-field",
+              metavar="FIELDNAME",
+              default="login",
+              help="Users are matched against the ID or this profile field; default: 'login'.")
 @_output_type_command_wrapper("id,profile.name,profile.description")
-def users_list_groups(name_or_id, **kwargs):
+def users_groups(user, user_lookup_field, **kwargs):
     """List all groups belonging to a user"""
-    return okta_manager.call_okta(f"/users/{name_or_id}/groups", REST.get)
+    user_obj = _okta_get("users", user,
+                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_id = user_obj["id"]
+    return okta_manager.call_okta(f"/users/{user_id}/groups", REST.get)
 
 
 @cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
