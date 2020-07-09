@@ -936,7 +936,7 @@ def users_groups(user, user_lookup_field, **kwargs):
               default="login",
               help="Users are matched against the ID or this profile field; default: 'login'.")
 @_output_type_command_wrapper("appInstanceId,appName,label")
-def users_groups(user, user_lookup_field, **kwargs):
+def users_apps(user, user_lookup_field, **kwargs):
     """List all apps associated with a user"""
     user_obj = _okta_get("users", user,
                      search=f"profile.{user_lookup_field} eq \"{user}\"")
