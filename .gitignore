@@ -2,6 +2,7 @@
 dump*
 okta-dump*
 tools/wordlist*
+.idea/
 
 ## App ignore settings
 # let's ignore all the top-level .json/.csv files
