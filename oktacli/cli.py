@@ -823,22 +823,46 @@ def cli_users():
 @click.option("-m", "--match", 'matches', multiple=True)
 @click.option("-p", "--partial", is_flag=True,
               help="Accept partial matches for match queries.")
-@click.option("-f", "--filter", 'api_filter', default="")
-@click.option("-s", "--search", 'api_search', default="")
+@click.option("-f", "--filter", 'filter_query', default="")
+@click.option("-s", "--search", 'search_query', default="")
+@click.option("-q", "--query", 'q_query', default="")
+@click.option("-d", "--deprovisioned", "deprov", default=False, is_flag=True)
 @_output_type_command_wrapper("id,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
-def users_list(matches, partial, api_filter, api_search, **kwargs):
+def users_list(matches, partial, filter_query, search_query, q_query, deprov, **kwargs):
     """Lists users (all or using various filters)
 
     NOTE: The simple 'users list' command will NOT contain DEPROVISIONED users,
     they are just not returned by the Okta API. If you want a list including
     those either use the 'dump' command, or use 'users list' twice, the 2nd
-    time adding this query: '-s "status eq \\"DEPROVISIONED\\""'."""
-    users = okta_manager.list_users(
-        filter_query=api_filter,
-        search_query=api_search)
+    time adding this query: '-s "status eq \\"DEPROVISIONED\\""'.
+
+    \b
+    EXAMPLES:
+    okta-cli users list -q Müller -m firstName=Hans
+    okta-cli users list -f 'profile.site eq "Berlin"'
+
+    \b
+    This is equivalent:
+    okta-cli users list -s 'staus eq "DEPROVISIONED"'
+    okta-cli users list -d 
+    """
+    params = {}
+    if deprov:
+        search_query = " and ".join(
+            filter(None, (search_query, "status eq \"DEPROVISIONED\""))
+        )
+    if search_query:
+        params["filter"] = search_query
+    if filter_query:
+        params["filter"] = filter_query
+    if q_query:
+        params["q"] = q_query
+    print(f"search_query={search_query}")
+    rv = _okta_retrieve("users", None, **params)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
-    return list(filter_users(users, filters=filters_dict, partial=partial))
+    rv = list(filter_users(rv, filters=filters_dict, partial=partial))
+    return rv
 
 
 @cli_users.command(name="get", context_settings=CONTEXT_SETTINGS)
