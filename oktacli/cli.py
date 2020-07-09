@@ -756,8 +756,8 @@ def apps_getuser(app, user, user_lookup_field, **kwargs):
 
 
 @cli_apps.command(name="adduser", context_settings=CONTEXT_SETTINGS)
-@click.option("-a", "--app", "app")
-@click.option("-u", "--user", "user")
+@click.option("-a", "--app", "app", required=True)
+@click.option("-u", "--user", "user", required=True)
 @click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
               default="login",
