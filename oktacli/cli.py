@@ -1252,6 +1252,40 @@ def features_get(partial_name, partial_name_field, **kwargs):
     return rv
 
 
+@cli_features.command(name="enable", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("--force", 'force', is_flag=True, default=False)
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_enable(partial_name, partial_name_field, force, **kwargs):
+    """Enable a feature"""
+    mode = "enable"
+    params = {"mode": "force"} if force else None
+    feature = _okta_get("features", partial_name,
+                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature_id = feature["id"]
+    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}",
+                                REST.post, params=params)
+    return rv
+
+
+@cli_features.command(name="disable", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("--force", 'force', is_flag=True, default=False)
+@_output_type_command_wrapper("id,status,stage.value,type,name")
+def features_disable(partial_name, partial_name_field, force, **kwargs):
+    """Disable a feature"""
+    mode = "disable"
+    params = {"mode": "force"} if force else None
+    feature = _okta_get("features", partial_name,
+                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature_id = feature["id"]
+    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}",
+                                REST.post, params=params)
+    return rv
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli_main():
     """
