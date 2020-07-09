@@ -9,6 +9,9 @@ vNEXT
 * add command 'features dependents'
 * add command 'features dependencies'
 * add "--colwidth" parameter to table output
+* use sorted output now for functions returning lists
+* various output changes
+* various fixes, some breaking functionality
 
 v14.3.0
 =======
