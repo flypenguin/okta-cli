@@ -400,17 +400,25 @@ def cli_groups():
 
 
 @cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
-@click.option("-f", "--filter", 'api_filter', default="")
-@click.option("-q", "--query", 'api_query', default="")
+@click.argument("partial_name", required=False, default=None)
+@click.option("-f", "--filter", 'filter_query', default="")
+@click.option("-q", "--query", 'q_query', default="")
 @click.option("-a", "--all", "all_groups", help="Include APP_GROUPs in list")
 @_output_type_command_wrapper("id,type,profile.name")
-def groups_list(api_filter, api_query, all_groups, **kwargs):
+def groups_list(partial_name, filter_query, q_query, all_groups, **kwargs):
     """List all defined groups"""
-    groups = okta_manager.list_groups(filter_ex=api_filter, query_ex=api_query)
+    params = {}
+    if filter_query:
+        params["filter"] = filter_query
+    if q_query:
+        params["q"] = q_query
+    selector = None
+    if partial_name:
+        selector = _selector_profile_find("name", partial_name.lower())
+    rv = _okta_retrieve("groups", None, selector=selector, **params)
     if not all_groups:
-        groups = filter(lambda x: x["type"] == "OKTA_GROUP", groups)
-    groups = sorted(groups, key=lambda x: x["profile"]["name"])
-    return groups
+        rv = list(filter(lambda x: x["type"] == "OKTA_GROUP", rv))
+    return rv
 
 
 @cli_groups.command(name="add", context_settings=CONTEXT_SETTINGS)
