@@ -837,6 +837,53 @@ def apps_removeuser(app, user, user_lookup_field, **kwargs):
     return f"User {user_id} ({user_login}) removed from app {app_id} ({app_label})"
 
 
+@cli_apps.command(name="addgroup", context_settings=CONTEXT_SETTINGS)
+@click.option("-a", "--app", "app")
+@click.option("-g", "--group", "group")
+@_output_type_command_wrapper(None)
+def apps_addgroup(app, group, **kwargs):
+    """Assigns a group to this app"""
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    group = _okta_get("groups", group,
+                      selector=_selector_profile_find_group("name", group))
+    group_id = group["id"]
+    app_id = app['id']
+    rv = okta_manager.call_okta(f"/apps/{app_id}/groups/{group_id}", REST.put)
+    return rv
+
+
+@cli_apps.command(name="removegroup", context_settings=CONTEXT_SETTINGS)
+@click.option("-a", "--app", "app")
+@click.option("-g", "--group", "group")
+@_command_wrapper
+def apps_removegroup(app, group, **kwargs):
+    """Removes a group association from an app"""
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    group = _okta_get("groups", group,
+                      selector=_selector_profile_find_group("name", group))
+    group_id = group["id"]
+    group_name = group["profile"]["name"]
+    app_id = app['id']
+    app_label = app["label"]
+    okta_manager.call_okta_raw(f"/apps/{app_id}/groups/{group_id}", REST.delete)
+    return f"App {app_id} ({app_label}) removed from group {group_id} ({group_name})"
+
+
+@cli_apps.command(name="groups", context_settings=CONTEXT_SETTINGS)
+@click.argument("app")
+@_output_type_command_wrapper(None)
+def apps_groups(app, **kwargs):
+    """List the groups associated to an app"""
+    app = _okta_get("apps", app,
+                    selector=_selector_field_find("label", app))
+    app_id = app['id']
+    rv = okta_manager.call_okta(f"/apps/{app_id}/groups", REST.get)
+    rv.sort(key=lambda x: x["id"])
+    return rv
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
