@@ -1398,7 +1398,6 @@ def features_dependents(partial_name, partial_name_field, force, **kwargs):
 def features_dependencies(partial_name, partial_name_field, force, **kwargs):
     """List dependencies of this feature"""
     mode = "dependencies"
-    params = {"mode": "force"} if force else None
     feature = _okta_get("features", partial_name,
                         selector=_selector_field_find(partial_name_field, partial_name))
     feature_id = feature["id"]
