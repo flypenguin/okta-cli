@@ -1,6 +1,13 @@
 vNEXT
 =======
 
+* add command 'apps groups'
+* add command 'apps removegroup'
+* add command 'apps addgroup'
+
+v15.0.0
+=======
+
 * unify behavior of 'users groups'
 * add command 'users apps' 
 * add command 'features list'
