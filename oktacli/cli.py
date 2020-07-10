@@ -3,6 +3,7 @@ import sys
 import collections
 import csv
 import re
+import traceback
 from datetime import datetime as dt
 from functools import wraps
 from os.path import splitext, join, isdir
@@ -11,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import click
 import yaml
+from requests import RequestException
 from dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
@@ -22,6 +24,7 @@ from .api import filter_dicts
 from .api import get_config_file
 
 from .okta import REST
+from .okta import OktaAPIError
 from .exceptions import ExitException
 
 VERSION = "15.0.0"
@@ -115,10 +118,22 @@ def _command_wrapper(func):
         except ExitException as e:
             print("ERROR: {}".format(str(e)), file=sys.stderr)
             sys.exit(-1)
+        except RequestException as e:
+            print(f"COMMUNICATION_ERROR: {str(e)}", file=sys.stderr)
+            sys.exit(-1)
+        except OktaAPIError as e:
+            print(f"OKTA_API_ERROR: {e.error_code}: {str(e)}")
+            sys.exit(-3)
         except Exception as e:
-            print(f"SOMETHING REALLY BAD HAPPENED\n{str(type(e))}"
-                  f"!\nERROR: {e}",
-                  file=sys.stderr)
+            print("".join(traceback.format_exc()), file=sys.stderr)
+            print(f"""
+*****************************************************************************
+CRITICAL_ERROR: {str(type(e))}
+
+Please report at the issues page with details of what you did. Thank you!
+-> https://git.io/JJYqi
+*****************************************************************************
+""", file=sys.stderr)
             sys.exit(-2)
 
     return wrapper

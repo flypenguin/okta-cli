@@ -4,6 +4,7 @@ vNEXT
 * add command 'apps groups'
 * add command 'apps removegroup'
 * add command 'apps addgroup'
+* add nicer error handling and output, especially for okta api errors
 
 v15.0.0
 =======

@@ -6,6 +6,15 @@ from urllib.parse import urljoin
 import requests
 
 
+class OktaAPIError(Exception):
+    def __init__(self, error_obj):
+        self.error_code = error_obj["errorCode"]
+        self.error_link = error_obj["errorLink"]
+        self.error_id = error_obj["errorId"]
+        self.error_causes = error_obj["errorCauses"]
+        super().__init__(error_obj["errorSummary"])
+
+
 class REST(enum.Enum):
     get = "get"
     put = "put"
@@ -56,8 +65,13 @@ class Okta:
             time.sleep(delay)
             # now try again
 
-        if rsp.status_code >= 400:
-            raise requests.HTTPError(json.dumps(rsp.json()))
+        rsp_code = rsp.status_code
+        if rsp_code >= 400:
+            if rsp_code < 500:
+                # Okta API error code
+                raise OktaAPIError(rsp.json())
+            else:
+                raise rsp.raise_for_statusss()
         return rsp
 
     def call_okta(self, path, method, *,
