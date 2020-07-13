@@ -1,38 +1,32 @@
 # Okta-CLI
 
-This is a python-based CLI tool for Okta. **It is not made or maintained by or in any way affiliated with anyone working at Okta.**
+This is a python-based CLI tool for Okta. **It is not made or maintained by or in any way affiliated with anyone working at Okta.** It is mainly driven by the personal needs of its author, although the feature set is becoming quite complete now.
 
-The feature set is quite complete, but based on the author's needs, which currently are:
+It basically is a CLI wrapper around the [Okta REST API](https://developer.okta.com/docs/reference/).
 
-- user functions
-  - list users (using API `search=` and `query=` functionality, and local filtering)
-  - update users
-  - bulk-update users, with parallel threads (hundreds of updates in seconds)
-- group functions (add users, remove users, list groups, list members)
-- handling of multiple Okta instances (e.g. a test cell, a production cell, a personal cell, ...)
-- updates and (now really fast) bulk-updates of user profiles (using CSV or Excel files)
-- export of profile data (into CSV or JSON)
-
-## NOTE
+## Requirements
 
 _REQUIRES_ Python 3.6+
 
 ## Quickstart
 
+Every more complex function should have help texts available: `okta-cli users add -h`, or maybe `okta-cli users update -h` or maybe `okta-cli apps add -h` ... those are probably the most interesting ones.
+
 ```bash
 $ pip install okta-cli
 $ okta-cli config new -n my-profile -u https://my.okta.url -t API_TOKEN
 $ okta-cli users list -f 'profile.email eq "my@email.com"'
-$ okta-cli users update id012345678 --set email=my@other.email.com --set phone=01234/5678
+$ okta-cli features list
+$ okta cli users groups adduser -g app1_rollout -u fred.flintstone@flintstones.com
+$ okta-cli apps adduser -a my_app_name -u 0109121 -f profile.employeeId
+$ okta-cli users update id012345678 --set profile.email=my@other.email.com
 $ okta-cli users bulk-update update-list.xlsx        # CSV is okay as well :)
-$ okta-cli groups adduser -g 01231324 -u 0129353892
-$ okta-cli groups removeuser -g ... -u ...
+$ okta-cli version
 ```
 
-## Config
+## Configuration
 
-Running `config new` (see above) will store a JSON configuration file
-in the directory determined by the `appdirs` module.
+Running `config new` (see above) will store a JSON configuration file in the directory determined by the `appdirs` module.
 
 ## References
 
