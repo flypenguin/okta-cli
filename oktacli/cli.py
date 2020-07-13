@@ -230,7 +230,7 @@ def _okta_retrieve(thing, possible_id,
             # let's just return this if possible. also, no (!) "params" parameter
             # the params parameter contains the query, which we don't need here.
             return okta_manager.call_okta(f"/{thing}/{possible_id}", REST.get)
-        except RequestsHTTPError as e:
+        except OktaAPIError as e:
             pass
 
     # we're still here? so let's continue.
