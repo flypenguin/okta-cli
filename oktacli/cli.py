@@ -959,7 +959,9 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     filters_dict = {("profile." + k): v
                     for k, v in map(lambda x: x.split("=", 1), matches)}
     rv = filter_dicts(rv, filters=filters_dict, partial=partial)
-    rv.sort(key=lambda x: x["profile"]["login"])
+    # filter_dicts returns a filter object, so "rv.sort()" throws
+    # an exception. let's use "rv = sorted(rv, ...)" to fix this.
+    rv = sorted(rv, key=lambda x: x["profile"]["login"])
     return rv
 
 
@@ -1323,8 +1325,8 @@ def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
         selector=_selector_field_find(partial_name_field, partial_name)
     rv = _okta_retrieve("features", None, selector=selector)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
-    rv = list(filter_dicts(rv, filters=filters_dict, partial=partial))
-    rv.sort(key=lambda x: x["name"])
+    rv = filter_dicts(rv, filters=filters_dict, partial=partial)
+    rv = sorted(rv, key=lambda x: x["name"])
     return rv
 
 
