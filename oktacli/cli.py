@@ -411,7 +411,7 @@ def pw_expire(login_or_id, temp_password):
               default=14)
 @_command_wrapper
 def pw_set(login_or_id, set_password, generate, language, min_length):
-    """Expire the password of a user"""
+    """Set a user's password"""
     # import here cause it takes time it seems ...
     from .pwgen import generate_password
     default_password_length = 5
