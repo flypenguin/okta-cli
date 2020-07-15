@@ -184,11 +184,13 @@ class Okta:
     def reset_password(self, user_id, *, send_email=True):
         return self.call_okta(
             f"/users/{user_id}/lifecycle/reset_password",
+            REST.post,
             params={'sendEmail': f"{str(send_email).lower()}"}
         )
 
     def expire_password(self, user_id, *, temp_password=False):
         return self.call_okta(
             f"/users/{user_id}/lifecycle/expire_password",
+            REST.post,
             params={'tempPassword': f"{str(temp_password).lower()}"}
         )
