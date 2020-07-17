@@ -919,7 +919,7 @@ def cli_users():
               help="Add Okta query string")
 @click.option("-d", "--deprovisioned", "deprov", default=False, is_flag=True,
               help="Return only deprovisioned users")
-@_output_type_command_wrapper("id,profile.login,profile.firstName,"
+@_output_type_command_wrapper("id,status,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
 def users_list(matches, partial, filter_query, search_query, q_query, deprov, **kwargs):
     """Lists users (all or using various filters)
@@ -969,7 +969,7 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
 @click.argument('lookup_value')
 @click.option("-f", "--field", default="login",
               help="Look users up using this profile field (default: 'login')")
-@_output_type_command_wrapper("id,profile.login,profile.firstName,"
+@_output_type_command_wrapper("id,status,profile.login,profile.firstName,"
                               "profile.lastName,profile.email")
 def users_get(lookup_value, field, **kwargs):
     """Get one user uniquely using any profile field or ID"""
