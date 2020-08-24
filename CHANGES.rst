@@ -2,6 +2,7 @@ vNEXT
 =======
 
 * fix commands 'user pw {reset,expire}'
+* update text output of 'apps users'
 * add command 'apps groups'
 * add command 'apps removegroup'
 * add command 'apps addgroup'

@@ -766,7 +766,7 @@ def apps_list(partial_name, filter_query, q_query, **kwargs):
 
 @cli_apps.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("app")
-@_output_type_command_wrapper("id,syncState,credentials.userName")
+@_output_type_command_wrapper("status,id,credentials.userName,")
 def apps_users(app, **kwargs):
     """List all users for an application"""
     app = _okta_get("apps", app,
