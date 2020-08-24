@@ -71,7 +71,7 @@ class Okta:
                 # Okta API error code
                 raise OktaAPIError(rsp.json())
             else:
-                raise rsp.raise_for_statusss()
+                raise rsp.raise_for_status()
         return rsp
 
     def call_okta(self, path, method, *,
