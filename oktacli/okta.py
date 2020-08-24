@@ -7,11 +7,12 @@ import requests
 
 
 class OktaAPIError(Exception):
-    def __init__(self, error_obj):
+    def __init__(self, error_obj, status_code=-1):
         self.error_code = error_obj["errorCode"]
         self.error_link = error_obj["errorLink"]
         self.error_id = error_obj["errorId"]
         self.error_causes = error_obj["errorCauses"]
+        self.status_code = status_code
         super().__init__(error_obj["errorSummary"])
 
 
@@ -69,7 +70,7 @@ class Okta:
         if rsp_code >= 400:
             if rsp_code < 500:
                 # Okta API error code
-                raise OktaAPIError(rsp.json())
+                raise OktaAPIError(rsp.json(), status_code=rsp_code)
             else:
                 raise rsp.raise_for_status()
         return rsp
