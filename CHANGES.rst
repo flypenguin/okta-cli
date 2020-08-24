@@ -7,6 +7,7 @@ vNEXT
 * add command 'apps addgroup'
 * add nicer error handling and output, especially for okta api errors
 * add user STATUS field to default output for "users {get,list}"
+* fix broken fuzzy lookup
 
 v15.0.0
 =======
