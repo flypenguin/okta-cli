@@ -1,4 +1,4 @@
-vNEXT
+v15.1.0
 =======
 
 * fix commands 'user pw {reset,expire}'
