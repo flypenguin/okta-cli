@@ -1,6 +1,7 @@
-vNEXT
+v16.0.0
 =======
 
+* [BREAKING] expire passwords from 'pw set' by default
 * update cli help texts
 * print more error information on okta API errors
 

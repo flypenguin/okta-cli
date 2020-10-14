@@ -408,12 +408,14 @@ def pw_expire(login_or_id, temp_password):
 @click.option("-s", "--set", "set_password", help="set password to this")
 @click.option("-g", "--generate", help="generate a random password",
               is_flag=True)
+@click.option("--expire/--no-expire", help="expire password (default: yes)",
+              is_flag=True, default=True)
 @click.option("-l", "--language", help="use a word list from this language",
               default="en")
 @click.option("-m", "--min-length", help="minimal password length", type=int,
               default=14)
 @_command_wrapper
-def pw_set(login_or_id, set_password, generate, language, min_length):
+def pw_set(login_or_id, set_password, generate, expire, language, min_length):
     """Set a user's password"""
     # import here cause it takes time it seems ...
     from .pwgen import generate_password
@@ -430,7 +432,14 @@ def pw_set(login_or_id, set_password, generate, language, min_length):
     profile_dict = {"credentials.password.value": set_password}
     nested_dict = _dict_flat_to_nested(profile_dict)
     okta_manager.update_user(login_or_id, nested_dict)
-    return set_password
+    if expire:
+        okta_manager.expire_password(login_or_id, temp_password=False)
+    rv = (
+        "PASSWORD" +
+        ("_EXPIRED" if expire else "") +
+        f": {set_password}"
+    )
+    return rv
 
 
 @click.group(name="groups")
