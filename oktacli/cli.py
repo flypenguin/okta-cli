@@ -498,12 +498,13 @@ def groups_get(name_or_id, **kwargs):
               metavar="GID-OR-UNIQUE",
               help="The group ID to add a user to")
 @click.option("-u", "--user", required=True,
-              metavar="ID-or-FIELDVALUE",
-              help="The user ID to add to the group")
+              metavar="EXACT-MATCH",
+              help="The user ID to add to the group, either the user id or "
+                   "an exact (!) match of the --user-lookup-field")
 @click.option("-f", "--user-lookup-field",
               metavar="FIELDNAME",
               default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+              help="Matching is done against this profile field; default: 'login'.")
 @_command_wrapper
 def groups_adduser(group, user, user_lookup_field, **kwargs):
     """

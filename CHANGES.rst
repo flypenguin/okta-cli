@@ -1,3 +1,8 @@
+vNEXT
+=======
+
+* update cli help texts
+
 v15.1.0
 =======
 
