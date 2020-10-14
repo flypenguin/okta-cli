@@ -123,6 +123,9 @@ def _command_wrapper(func):
             sys.exit(-1)
         except OktaAPIError as e:
             print(f"OKTA_API_ERROR: {e.error_code}: {str(e)}")
+            for cause in e.error_causes:
+                for hdg, txt in cause.items():
+                    print(f"{hdg}: {txt}")
             sys.exit(-3)
         except Exception as e:
             print("".join(traceback.format_exc()), file=sys.stderr)

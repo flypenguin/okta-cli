@@ -11,8 +11,10 @@ class OktaAPIError(Exception):
         self.error_code = error_obj["errorCode"]
         self.error_link = error_obj["errorLink"]
         self.error_id = error_obj["errorId"]
-        self.error_causes = error_obj["errorCauses"]
-        self.status_code = status_code
+        # make sure this is always a list, assuming it contains
+        # dicts later.
+        causes = error_obj.get("errorCauses", None)
+        self.error_causes = causes if isinstance(causes, list) else []
         super().__init__(error_obj["errorSummary"])
 
 

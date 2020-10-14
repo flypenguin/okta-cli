@@ -2,6 +2,7 @@ vNEXT
 =======
 
 * update cli help texts
+* print more error information on okta API errors
 
 v15.1.0
 =======
