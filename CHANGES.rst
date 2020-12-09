@@ -1,3 +1,9 @@
+v17.0.0
+=======
+
+* [BREAKING] check for 'id' before profile.login when mass-updating profiles. enables update-possibility of the login field
+  * Thanks @techjutsu-mikeb
+
 v16.0.0
 =======
 
