@@ -1221,14 +1221,27 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
             _cnt += 1
 
     def update_user_parallel(_row, index):
+        user_id = None
+
         # this is a closure, let's use the outer scope's variables
-        for field in ("profile.login", "id"):
-            if field in _row:
+        # Set preference to "id" first
+        for field in ("id", "profile.login"):
+            if field in _row and user_id is None:
                 user_id = _row.pop(field)
         # you can't set top-level fields. pop all of them.
         _row = {k: v for k, v in _row.items() if k.find(".") > -1}
         # fields_dict - from outer scope.
         final_dict = _dict_flat_to_nested(_row, defaults=fields_dict)
+
+        # user_id check
+        if user_id is None:
+            upd_err.append((
+                index + jump_to_index,
+                final_dict,
+                "missing user_id column (id or profile.login)"
+            ))
+            return
+
         try:
             upd_ok.append(okta_manager.update_user(user_id, final_dict))
         except RequestsHTTPError as e:
