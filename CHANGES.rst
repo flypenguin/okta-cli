@@ -1,3 +1,8 @@
+v17.1.0
+=======
+
+* Added logging basics. use "-vvvvv" for detailed http dumps
+
 v17.0.0
 =======
 
