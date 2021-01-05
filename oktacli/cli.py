@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 import collections
 import csv
@@ -93,9 +94,23 @@ def _dump_csv(print_obj, *, dialect=None, out=sys.stdout, fields=None):
 
 def _command_wrapper(func):
     @wraps(func)
+    @click.option('-v', '--verbose', 'verbosity',
+                  count=True, default=0,
+                  help="Increase verbosity (-vvvvv for full DEBUG logging)")
     def wrapper(*args, **kwargs):
         global okta_manager
         global config
+        # configure logging, use levels as defined here: https://is.gd/G2vcgB
+        verb = kwargs["verbosity"]
+        if verb:
+            verb = max(10, 60 - verb * 10)
+            print("log level: ", verb)
+            logging.basicConfig(level=verb)
+            logging.getLogger("cli.requests.packages.urllib3").setLevel(verb)
+            # from here: https://thomas-cokelaer.info/blog/?p=1577
+            if verb <= 10:
+                from http.client import HTTPConnection
+                HTTPConnection.debuglevel = 1
         try:
             okta_manager = get_manager()
             rv = func(*args, **kwargs)
