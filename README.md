@@ -4,6 +4,8 @@ This is a python-based CLI tool for Okta. **It is not made or maintained by or i
 
 It basically is a CLI wrapper around the [Okta REST API](https://developer.okta.com/docs/reference/).
 
+**NOTE:** This is _not_ the same as Okta's own [`okta`](https://cli.okta.com/) CLI interface. The latter is apparently used for setting up the source for development projects.
+
 ## Requirements
 
 _REQUIRES_ Python 3.6+
