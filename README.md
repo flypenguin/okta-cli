@@ -13,15 +13,26 @@ _REQUIRES_ Python 3.6+
 Every more complex function should have help texts available: `okta-cli users add -h`, or maybe `okta-cli users update -h` or maybe `okta-cli apps add -h` ... those are probably the most interesting ones.
 
 ```bash
-$ pip install okta-cli
-$ okta-cli config new -n my-profile -u https://my.okta.url -t API_TOKEN
-$ okta-cli users list -f 'profile.email eq "my@email.com"'
-$ okta-cli features list
-$ okta cli users groups adduser -g app1_rollout -u fred.flintstone@flintstones.com
-$ okta-cli apps adduser -a my_app_name -u 0109121 -f profile.employeeId
-$ okta-cli users update id012345678 --set profile.email=my@other.email.com
-$ okta-cli users bulk-update update-list.xlsx        # CSV is okay as well :)
-$ okta-cli version
+$ pip install okta-cli                                # install :)
+$ okta-cli config new \                               # create a new okta profile
+           -n my-profile -\
+           u https://my.okta.url \
+           -t API_TOKEN
+$ okta-cli users list \                               # search users with a query
+           -f 'profile.email eq "my@email.com"'
+$ okta-cli features list                              # list okta server-side features
+$ okta-cli features enable "Recent Activity"          # enable an Okta feature
+$ okta cli users groups adduser \                     # add a user to a group 
+           -g app1_rollout \
+           -u fred.flintstone@flintstones.com
+$ okta-cli apps adduser \                             # assign an app to a user
+           -a my_app_name -u 0109121 \
+           -f profile.employeeId
+$ okta-cli users update id012345678 \                 # update a field of a user record
+           --set profile.email=my@other.email.com
+$ okta-cli users bulk-update update-list.xlsx         # CSV is okay as well :)
+$ okta-cli version                                    # print version and exit
+$ okta-cli users get my-login -vvvvv                  # see http debug output
 ```
 
 ## Configuration
