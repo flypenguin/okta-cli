@@ -101,7 +101,9 @@ def _command_wrapper(func):
         global okta_manager
         global config
         # configure logging, use levels as defined here: https://is.gd/G2vcgB
-        verb = kwargs["verbosity"]
+        # we need to pop it cause otherwise it will lead to parameter errors
+        # on the execution functions
+        verb = kwargs.pop("verbosity")
         if verb:
             verb = max(10, 60 - verb * 10)
             print("log level: ", verb)
