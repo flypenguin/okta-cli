@@ -270,8 +270,7 @@ def _okta_get(thing, possible_id,
             raise ExitException(f"Name for {thing} must be unique. "
                                 f"(found {len(things)} matches).")
         elif len(things) == 0:
-            raise ExitException(
-                f"No matching {thing} found.")
+            raise ExitException(f"No matching {thing} found.")
         # must be here - ouside of this 'if' things can (and sometimes will)
         # be a dict
         things = things[0]
