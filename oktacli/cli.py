@@ -1592,9 +1592,175 @@ def cli_version():
     print(VERSION)
 
 
+@click.group(name="eventhooks")
+def cli_eventhooks():
+    """Event hook operations"""
+    pass
+
+
+@cli_eventhooks.command(name="list", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_list(partial_name, **kwargs):
+    """Lists event hooks"""
+    partial_name_field = "name"
+    selector = None
+    if partial_name:
+        selector=_selector_field_find(partial_name_field, partial_name)
+    rv = _okta_retrieve("eventHooks", None, selector=selector)
+    return rv
+
+
+@cli_eventhooks.command(name="get", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_get(partial_name, **kwargs):
+    """Retrieves information about one specific feature"""
+    partial_name_field = "name"
+    rv = _okta_get("eventHooks", partial_name,
+                   selector=_selector_field_find(partial_name_field, partial_name))
+    return rv
+
+
+def get_event_object(url, name, events):
+    """Either creates or updates the event (POST or PUT), depending on
+    method"""
+    # see here: https://stackoverflow.com/a/952952/902327
+    events = [item for e in events for item in e.split(",")]
+    event_obj = {
+        "name": name,
+        "events": {
+            "type": "EVENT_TYPE",
+            "items": events,
+        },
+        "channel": {
+            "type": "HTTP",
+            "version": "1.0.0",
+            "config": {
+                "uri": url,
+            }
+        }
+    }
+    return event_obj
+
+
+@cli_eventhooks.command(name="add", context_settings=CONTEXT_SETTINGS)
+@click.option("-u", "--url",
+              required=True,
+              help="The URL where the events will be sent to by Okta")
+@click.option("-n", "--name",
+              required=True,
+              help="A short name (description) of the event hook")
+@click.option("-e", "--event", "events",
+              required=True, multiple=True,
+              help="Specify event types (either separated by comma or multiple -e)")
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_add(url, name, events, **kwargs):
+    """Creates a new event hook"""
+    event_obj = get_event_object(url, name, events)
+    return okta_manager.call_okta(f"/eventHooks", REST.post, body_obj=event_obj)
+
+
+@cli_eventhooks.command(name="update", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=True, default=None)
+@click.option("-u", "--url",
+              required=True,
+              help="The URL where the events will be sent to by Okta")
+@click.option("-n", "--name",
+              required=True,
+              help="A short name (description) of the event hook")
+@click.option("-e", "--event", "events",
+              required=True, multiple=True,
+              help="Specify event types (either separated by comma or multiple -e)")
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_update(partial_name, url, name, events, **kwargs):
+    """Updates an event hook"""
+    partial_name_field = "name"
+    existing = _okta_get(
+        "eventHooks", partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name)
+    )
+    existing_id = existing["id"]
+    event_obj = get_event_object(url, name, events)
+    return okta_manager.call_okta(f"/eventHooks/{existing_id}", REST.put, body_obj=event_obj)
+
+
+@cli_eventhooks.command(name="activate", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=True)
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_activate(partial_name, **kwargs):
+    """Activates an event hook"""
+    partial_name_field = "name"
+    existing = _okta_get(
+        "eventHooks", partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name)
+    )
+    existing_id = existing["id"]
+    return okta_manager.call_okta_raw(
+        f"/eventHooks/{existing_id}/lifecycle/deactivate",
+        REST.post
+    )
+
+
+@cli_eventhooks.command(name="verify", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=True)
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_verify(partial_name, **kwargs):
+    """Verifies an event hook"""
+    partial_name_field = "name"
+    existing = _okta_get(
+        "eventHooks", partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name)
+    )
+    existing_id = existing["id"]
+    return okta_manager.call_okta(
+        f"/eventHooks/{existing_id}/lifecycle/verify",
+        REST.post
+    )
+
+
+@cli_eventhooks.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=True)
+@_output_type_command_wrapper("id,created,status,verificationStatus,name")
+def eventhook_deactivate(partial_name, **kwargs):
+    """Deactivates an event hook"""
+    partial_name_field = "name"
+    existing = _okta_get(
+        "eventHooks", partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name)
+    )
+    existing_id = existing["id"]
+    existing_name = existing["name"]
+    return okta_manager.call_okta(
+        f"/eventHooks/{existing_id}/lifecycle/deactivate",
+        REST.post
+    )
+
+
+@cli_eventhooks.command(name="delete", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=True)
+@_command_wrapper
+def eventhook_delete(partial_name, **kwargs):
+    """Deactivates an event hook"""
+    partial_name_field = "name"
+    existing = _okta_get(
+        "eventHooks", partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name)
+    )
+    existing_id = existing["id"]
+    existing_name = existing["name"]
+    okta_manager.call_okta_raw(
+        f"/eventHooks/{existing_id}",
+        REST.delete
+    )
+    return f"event hook {existing_id} ({existing_name}) deleted"
+
+
+
 cli_main.add_command(cli_config)
 cli_main.add_command(cli_users)
 cli_main.add_command(cli_pw)
 cli_main.add_command(cli_groups)
 cli_main.add_command(cli_apps)
 cli_main.add_command(cli_features)
+cli_main.add_command(cli_eventhooks)
