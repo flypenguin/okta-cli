@@ -243,7 +243,7 @@ def _dict_get_dotted_keys(dict_inst, pre_path=""):
 def _okta_retrieve(thing, possible_id,
                    *,
                    selector=None,
-                   **kwargs):
+                   **call_params):
     """Returns anything between nothing and a list of items"""
     if possible_id is not None:
         try:
@@ -254,7 +254,7 @@ def _okta_retrieve(thing, possible_id,
             pass
 
     # we're still here? so let's continue.
-    params = kwargs or {}
+    params = call_params or {}
     things = okta_manager.call_okta(f"/{thing}", REST.get, params=params)
     if isinstance(things, list):
         if selector:
