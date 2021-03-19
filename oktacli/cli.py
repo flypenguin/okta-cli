@@ -1124,10 +1124,11 @@ def users_suspend(login_or_id):
 @cli_users.command(name="update", context_settings=CONTEXT_SETTINGS)
 @click.argument('user_id')
 @click.option('-s', '--set', 'set_fields', multiple=True)
+@click.option('-S', '--array-set', 'set_array', multiple=True)
 @click.option('-c', '--context', default=None,
               help="Set a context (profile, credentials) to save typing")
 @_command_wrapper
-def users_update(user_id, set_fields, context):
+def users_update(user_id, set_fields, set_array, context):
     """Update a user object.
 
     See https://is.gd/DWHEvA for details.
@@ -1138,11 +1139,17 @@ def users_update(user_id, set_fields, context):
     okta-cli users update 012345 -s profile.lastName=Doe
     okta-cli users update 012345         -s lastName=Doe -c profile
 
-    EXAMPLE: Update a profile field:
+    EXAMPLE: Update a STRING profile field:
 
     \b
     okta-cli users update 012345 \\
        -s profile.email=me@myself.com
+
+    EXAMPLE: Update an ARRAY profile field:
+
+    \b
+    okta-cli users update 012345 \\
+       -S profile.customMultipleChoiceField=choice1,choice3
 
     EXAMPLE: Set a new password:
 
@@ -1159,6 +1166,9 @@ def users_update(user_id, set_fields, context):
        -s answer="Me."
     """
     fields_dict = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
+    arrays_dict = {k: list(map(lambda x: x.strip(), v.split(",")))
+                      for k, v in map(lambda x: x.split("=", 1), set_array)}
+    fields_dict = {**fields_dict, **arrays_dict}
     if context:
         fields_dict = {context + "." + k: v for k, v in fields_dict.items()}
     nested_dict = _dict_flat_to_nested(fields_dict)

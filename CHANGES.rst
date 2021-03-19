@@ -1,3 +1,8 @@
+v17.2.0
+=======
+
+* add parameter "-A" (array update) for "users update"
+
 v17.1.0
 =======
 
