@@ -32,7 +32,7 @@ v15.0.0
 =======
 
 * unify behavior of 'users groups'
-* add command 'users apps' 
+* add command 'users apps'
 * add command 'features list'
 * add command 'features enable'
 * add command 'features disable'
