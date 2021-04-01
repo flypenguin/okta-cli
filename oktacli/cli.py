@@ -806,6 +806,41 @@ def apps_list(partial_name, filter_query, q_query, **kwargs):
     return rv
 
 
+@cli_apps.command(name="update", context_settings=CONTEXT_SETTINGS)
+@click.argument("partial_name", required=False, default=None)
+@click.option('-s', '--set', 'set_fields', multiple=True,
+              metavar="KEY=VAL")
+@click.option('-S', '--set-array', 'set_array', multiple=True,
+              metavar="KEY=VAL1[,VAL2...]")
+@click.option('-B', '--set-bool', 'set_bool', multiple=True,
+              metavar="KEY=VAL1[,VAL2...]")
+@_output_type_command_wrapper("id,label")
+def apps_update(partial_name, set_fields, set_array, set_bool, **kwargs):
+    """Update an application.
+
+    \b
+    Examples:
+    okta-cli apps update app4321 --set label="My shiny new label"
+    okta-cli apps update app1234 --set visibility.hide.web=true
+    """
+    app = _okta_get("apps", partial_name,
+                    selector=_selector_field_find("label", partial_name))
+    app_id = app["id"]
+    fields_dict = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
+    arrays_dict = {k: list(map(lambda x: x.strip(), v.split(",")))
+                      for k, v in map(lambda x: x.split("=", 1), set_array)}
+    bools_dict = {k: v.lower() in ("true", "1", "on", "yes")
+                  for k, v in map(lambda x: x.split("=", 1), set_fields)}
+    fields_dict = {**fields_dict, **arrays_dict, **bools_dict}
+    nested_dict = _dict_flat_to_nested(fields_dict)
+    # INFO: DELTA UPDATES ARE NOT SUPPORTED! https://is.gd/XTDFgV
+    final_dict = {**app, **nested_dict}
+    from pprint import pprint
+    pprint(final_dict)
+    return okta_manager.call_okta(f"/apps/{app_id}", REST.put,
+                                  body_obj=final_dict)
+
+
 @cli_apps.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("app")
 @_output_type_command_wrapper("status,id,credentials.userName,")
