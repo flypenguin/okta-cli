@@ -1057,7 +1057,7 @@ def users_apps(user, user_lookup_field, **kwargs):
 @cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
-              help="Send email to admins if set")
+              help="Send email if set")
 @click.option("--no-confirmation", is_flag=True,
               help="Don't ask - DANGER!!")
 @_command_wrapper
@@ -1076,11 +1076,20 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
 @cli_users.command(name="activate", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
-              help="Send email to admins if set")
+              help="Send email if set")
 @_output_type_command_wrapper(None)
 def users_activate(login_or_id, send_email, **kwargs):
     """Activate a user"""
     return okta_manager.activate_user(login_or_id, send_email)
+
+@cli_users.command(name="reactivate", context_settings=CONTEXT_SETTINGS)
+@click.argument('login_or_id')
+@click.option("-e", "--send-email", is_flag=True, default=False,
+              help="Send email if set")
+@_output_type_command_wrapper(None)
+def users_reactivate(login_or_id, send_email, **kwargs):
+    """Reactivate a user"""
+    return okta_manager.reactivate_user(login_or_id, send_email)
 
 
 @cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
@@ -1095,7 +1104,7 @@ def users_unlock(login_or_id):
 @cli_users.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument('login_or_id')
 @click.option("-e", "--send-email", is_flag=True,
-              help="Send email to admins if set")
+              help="Send email if set")
 @click.option("--no-confirmation", is_flag=True,
               help="Don't ask - DANGER!!")
 @_command_wrapper

@@ -173,6 +173,17 @@ class Okta:
         params = {"sendEmail": "true"} if send_email else {}
         return self.call_okta(path, REST.post, params=params)
 
+    def reactivate_user(self, user_id, send_email=False):
+        """
+        Reactivates a user.
+        :param user_id: The user ID
+        :param send_email: On True admins will be notified
+        :return: Empty object or activation data
+        """
+        path = f"/users/{user_id}/lifecycle/reactivate"
+        params = {"sendEmail": "true"} if send_email else {}
+        return self.call_okta(path, REST.post, params=params)
+
     def delete_user(self, user_id, send_email=True):
         """
         Deletes a user.
