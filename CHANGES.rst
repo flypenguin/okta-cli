@@ -1,3 +1,9 @@
+v17.3.0
+=======
+
+* add command 'groups apps' (PR by bousquf)
+* add command 'user reactivate' (PR by josephbreihan)
+
 v17.2.0
 =======
 
