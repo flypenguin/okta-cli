@@ -496,6 +496,19 @@ def groups_add(name, description, **kwargs):
     return okta_manager.call_okta(f"/groups", REST.post, body_obj=new_group)
 
 
+@cli_groups.command(name="apps", context_settings=CONTEXT_SETTINGS)
+@click.argument("name-or-id")
+@_output_type_command_wrapper("id,name,label")
+def groups_apps(name_or_id, **kwargs):
+    """List all apps associated with a group"""
+    group = _okta_get("groups", name_or_id,
+                      selector=_selector_profile_find_group("name", name_or_id))
+    group_id = group['id']
+    rv = okta_manager.call_okta(f"/groups/{group_id}/apps", REST.get)
+    rv.sort(key=lambda x: x["label"])
+    return rv
+
+
 @cli_groups.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
 @_output_type_command_wrapper("id,type,profile.name")
