@@ -1,3 +1,9 @@
+v17.3.1
+=======
+
+* make 'https://' mandatory for Okta URLs
+* fix 'config COMMAND' crashes on wrongly or unconfigured default contexts
+
 v17.3.0
 =======
 
