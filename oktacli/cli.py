@@ -293,6 +293,13 @@ def _selector_field_find(field, value):
     return lambda x: x[field].lower().find(lower_value) != -1
 
 
+def _validate_url(ctx, param, value):
+    value = value.lower()
+    if not value.startswith("https://"):
+        raise click.BadParameter("url must start with 'https://'")
+    return value
+
+
 @click.group(name="config")
 def cli_config():
     """Manage okta-cli configuration"""
@@ -303,7 +310,8 @@ def cli_config():
 @click.option("-n", "--name", required=True, prompt=True,
               help="Name of the configuration to add.")
 @click.option("-u", "--url", required=True, prompt=True,
-              help="The base URL of Okta, e.g. 'https://my.okta.com'.")
+              help="The base URL of Okta, e.g. 'https://my.okta.com'.",
+              callback=_validate_url)
 @click.option("-t", "--token", required=True, prompt=True,
               help="The API token to use")
 def config_new(name, url, token):
@@ -332,7 +340,6 @@ def config_list():
 
 @cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
 @click.argument("profile-name")
-@_command_wrapper
 def config_use_context(profile_name):
     """
     Set a config profile as default profile
@@ -343,12 +350,11 @@ def config_use_context(profile_name):
         raise ExitException("Unknown profile name: '{}'.".format(profile_name))
     config["default"] = profile_name
     save_config(config)
-    return "Default profile set to '{}'.".format(profile_name)
+    print("Default profile set to '{}'.".format(profile_name))
 
 
 @cli_config.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument("profile-name")
-@_command_wrapper
 def config_delete(profile_name):
     """
     Delete a config profile
@@ -369,20 +375,18 @@ def config_delete(profile_name):
             del config["default"]
             rv.append("No more profiles left.")
     save_config(config)
-    return "\n".join(rv)
+    print("\n".join(rv))
 
 
 @cli_config.command(name="file", context_settings=CONTEXT_SETTINGS)
-@_command_wrapper
 def config_file():
     """
     Print the locations of the configuration file
     """
-    return get_config_file()
+    print(get_config_file())
 
 
 @cli_config.command(name="current-context", context_settings=CONTEXT_SETTINGS)
-@_command_wrapper
 def config_current_context():
     """
     Print the current default profile
@@ -391,7 +395,7 @@ def config_current_context():
     config = load_config()
     if "default" not in config:
         return "No profile set."
-    return "Current profile set to '{}'.".format(config["default"])
+    print("Current profile set to '{}'.".format(config["default"]))
 
 
 @click.group(name="pw")

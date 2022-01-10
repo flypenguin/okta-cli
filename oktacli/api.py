@@ -41,10 +41,21 @@ def save_config(config_to_save):
 
 def get_manager():
     config = load_config()
-    if "default" not in config or config["default"] not in config["profiles"]:
-        raise ExitException("Default profile '{}' not configured. "
-                            "Use use-profile command to change it.")
-    return Okta(**config["profiles"][config["default"]])
+
+    if "default" not in config:
+        raise ExitException("Default context not configured. "
+                            "Please execute 'okta-cli config use-context CONTEXT'")
+
+    context = config["default"]
+    if context not in config["profiles"]:
+        raise ExitException(f"Default context '{context}' does not exist. "
+                            "Either add it or run 'use-context' command to configure a different one.")
+
+    context_dict = config["profiles"][context]
+    if not context_dict["url"].startswith("https://"):
+        raise ExitException("ERROR: configured Okta URL does not start with 'https://'. Please fix this.")
+
+    return Okta(**context_dict)
 
 
 def filter_dicts(dicts, *, filters={}, partial=False):
