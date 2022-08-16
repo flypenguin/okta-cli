@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-import collections
+import collections.abc as collections
 import csv
 import re
 import traceback
