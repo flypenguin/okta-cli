@@ -8,7 +8,7 @@ It basically is a CLI wrapper around the [Okta REST API](https://developer.okta.
 
 ## Requirements
 
-_REQUIRES_ Python 3.6+
+_REQUIRES_ Python 3.7+
 
 ## Quickstart
 
