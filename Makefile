@@ -1,5 +1,9 @@
 all:    checkclean clean build
 
+test:
+	pytest
+.PHONY: test
+
 .PHONY: pypi
 pypi:   clean build upload
 
