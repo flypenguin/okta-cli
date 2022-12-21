@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import click
 import yaml
 from requests import RequestException
-from dotted.collection import DottedDict, DottedCollection
+from .dotted.collection import DottedDict, DottedCollection
 from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
 

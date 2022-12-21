@@ -28,7 +28,6 @@ REQUIRES_PYTHON = ">=3.5.0"
 REQUIRED = [
     "appdirs",
     "click",
-    "dotted",
     "requests",
     "openpyxl",
     "pony",
