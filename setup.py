@@ -35,7 +35,15 @@ REQUIRED = [
 ]
 
 EXTRAS = {
-    "dev": ["bumpversion", "pytest", "responses", "tox", "twine", "wheel"],
+    "dev": [
+        "bumpversion",
+        "pre-commit",
+        "pytest",
+        "responses",
+        "tox",
+        "twine",
+        "wheel",
+    ],
 }
 
 # The rest you shouldn't have to touch too much :)
