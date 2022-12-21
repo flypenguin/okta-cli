@@ -39,7 +39,7 @@ okta_manager = None
 config = None
 
 # https://is.gd/T1enMM
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 def _print_table_from(print_obj, fields, *, max_len=None):
@@ -53,15 +53,18 @@ def _print_table_from(print_obj, fields, *, max_len=None):
         fields = fields.split(",")
     for col in fields:
         try:
-            col_lengths.append(max([len(str(DottedDict(item)[col]))
-                                    for item in arr if col in item]))
+            col_lengths.append(
+                max([len(str(DottedDict(item)[col])) for item in arr if col in item])
+            )
         except ValueError:
             # we don't have a "col" field or it's not used.
             # and we can't use 0 as width cause this will cause a weird
             # exception
             col_lengths.append(1)
-            print(f"WARNING: field {col} either never filled or non-existant.",
-                  file=sys.stderr)
+            print(
+                f"WARNING: field {col} either never filled or non-existant.",
+                file=sys.stderr,
+            )
     # enforce max field length to print
     if max_len is not None:
         col_lengths = [min(max_len, l) for l in col_lengths]
@@ -83,10 +86,9 @@ def _dump_csv(print_obj, *, dialect=None, out=sys.stdout, fields=None):
         tmp_dict.update(dict.fromkeys(_dict_get_dotted_keys(obj)))
     fieldlist = list(sorted(tmp_dict.keys()))
     # iterate through the list and print it
-    writer = csv.DictWriter(out,
-                            fieldnames=fieldlist,
-                            extrasaction='ignore',
-                            dialect=dialect)
+    writer = csv.DictWriter(
+        out, fieldnames=fieldlist, extrasaction="ignore", dialect=dialect
+    )
     writer.writeheader()
     for obj in print_obj:
         writer.writerow(_dict_nested_to_flat(obj))
@@ -94,9 +96,14 @@ def _dump_csv(print_obj, *, dialect=None, out=sys.stdout, fields=None):
 
 def _command_wrapper(func):
     @wraps(func)
-    @click.option('-v', '--verbose', 'verbosity',
-                  count=True, default=0,
-                  help="Increase verbosity (-vvvvv for full DEBUG logging)")
+    @click.option(
+        "-v",
+        "--verbose",
+        "verbosity",
+        count=True,
+        default=0,
+        help="Increase verbosity (-vvvvv for full DEBUG logging)",
+    )
     def wrapper(*args, **kwargs):
         global okta_manager
         global config
@@ -112,18 +119,20 @@ def _command_wrapper(func):
             # from here: https://thomas-cokelaer.info/blog/?p=1577
             if verb <= 10:
                 from http.client import HTTPConnection
+
                 HTTPConnection.debuglevel = 1
         try:
             okta_manager = get_manager()
             rv = func(*args, **kwargs)
             if not isinstance(rv, str):
                 if kwargs.get("print_json", False) is True:
-                    print(json.dumps(rv, indent=2, sort_keys=True,
-                                     ensure_ascii=False))
+                    print(json.dumps(rv, indent=2, sort_keys=True, ensure_ascii=False))
                 elif kwargs.get("print_yaml", False) is True:
-                    print(yaml.safe_dump(rv, indent=2, encoding=None, allow_unicode=True))
+                    print(
+                        yaml.safe_dump(rv, indent=2, encoding=None, allow_unicode=True)
+                    )
                 elif kwargs.get("print_csv", False) is True:
-                    _dump_csv(rv, dialect=kwargs['csv_dialect'])
+                    _dump_csv(rv, dialect=kwargs["csv_dialect"])
                 elif "output_fields" in kwargs and len(rv) > 0:
                     max_len = kwargs.get("max_len", None)
                     _print_table_from(rv, kwargs["output_fields"], max_len=max_len)
@@ -146,14 +155,17 @@ def _command_wrapper(func):
             sys.exit(-3)
         except Exception as e:
             print("".join(traceback.format_exc()), file=sys.stderr)
-            print(f"""
+            print(
+                f"""
 *****************************************************************************
 CRITICAL_ERROR: {str(type(e))}
 
 Please report at the issues page with details of what you did. Thank you!
 -> https://git.io/JJYqi
 *****************************************************************************
-""", file=sys.stderr)
+""",
+                file=sys.stderr,
+            )
             sys.exit(-2)
 
     return wrapper
@@ -162,22 +174,47 @@ Please report at the issues page with details of what you did. Thank you!
 def _output_type_command_wrapper(default_fields):
     def _output_type_command_wrapper_inner(func):
         @wraps(func)
-        @click.option("-j", "--json", 'print_json', is_flag=True, default=False,
-                      help="Print raw JSON output")
-        @click.option("-y", "--yaml", 'print_yaml', is_flag=True, default=False,
-                      help="Print raw YAML output")
-        @click.option("--csv", "print_csv", is_flag=True, default=False,
-                      help="Print output as CSV format. Will ignore "
-                           "--output-fields parameter if set")
-        @click.option("--csv-dialect", default='excel',
-                      help="Use this CSV dialect with CSV output")
-        @click.option("--output-fields",
-                      default=default_fields,
-                      help="Override default fields in table format")
-        @click.option("--colwidth",
-                      default=TABLE_MAX_FIELD_LENGTH, type=int,
-                      help="Limit column width; "
-                           f"default: {TABLE_MAX_FIELD_LENGTH or 'unlimited'}")
+        @click.option(
+            "-j",
+            "--json",
+            "print_json",
+            is_flag=True,
+            default=False,
+            help="Print raw JSON output",
+        )
+        @click.option(
+            "-y",
+            "--yaml",
+            "print_yaml",
+            is_flag=True,
+            default=False,
+            help="Print raw YAML output",
+        )
+        @click.option(
+            "--csv",
+            "print_csv",
+            is_flag=True,
+            default=False,
+            help="Print output as CSV format. Will ignore "
+            "--output-fields parameter if set",
+        )
+        @click.option(
+            "--csv-dialect",
+            default="excel",
+            help="Use this CSV dialect with CSV output",
+        )
+        @click.option(
+            "--output-fields",
+            default=default_fields,
+            help="Override default fields in table format",
+        )
+        @click.option(
+            "--colwidth",
+            default=TABLE_MAX_FIELD_LENGTH,
+            type=int,
+            help="Limit column width; "
+            f"default: {TABLE_MAX_FIELD_LENGTH or 'unlimited'}",
+        )
         @_command_wrapper
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
@@ -240,10 +277,7 @@ def _dict_get_dotted_keys(dict_inst, pre_path=""):
     return rv
 
 
-def _okta_retrieve(thing, possible_id,
-                   *,
-                   selector=None,
-                   **call_params):
+def _okta_retrieve(thing, possible_id, *, selector=None, **call_params):
     """Returns anything between nothing and a list of items"""
     if possible_id is not None:
         try:
@@ -262,13 +296,13 @@ def _okta_retrieve(thing, possible_id,
     return things
 
 
-def _okta_get(thing, possible_id,
-              **kwargs):
+def _okta_get(thing, possible_id, **kwargs):
     things = _okta_retrieve(thing, possible_id, **kwargs)
     if isinstance(things, list):
         if len(things) > 1:
-            raise ExitException(f"Name for {thing} must be unique. "
-                                f"(found {len(things)} matches).")
+            raise ExitException(
+                f"Name for {thing} must be unique. " f"(found {len(things)} matches)."
+            )
         elif len(things) == 0:
             raise ExitException(f"No matching {thing} found.")
         # must be here - ouside of this 'if' things can (and sometimes will)
@@ -284,8 +318,10 @@ def _selector_profile_find(field, value):
 
 def _selector_profile_find_group(field, value):
     lower_value = value.lower()
-    return lambda x: (x["profile"][field].lower().find(lower_value) != -1 and
-                      x["type"] == "OKTA_GROUP")
+    return lambda x: (
+        x["profile"][field].lower().find(lower_value) != -1
+        and x["type"] == "OKTA_GROUP"
+    )
 
 
 def _selector_field_find(field, value):
@@ -307,13 +343,18 @@ def cli_config():
 
 
 @cli_config.command(name="new", context_settings=CONTEXT_SETTINGS)
-@click.option("-n", "--name", required=True, prompt=True,
-              help="Name of the configuration to add.")
-@click.option("-u", "--url", required=True, prompt=True,
-              help="The base URL of Okta, e.g. 'https://my.okta.com'.",
-              callback=_validate_url)
-@click.option("-t", "--token", required=True, prompt=True,
-              help="The API token to use")
+@click.option(
+    "-n", "--name", required=True, prompt=True, help="Name of the configuration to add."
+)
+@click.option(
+    "-u",
+    "--url",
+    required=True,
+    prompt=True,
+    help="The base URL of Okta, e.g. 'https://my.okta.com'.",
+    callback=_validate_url,
+)
+@click.option("-t", "--token", required=True, prompt=True, help="The API token to use")
 def config_new(name, url, token):
     """
     Create a new configuration profile
@@ -334,8 +375,7 @@ def config_list():
     global config
     config = load_config()
     for name, conf in config["profiles"].items():
-        print("{}  {}  {}".format(name, conf["url"],
-                                  "*" * 3 + conf["token"][-4:]))
+        print("{}  {}  {}".format(name, conf["url"], "*" * 3 + conf["token"][-4:]))
 
 
 @cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
@@ -419,26 +459,31 @@ def pw_reset(login_or_id, no_email):
 @_command_wrapper
 def pw_expire(login_or_id, temp_password):
     """Expire the password of a user"""
-    return okta_manager.expire_password(login_or_id,
-                                        temp_password=temp_password)
+    return okta_manager.expire_password(login_or_id, temp_password=temp_password)
 
 
 @cli_pw.command(name="set", context_settings=CONTEXT_SETTINGS)
 @click.argument("login-or-id")
 @click.option("-s", "--set", "set_password", help="set password to this")
-@click.option("-g", "--generate", help="generate a random password",
-              is_flag=True)
-@click.option("--expire/--no-expire", help="expire password (default: yes)",
-              is_flag=True, default=True)
-@click.option("-l", "--language", help="use a word list from this language",
-              default="en")
-@click.option("-m", "--min-length", help="minimal password length", type=int,
-              default=14)
+@click.option("-g", "--generate", help="generate a random password", is_flag=True)
+@click.option(
+    "--expire/--no-expire",
+    help="expire password (default: yes)",
+    is_flag=True,
+    default=True,
+)
+@click.option(
+    "-l", "--language", help="use a word list from this language", default="en"
+)
+@click.option(
+    "-m", "--min-length", help="minimal password length", type=int, default=14
+)
 @_command_wrapper
 def pw_set(login_or_id, set_password, generate, expire, language, min_length):
     """Set a user's password"""
     # import here cause it takes time it seems ...
     from .pwgen import generate_password
+
     default_password_length = 5
     num_words = max(3, int(min_length / default_password_length + 3))
     if generate:
@@ -454,11 +499,7 @@ def pw_set(login_or_id, set_password, generate, expire, language, min_length):
     okta_manager.update_user(login_or_id, nested_dict)
     if expire:
         okta_manager.expire_password(login_or_id, temp_password=False)
-    rv = (
-        "PASSWORD" +
-        ("_EXPIRED" if expire else "") +
-        f": {set_password}"
-    )
+    rv = "PASSWORD" + ("_EXPIRED" if expire else "") + f": {set_password}"
     return rv
 
 
@@ -470,8 +511,8 @@ def cli_groups():
 
 @cli_groups.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--filter", 'filter_query', default="")
-@click.option("-q", "--query", 'q_query', default="")
+@click.option("-f", "--filter", "filter_query", default="")
+@click.option("-q", "--query", "q_query", default="")
 @click.option("-a", "--all", "all_groups", help="Include APP_GROUPs in list")
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_list(partial_name, filter_query, q_query, all_groups, **kwargs):
@@ -505,9 +546,10 @@ def groups_add(name, description, **kwargs):
 @_output_type_command_wrapper("id,name,label")
 def groups_apps(name_or_id, **kwargs):
     """List all apps associated with a group"""
-    group = _okta_get("groups", name_or_id,
-                      selector=_selector_profile_find_group("name", name_or_id))
-    group_id = group['id']
+    group = _okta_get(
+        "groups", name_or_id, selector=_selector_profile_find_group("name", name_or_id)
+    )
+    group_id = group["id"]
     rv = okta_manager.call_okta(f"/groups/{group_id}/apps", REST.get)
     rv.sort(key=lambda x: x["label"])
     return rv
@@ -522,9 +564,10 @@ def groups_delete(name_or_id, **kwargs):
     When you give a name a name substring match will be performed. If more
     than one group matches execution will be aborted.
     """
-    group = _okta_get("groups", name_or_id,
-                      selector=_selector_profile_find_group("name", name_or_id))
-    group_id = group['id']
+    group = _okta_get(
+        "groups", name_or_id, selector=_selector_profile_find_group("name", name_or_id)
+    )
+    group_id = group["id"]
     okta_manager.call_okta_raw(f"/groups/{group_id}", REST.delete)
     return f"group {group_id} deleted"
 
@@ -534,22 +577,34 @@ def groups_delete(name_or_id, **kwargs):
 @_output_type_command_wrapper("id,type,profile.name")
 def groups_get(name_or_id, **kwargs):
     """Print only one group"""
-    return _okta_get("groups", name_or_id,
-                     selector=_selector_profile_find_group("name", name_or_id))
+    return _okta_get(
+        "groups", name_or_id, selector=_selector_profile_find_group("name", name_or_id)
+    )
 
 
 @cli_groups.command(name="adduser", context_settings=CONTEXT_SETTINGS)
-@click.option("-g", "--group", required=True,
-              metavar="GID-OR-UNIQUE",
-              help="The group ID to add a user to")
-@click.option("-u", "--user", required=True,
-              metavar="EXACT-MATCH",
-              help="The user ID to add to the group, either the user id or "
-                   "an exact (!) match of the --user-lookup-field")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Matching is done against this profile field; default: 'login'.")
+@click.option(
+    "-g",
+    "--group",
+    required=True,
+    metavar="GID-OR-UNIQUE",
+    help="The group ID to add a user to",
+)
+@click.option(
+    "-u",
+    "--user",
+    required=True,
+    metavar="EXACT-MATCH",
+    help="The user ID to add to the group, either the user id or "
+    "an exact (!) match of the --user-lookup-field",
+)
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Matching is done against this profile field; default: 'login'.",
+)
 @_command_wrapper
 def groups_adduser(group, user, user_lookup_field, **kwargs):
     """
@@ -557,31 +612,40 @@ def groups_adduser(group, user, user_lookup_field, **kwargs):
 
     You can use any Okta profile field to select users by using "-f".
     """
-    group = _okta_get("groups", group,
-                      selector=_selector_profile_find_group("name", group))
+    group = _okta_get(
+        "groups", group, selector=_selector_profile_find_group("name", group)
+    )
     group_id = group["id"]
     group_name = group["profile"]["name"]
-    user = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user = _okta_get("users", user, search=f'profile.{user_lookup_field} eq "{user}"')
     user_id = user["id"]
     user_login = user["profile"]["login"]
-    okta_manager.call_okta_raw(
-        f"/groups/{group_id}/users/{user_id}",
-        REST.put)
+    okta_manager.call_okta_raw(f"/groups/{group_id}/users/{user_id}", REST.put)
     return f"User {user_id} ({user_login}) added to group {group_id} ({group_name})"
 
 
 @cli_groups.command(name="removeuser", context_settings=CONTEXT_SETTINGS)
-@click.option("-g", "--group", required=True,
-              metavar="GID-OR-UNIQUE",
-              help="The group ID to add a user to")
-@click.option("-u", "--user", required=True,
-              metavar="ID-or-FIELDVALUE",
-              help="The user ID to add to the group")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option(
+    "-g",
+    "--group",
+    required=True,
+    metavar="GID-OR-UNIQUE",
+    help="The group ID to add a user to",
+)
+@click.option(
+    "-u",
+    "--user",
+    required=True,
+    metavar="ID-or-FIELDVALUE",
+    help="The user ID to add to the group",
+)
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
 @_command_wrapper
 def groups_removeuser(group, user, user_lookup_field, **kwargs):
     """
@@ -589,28 +653,30 @@ def groups_removeuser(group, user, user_lookup_field, **kwargs):
 
     Note that you must use Okta's user and group IDs.
     """
-    group = _okta_get("groups", group,
-                      selector=_selector_profile_find_group("name", group))
+    group = _okta_get(
+        "groups", group, selector=_selector_profile_find_group("name", group)
+    )
     group_id = group["id"]
-    user = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user = _okta_get("users", user, search=f'profile.{user_lookup_field} eq "{user}"')
     user_id = user["id"]
     user_login = user["profile"]["login"]
     group_name = group["profile"]["name"]
-    okta_manager.call_okta_raw(
-        f"/groups/{group_id}/users/{user_id}",
-        REST.delete)
+    okta_manager.call_okta_raw(f"/groups/{group_id}/users/{user_id}", REST.delete)
     return f"User {user_id} ({user_login}) removed from group {group_id} ({group_name})"
 
 
 @cli_groups.command(name="users", context_settings=CONTEXT_SETTINGS)
 @click.argument("id-or-unique")
-@_output_type_command_wrapper("id,profile.login,profile.firstName,"
-                              "profile.lastName,profile.email")
+@_output_type_command_wrapper(
+    "id,profile.login,profile.firstName," "profile.lastName,profile.email"
+)
 def groups_users(id_or_unique, **kwargs):
     """List all users in a group"""
-    group = _okta_get("groups", id_or_unique,
-                      selector=_selector_profile_find_group("name", id_or_unique))
+    group = _okta_get(
+        "groups",
+        id_or_unique,
+        selector=_selector_profile_find_group("name", id_or_unique),
+    )
     group_id = group["id"]
     rv = okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
     rv.sort(key=lambda x: x["profile"]["login"].lower())
@@ -619,21 +685,28 @@ def groups_users(id_or_unique, **kwargs):
 
 @cli_groups.command(name="clear", context_settings=CONTEXT_SETTINGS)
 @click.argument("name-or-id")
-@click.option("-i", "--id", 'use_id', is_flag=True, default=False,
-              help="Use Okta group ID instead of the group name")
+@click.option(
+    "-i",
+    "--id",
+    "use_id",
+    is_flag=True,
+    default=False,
+    help="Use Okta group ID instead of the group name",
+)
 @_command_wrapper
 def groups_clear(name_or_id, use_id):
     """Remove all users from a group.
 
     This can take a while if the group is big."""
-    group = _okta_get("groups", name_or_id,
-                      selector=_selector_profile_find_group("name", name_or_id))
+    group = _okta_get(
+        "groups", name_or_id, selector=_selector_profile_find_group("name", name_or_id)
+    )
     group_id = group["id"]
     group_name = group["profile"]["name"]
     users = okta_manager.call_okta(f"/groups/{group_id}/users", REST.get)
     for user in sorted(users, key=lambda x: x["profile"]["login"]):
-        user_id = user['id']
-        user_login = user['profile']['login']
+        user_id = user["id"]
+        user_login = user["profile"]["login"]
         print(f"Removing user {user_login} ... ", file=sys.stderr, end="")
         path = f"/groups/{name_or_id}/users/{user_id}"
         okta_manager.call_okta_raw(path, REST.delete)
@@ -648,9 +721,7 @@ def cli_apps():
 
 
 APP_DEFAULTS = {
-    "bookmark": (
-        ("sa.requestIntegration", "false"),
-    ),
+    "bookmark": (("sa.requestIntegration", "false"),),
 }
 
 APP_TYPES = [
@@ -701,20 +772,31 @@ def _unshorten_app_settings(setting_item):
 
 
 @cli_apps.command(name="add", context_settings=CONTEXT_SETTINGS)
-@click.option("-n", "--name",
-              help="The application name - Okta-internal field, NOT the name "
-                   "displayed in the Okta UI!",
-              type=click.Choice(APP_TYPES), default=None)
-@click.option("-m", "--signonmode",
-              help="Sign on mode of the app, you should not need to set this "
-                   "manually",
-              type=click.Choice(SIGNON_TYPES), default=None)
+@click.option(
+    "-n",
+    "--name",
+    help="The application name - Okta-internal field, NOT the name "
+    "displayed in the Okta UI!",
+    type=click.Choice(APP_TYPES),
+    default=None,
+)
+@click.option(
+    "-m",
+    "--signonmode",
+    help="Sign on mode of the app, you should not need to set this " "manually",
+    type=click.Choice(SIGNON_TYPES),
+    default=None,
+)
 @click.option("-l", "--label", help="The application label")
-@click.option("-s", "--set", "set_fields",
-              help="Set app parameter. You can use prefix shortcuts "
-                   "(sa=settings.apps, v=visibility, "
-                   "f=features, c=credentials)",
-              multiple=True)
+@click.option(
+    "-s",
+    "--set",
+    "set_fields",
+    help="Set app parameter. You can use prefix shortcuts "
+    "(sa=settings.apps, v=visibility, "
+    "f=features, c=credentials)",
+    multiple=True,
+)
 @_command_wrapper
 def apps_add(name, signonmode, label, set_fields):
     """Add a new application
@@ -731,8 +813,7 @@ def apps_add(name, signonmode, label, set_fields):
     new_app = dict(settings)
     if name and name in SIGNON_DEFAULTS:
         signonmode = SIGNON_DEFAULTS[name]
-    for check, setme in \
-            ((name, "name"), (label, "label"), (signonmode, "signOnMode")):
+    for check, setme in ((name, "name"), (label, "label"), (signonmode, "signOnMode")):
         if check is not None:
             new_app[setme] = check
     new_app = _dict_flat_to_nested(new_app)
@@ -744,9 +825,10 @@ def apps_add(name, signonmode, label, set_fields):
 @_command_wrapper
 def apps_activate(label_or_id):
     """Activate an application"""
-    app = _okta_get("apps", label_or_id,
-                    selector=_selector_field_find("label", label_or_id))
-    app_id = app['id']
+    app = _okta_get(
+        "apps", label_or_id, selector=_selector_field_find("label", label_or_id)
+    )
+    app_id = app["id"]
     app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/activate"
     okta_manager.call_okta_raw(path, REST.post)
@@ -760,9 +842,10 @@ def apps_deactivate(label_or_id):
     """Deactivate an application
 
     Must be done before deletion"""
-    app = _okta_get("apps", label_or_id,
-                    selector=_selector_field_find("label", label_or_id))
-    app_id = app['id']
+    app = _okta_get(
+        "apps", label_or_id, selector=_selector_field_find("label", label_or_id)
+    )
+    app_id = app["id"]
     app_label = app["label"]
     path = f"/apps/{app_id}/lifecycle/deactivate"
     okta_manager.call_okta_raw(path, REST.post)
@@ -774,9 +857,10 @@ def apps_deactivate(label_or_id):
 @_command_wrapper
 def apps_delete(label_or_id):
     """Delete an application"""
-    app = _okta_get("apps", label_or_id,
-                    selector=_selector_field_find("label", label_or_id))
-    app_id = app['id']
+    app = _okta_get(
+        "apps", label_or_id, selector=_selector_field_find("label", label_or_id)
+    )
+    app_id = app["id"]
     app_label = app["label"]
     okta_manager.call_okta_raw(f"/apps/{app_id}", REST.delete)
     return f"application {app_id} ({app_label}) deleted"
@@ -784,8 +868,8 @@ def apps_delete(label_or_id):
 
 @cli_apps.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--filter", 'filter_query', default="", metavar="EXPRESSION")
-@click.option("-q", "--query", 'q_query', default="")
+@click.option("-f", "--filter", "filter_query", default="", metavar="EXPRESSION")
+@click.option("-q", "--query", "q_query", default="")
 @_output_type_command_wrapper("id,label")
 def apps_list(partial_name, filter_query, q_query, **kwargs):
     """List all defined applications. If you give an optional command line
@@ -815,8 +899,7 @@ def apps_list(partial_name, filter_query, q_query, **kwargs):
 @_output_type_command_wrapper("status,id,credentials.userName,")
 def apps_users(app, **kwargs):
     """List all users for an application"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
     app_id = app["id"]
     rv = okta_manager.call_okta(f"/apps/{app_id}/users", REST.get)
     rv.sort(key=lambda x: x["credentials"]["userName"])
@@ -828,48 +911,51 @@ def apps_users(app, **kwargs):
 @_output_type_command_wrapper("id,name,label")
 def apps_get(partial_name, **kwargs):
     """Retrieves information about one specific application"""
-    app = _okta_get("apps", partial_name,
-                    selector=_selector_field_find("label", partial_name))
+    app = _okta_get(
+        "apps", partial_name, selector=_selector_field_find("label", partial_name)
+    )
     return app
 
 
 @cli_apps.command(name="getuser", context_settings=CONTEXT_SETTINGS)
 @click.option("-a", "--app", "app")
 @click.option("-u", "--user", "user")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
 @_output_type_command_wrapper("id,credentials.userName,scope,status,syncState")
 def apps_getuser(app, user, user_lookup_field, **kwargs):
     """Retrieves information about one specific assigned user of an application"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    user = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    user = _okta_get("users", user, search=f'profile.{user_lookup_field} eq "{user}"')
     user_id = user["id"]
-    app_id = app['id']
+    app_id = app["id"]
     return okta_manager.call_okta(f"/apps/{app_id}/users/{user_id}", REST.get)
 
 
 @cli_apps.command(name="adduser", context_settings=CONTEXT_SETTINGS)
 @click.option("-a", "--app", "app", required=True)
 @click.option("-u", "--user", "user", required=True)
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
-@click.option('-s', '--set', 'set_fields', multiple=True)
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
+@click.option("-s", "--set", "set_fields", multiple=True)
 @_output_type_command_wrapper("id,credentials.userName,scope,status,syncState")
 def apps_adduser(app, user, user_lookup_field, set_fields, **kwargs):
     """Add a user to an application"""
     appuser = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    user = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    user = _okta_get("users", user, search=f'profile.{user_lookup_field} eq "{user}"')
     user_id = user["id"]
-    app_id = app['id']
+    app_id = app["id"]
 
     appuser["id"] = user_id
     appuser = _dict_flat_to_nested(appuser)
@@ -879,20 +965,21 @@ def apps_adduser(app, user, user_lookup_field, set_fields, **kwargs):
 @cli_apps.command(name="removeuser", context_settings=CONTEXT_SETTINGS)
 @click.option("-a", "--app", "app")
 @click.option("-u", "--user", "user")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
 @_command_wrapper
 def apps_removeuser(app, user, user_lookup_field, **kwargs):
     """Rempoves a user from an application"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    user = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    user = _okta_get("users", user, search=f'profile.{user_lookup_field} eq "{user}"')
     user_id = user["id"]
     user_login = user["profile"]["login"]
-    app_id = app['id']
+    app_id = app["id"]
     app_label = app["label"]
     okta_manager.call_okta_raw(f"/apps/{app_id}/users/{user_id}", REST.delete)
     return f"User {user_id} ({user_login}) removed from app {app_id} ({app_label})"
@@ -904,12 +991,12 @@ def apps_removeuser(app, user, user_lookup_field, **kwargs):
 @_output_type_command_wrapper(None)
 def apps_addgroup(app, group, **kwargs):
     """Assigns a group to this app"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    group = _okta_get("groups", group,
-                      selector=_selector_profile_find_group("name", group))
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    group = _okta_get(
+        "groups", group, selector=_selector_profile_find_group("name", group)
+    )
     group_id = group["id"]
-    app_id = app['id']
+    app_id = app["id"]
     rv = okta_manager.call_okta(f"/apps/{app_id}/groups/{group_id}", REST.put)
     return rv
 
@@ -920,13 +1007,13 @@ def apps_addgroup(app, group, **kwargs):
 @_command_wrapper
 def apps_removegroup(app, group, **kwargs):
     """Removes a group association from an app"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    group = _okta_get("groups", group,
-                      selector=_selector_profile_find_group("name", group))
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    group = _okta_get(
+        "groups", group, selector=_selector_profile_find_group("name", group)
+    )
     group_id = group["id"]
     group_name = group["profile"]["name"]
-    app_id = app['id']
+    app_id = app["id"]
     app_label = app["label"]
     okta_manager.call_okta_raw(f"/apps/{app_id}/groups/{group_id}", REST.delete)
     return f"App {app_id} ({app_label}) removed from group {group_id} ({group_name})"
@@ -937,9 +1024,8 @@ def apps_removegroup(app, group, **kwargs):
 @_output_type_command_wrapper(None)
 def apps_groups(app, **kwargs):
     """List the groups associated to an app"""
-    app = _okta_get("apps", app,
-                    selector=_selector_field_find("label", app))
-    app_id = app['id']
+    app = _okta_get("apps", app, selector=_selector_field_find("label", app))
+    app_id = app["id"]
     rv = okta_manager.call_okta(f"/apps/{app_id}/groups", REST.get)
     rv.sort(key=lambda x: x["id"])
     return rv
@@ -952,21 +1038,35 @@ def cli_users():
 
 
 @cli_users.command(name="list", context_settings=CONTEXT_SETTINGS)
-@click.option("-m", "--match", 'matches', multiple=True,
-              metavar="FIELD=VALUE",
-              help="Filter for field values")
-@click.option("-p", "--partial", is_flag=True,
-              help="Accept partial matches for match queries.")
-@click.option("-f", "--filter", 'filter_query', default="",
-              help="Add Okta filter query")
-@click.option("-s", "--search", 'search_query', default="",
-              help="Add Okta search query")
-@click.option("-q", "--query", 'q_query', default="",
-              help="Add Okta query string")
-@click.option("-d", "--deprovisioned", "deprov", default=False, is_flag=True,
-              help="Return only deprovisioned users")
-@_output_type_command_wrapper("id,status,profile.login,profile.firstName,"
-                              "profile.lastName,profile.email")
+@click.option(
+    "-m",
+    "--match",
+    "matches",
+    multiple=True,
+    metavar="FIELD=VALUE",
+    help="Filter for field values",
+)
+@click.option(
+    "-p", "--partial", is_flag=True, help="Accept partial matches for match queries."
+)
+@click.option(
+    "-f", "--filter", "filter_query", default="", help="Add Okta filter query"
+)
+@click.option(
+    "-s", "--search", "search_query", default="", help="Add Okta search query"
+)
+@click.option("-q", "--query", "q_query", default="", help="Add Okta query string")
+@click.option(
+    "-d",
+    "--deprovisioned",
+    "deprov",
+    default=False,
+    is_flag=True,
+    help="Return only deprovisioned users",
+)
+@_output_type_command_wrapper(
+    "id,status,profile.login,profile.firstName," "profile.lastName,profile.email"
+)
 def users_list(matches, partial, filter_query, search_query, q_query, deprov, **kwargs):
     """Lists users (all or using various filters)
 
@@ -993,7 +1093,7 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     params = {}
     if deprov:
         search_query = " and ".join(
-            filter(None, (search_query, "status eq \"DEPROVISIONED\""))
+            filter(None, (search_query, 'status eq "DEPROVISIONED"'))
         )
     if search_query:
         params["search"] = search_query
@@ -1002,8 +1102,9 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
     if q_query:
         params["q"] = q_query
     rv = _okta_retrieve("users", None, **params)
-    filters_dict = {("profile." + k): v
-                    for k, v in map(lambda x: x.split("=", 1), matches)}
+    filters_dict = {
+        ("profile." + k): v for k, v in map(lambda x: x.split("=", 1), matches)
+    }
     rv = filter_dicts(rv, filters=filters_dict, partial=partial)
     # filter_dicts returns a filter object, so "rv.sort()" throws
     # an exception. let's use "rv = sorted(rv, ...)" to fix this.
@@ -1012,11 +1113,16 @@ def users_list(matches, partial, filter_query, search_query, q_query, deprov, **
 
 
 @cli_users.command(name="get", context_settings=CONTEXT_SETTINGS)
-@click.argument('lookup_value')
-@click.option("-f", "--field", default="login",
-              help="Look users up using this profile field (default: 'login')")
-@_output_type_command_wrapper("id,status,profile.login,profile.firstName,"
-                              "profile.lastName,profile.email")
+@click.argument("lookup_value")
+@click.option(
+    "-f",
+    "--field",
+    default="login",
+    help="Look users up using this profile field (default: 'login')",
+)
+@_output_type_command_wrapper(
+    "id,status,profile.login,profile.firstName," "profile.lastName,profile.email"
+)
 def users_get(lookup_value, field, **kwargs):
     """Get one user uniquely using any profile field or ID"""
     rv = None
@@ -1024,7 +1130,9 @@ def users_get(lookup_value, field, **kwargs):
         try:
             # let's always return a list. the /users/ID will otherwise return
             # a dict.
-            rv = [okta_manager.call_okta(f"/users/{lookup_value}", REST.get), ]
+            rv = [
+                okta_manager.call_okta(f"/users/{lookup_value}", REST.get),
+            ]
         except RequestsHTTPError as e:
             pass
     if rv is None:
@@ -1040,31 +1148,40 @@ def users_get(lookup_value, field, **kwargs):
 
 @cli_users.command(name="groups", context_settings=CONTEXT_SETTINGS)
 @click.argument("user")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
 @_output_type_command_wrapper("id,profile.name,profile.description")
 def users_groups(user, user_lookup_field, **kwargs):
     """List all groups belonging to a user"""
-    user_obj = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_obj = _okta_get(
+        "users", user, search=f'profile.{user_lookup_field} eq "{user}"'
+    )
     user_id = user_obj["id"]
     rv = okta_manager.call_okta(f"/users/{user_id}/groups", REST.get)
     rv.sort(key=lambda x: x["profile"]["name"])
     return rv
 
+
 @cli_users.command(name="apps", context_settings=CONTEXT_SETTINGS)
 @click.argument("user")
-@click.option("-f", "--user-lookup-field",
-              metavar="FIELDNAME",
-              default="login",
-              help="Users are matched against the ID or this profile field; default: 'login'.")
+@click.option(
+    "-f",
+    "--user-lookup-field",
+    metavar="FIELDNAME",
+    default="login",
+    help="Users are matched against the ID or this profile field; default: 'login'.",
+)
 @_output_type_command_wrapper("appInstanceId,appName,label")
 def users_apps(user, user_lookup_field, **kwargs):
     """List all apps associated with a user"""
-    user_obj = _okta_get("users", user,
-                     search=f"profile.{user_lookup_field} eq \"{user}\"")
+    user_obj = _okta_get(
+        "users", user, search=f'profile.{user_lookup_field} eq "{user}"'
+    )
     user_id = user_obj["id"]
     rv = okta_manager.call_okta(f"/users/{user_id}/appLinks", REST.get)
     rv.sort(key=lambda x: x["label"])
@@ -1072,18 +1189,18 @@ def users_apps(user, user_lookup_field, **kwargs):
 
 
 @cli_users.command(name="deactivate", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
-@click.option("-e", "--send-email", is_flag=True,
-              help="Send email if set")
-@click.option("--no-confirmation", is_flag=True,
-              help="Don't ask - DANGER!!")
+@click.argument("login_or_id")
+@click.option("-e", "--send-email", is_flag=True, help="Send email if set")
+@click.option("--no-confirmation", is_flag=True, help="Don't ask - DANGER!!")
 @_command_wrapper
 def users_deactivate(login_or_id, send_email, no_confirmation):
     """Deactivate a user (DESTRUCTIVE OPERATION)"""
     if not no_confirmation:
-        check = input("DANGER!! Do you REALLY want to do this "
-                      "(maybe use 'suspend' instead)?\n"
-                      f"Then enter '{login_or_id}': ")
+        check = input(
+            "DANGER!! Do you REALLY want to do this "
+            "(maybe use 'suspend' instead)?\n"
+            f"Then enter '{login_or_id}': "
+        )
         if check != login_or_id:
             raise ExitException("Aborted.")
     okta_manager.deactivate_user(login_or_id, send_email)
@@ -1091,18 +1208,19 @@ def users_deactivate(login_or_id, send_email, no_confirmation):
 
 
 @cli_users.command(name="activate", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
-@click.option("-e", "--send-email", is_flag=True,
-              help="Send email if set")
+@click.argument("login_or_id")
+@click.option("-e", "--send-email", is_flag=True, help="Send email if set")
 @_output_type_command_wrapper(None)
 def users_activate(login_or_id, send_email, **kwargs):
     """Activate a user"""
     return okta_manager.activate_user(login_or_id, send_email)
 
+
 @cli_users.command(name="reactivate", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
-@click.option("-e", "--send-email", is_flag=True, default=False,
-              help="Send email if set")
+@click.argument("login_or_id")
+@click.option(
+    "-e", "--send-email", is_flag=True, default=False, help="Send email if set"
+)
 @_output_type_command_wrapper(None)
 def users_reactivate(login_or_id, send_email, **kwargs):
     """Reactivate a user"""
@@ -1110,7 +1228,7 @@ def users_reactivate(login_or_id, send_email, **kwargs):
 
 
 @cli_users.command(name="unlock", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
+@click.argument("login_or_id")
 @_command_wrapper
 def users_unlock(login_or_id):
     """Unlock a locked user"""
@@ -1119,17 +1237,16 @@ def users_unlock(login_or_id):
 
 
 @cli_users.command(name="delete", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
-@click.option("-e", "--send-email", is_flag=True,
-              help="Send email if set")
-@click.option("--no-confirmation", is_flag=True,
-              help="Don't ask - DANGER!!")
+@click.argument("login_or_id")
+@click.option("-e", "--send-email", is_flag=True, help="Send email if set")
+@click.option("--no-confirmation", is_flag=True, help="Don't ask - DANGER!!")
 @_command_wrapper
 def users_delete(login_or_id, send_email, no_confirmation):
     """Delete a user (DESTRUCTIVE OPERATION)"""
     if not no_confirmation:
-        check = input("DANGER!! Do you REALLY want to do this?\n"
-                      f"Then enter '{login_or_id}': ")
+        check = input(
+            "DANGER!! Do you REALLY want to do this?\n" f"Then enter '{login_or_id}': "
+        )
         if check != login_or_id:
             raise ExitException("Aborted.")
     okta_manager.delete_user(login_or_id, send_email)
@@ -1138,7 +1255,7 @@ def users_delete(login_or_id, send_email, no_confirmation):
 
 
 @cli_users.command(name="suspend", context_settings=CONTEXT_SETTINGS)
-@click.argument('login_or_id')
+@click.argument("login_or_id")
 @_command_wrapper
 def users_suspend(login_or_id):
     """Suspend a user"""
@@ -1148,11 +1265,15 @@ def users_suspend(login_or_id):
 
 
 @cli_users.command(name="update", context_settings=CONTEXT_SETTINGS)
-@click.argument('user_id')
-@click.option('-s', '--set', 'set_fields', multiple=True)
-@click.option('-S', '--array-set', 'set_array', multiple=True)
-@click.option('-c', '--context', default=None,
-              help="Set a context (profile, credentials) to save typing")
+@click.argument("user_id")
+@click.option("-s", "--set", "set_fields", multiple=True)
+@click.option("-S", "--array-set", "set_array", multiple=True)
+@click.option(
+    "-c",
+    "--context",
+    default=None,
+    help="Set a context (profile, credentials) to save typing",
+)
 @_command_wrapper
 def users_update(user_id, set_fields, set_array, context):
     """Update a user object.
@@ -1192,8 +1313,10 @@ def users_update(user_id, set_fields, set_array, context):
        -s answer="Me."
     """
     fields_dict = {k: v for k, v in map(lambda x: x.split("=", 1), set_fields)}
-    arrays_dict = {k: list(map(lambda x: x.strip(), v.split(",")))
-                      for k, v in map(lambda x: x.split("=", 1), set_array)}
+    arrays_dict = {
+        k: list(map(lambda x: x.strip(), v.split(",")))
+        for k, v in map(lambda x: x.split("=", 1), set_array)
+    }
     fields_dict = {**fields_dict, **arrays_dict}
     if context:
         fields_dict = {context + "." + k: v for k, v in fields_dict.items()}
@@ -1202,25 +1325,39 @@ def users_update(user_id, set_fields, set_array, context):
 
 
 @cli_users.command(name="bulk-update", context_settings=CONTEXT_SETTINGS)
-@click.argument('file')
-@click.option('-s', '--set', 'set_fields', multiple=True,
-              help="Set default field values for updates")
-@click.option('-i', '--jump-to-index', metavar="IDX",
-              default=0,
-              help="Start with index IDX (0-based) and skip previous entries")
-@click.option('-u', '--jump-to-user', metavar="USER_ID",
-              default=None,
-              help="Same as --jump-to-index, but starts from a specific user "
-                   "ID instead of an index")
-@click.option('-l', '--limit', metavar="NUM",
-              default=0,
-              help="Stop after NUM updates")
-@click.option('-w', '--workers', metavar="NUM",
-              default=25,
-              help="use this many threads parallel, default:25")
+@click.argument("file")
+@click.option(
+    "-s",
+    "--set",
+    "set_fields",
+    multiple=True,
+    help="Set default field values for updates",
+)
+@click.option(
+    "-i",
+    "--jump-to-index",
+    metavar="IDX",
+    default=0,
+    help="Start with index IDX (0-based) and skip previous entries",
+)
+@click.option(
+    "-u",
+    "--jump-to-user",
+    metavar="USER_ID",
+    default=None,
+    help="Same as --jump-to-index, but starts from a specific user "
+    "ID instead of an index",
+)
+@click.option("-l", "--limit", metavar="NUM", default=0, help="Stop after NUM updates")
+@click.option(
+    "-w",
+    "--workers",
+    metavar="NUM",
+    default=25,
+    help="use this many threads parallel, default:25",
+)
 @_command_wrapper
-def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
-                      workers):
+def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, workers):
     """
     Bulk-update users from a CSV or Excel (.xlsx) file
 
@@ -1254,12 +1391,10 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
                     yield row
 
     def file_reader():
-        dr = excel_reader() \
-            if splitext(file)[1].lower() == ".xlsx" else csv_reader()
+        dr = excel_reader() if splitext(file)[1].lower() == ".xlsx" else csv_reader()
         if jump_to_user:
             tmp = next(dr)
-            while jump_to_user not in (
-                    tmp.get("profile.login", ""), tmp.get("id", "")):
+            while jump_to_user not in (tmp.get("profile.login", ""), tmp.get("id", "")):
                 tmp = next(dr)
         elif jump_to_index:
             # prevent both being used at the same time :)
@@ -1287,11 +1422,13 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 
         # user_id check
         if user_id is None:
-            upd_err.append((
-                index + jump_to_index,
-                final_dict,
-                "missing user_id column (id or profile.login)"
-            ))
+            upd_err.append(
+                (
+                    index + jump_to_index,
+                    final_dict,
+                    "missing user_id column (id or profile.login)",
+                )
+            )
             return
 
         try:
@@ -1307,8 +1444,9 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
     dr = file_reader()
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        runs = {idx: ex.submit(update_user_parallel, row, idx)
-                for idx, row in enumerate(dr)}
+        runs = {
+            idx: ex.submit(update_user_parallel, row, idx) for idx, row in enumerate(dr)
+        }
         for job in as_completed(runs.values()):
             pass
 
@@ -1328,24 +1466,47 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit,
 
 
 @cli_users.command(name="add", context_settings=CONTEXT_SETTINGS)
-@click.option('-s', '--set', 'set_fields', metavar="FIELD=value",
-              help="set any user object field",
-              multiple=True)
-@click.option('-p', '--profile', 'profile_fields', metavar="FIELD=value",
-              help="same as '-s profile.FIELD=value'",
-              multiple=True)
-@click.option('-g', '--group', 'groups', metavar="GROUP_ID",
-              help="specify groups the user should be added to on creation",
-              multiple=True)
-@click.option('--activate/--no-activate', default=True,
-              help="Set 'activation' flag, default: True")
-@click.option('--provider/--no-provider', default=False,
-              help="Set 'provider' flag, default: False")
-@click.option('--nextlogin/--no-nextlogin', default=False,
-              help="User must change password, default: False")
+@click.option(
+    "-s",
+    "--set",
+    "set_fields",
+    metavar="FIELD=value",
+    help="set any user object field",
+    multiple=True,
+)
+@click.option(
+    "-p",
+    "--profile",
+    "profile_fields",
+    metavar="FIELD=value",
+    help="same as '-s profile.FIELD=value'",
+    multiple=True,
+)
+@click.option(
+    "-g",
+    "--group",
+    "groups",
+    metavar="GROUP_ID",
+    help="specify groups the user should be added to on creation",
+    multiple=True,
+)
+@click.option(
+    "--activate/--no-activate",
+    default=True,
+    help="Set 'activation' flag, default: True",
+)
+@click.option(
+    "--provider/--no-provider",
+    default=False,
+    help="Set 'provider' flag, default: False",
+)
+@click.option(
+    "--nextlogin/--no-nextlogin",
+    default=False,
+    help="User must change password, default: False",
+)
 @_command_wrapper
-def users_add(set_fields, profile_fields, groups, activate, provider,
-              nextlogin):
+def users_add(set_fields, profile_fields, groups, activate, provider, nextlogin):
     """Add a user to Okta
 
     Note that this is equivalent:
@@ -1364,19 +1525,20 @@ def users_add(set_fields, profile_fields, groups, activate, provider,
     """
     # create user dict
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    profile_dict = {"profile." + k: v
-                    for k, v in map(lambda x: x.split("="), profile_fields)}
+    profile_dict = {
+        "profile." + k: v for k, v in map(lambda x: x.split("="), profile_fields)
+    }
     fields_dict.update(profile_dict)
     if groups:
         fields_dict["groupIds"] = groups
 
     # query parameters
     params = {
-        'activate': "True" if activate else "False",
-        'provider': "True" if provider else "False",
+        "activate": "True" if activate else "False",
+        "provider": "True" if provider else "False",
     }
     if nextlogin:
-        params['nextlogin'] = "changePassword"
+        params["nextlogin"] = "changePassword"
 
     # when reading from csv, we iterate
     final_dict = _dict_flat_to_nested(fields_dict)
@@ -1391,16 +1553,21 @@ def cli_features():
 
 @cli_features.command(name="list", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
-@click.option("-m", "--match", 'matches', multiple=True)
-@click.option("-p", "--partial", is_flag=True, default=True,
-              help="Accept partial matches for match queries.")
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
+@click.option("-m", "--match", "matches", multiple=True)
+@click.option(
+    "-p",
+    "--partial",
+    is_flag=True,
+    default=True,
+    help="Accept partial matches for match queries.",
+)
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
     """Lists tenant features"""
     selector = None
     if partial_name:
-        selector=_selector_field_find(partial_name_field, partial_name)
+        selector = _selector_field_find(partial_name_field, partial_name)
     rv = _okta_retrieve("features", None, selector=selector)
     filters_dict = {k: v for k, v in map(lambda x: x.split("="), matches)}
     rv = filter_dicts(rv, filters=filters_dict, partial=partial)
@@ -1410,60 +1577,74 @@ def features_list(partial_name, partial_name_field, matches, partial, **kwargs):
 
 @cli_features.command(name="get", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_get(partial_name, partial_name_field, **kwargs):
     """Retrieves information about one specific feature"""
-    rv = _okta_get("features", partial_name,
-                   selector=_selector_field_find(partial_name_field, partial_name))
+    rv = _okta_get(
+        "features",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     return rv
 
 
 @cli_features.command(name="enable", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
-@click.option("--force", 'force', is_flag=True, default=False)
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
+@click.option("--force", "force", is_flag=True, default=False)
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_enable(partial_name, partial_name_field, force, **kwargs):
     """Enable a feature"""
     mode = "enable"
     params = {"mode": "force"} if force else None
-    feature = _okta_get("features", partial_name,
-                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature = _okta_get(
+        "features",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     feature_id = feature["id"]
-    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}",
-                                REST.post, params=params)
+    rv = okta_manager.call_okta(
+        f"/features/{feature_id}/{mode}", REST.post, params=params
+    )
     return rv
 
 
 @cli_features.command(name="disable", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
-@click.option("--force", 'force', is_flag=True, default=False)
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
+@click.option("--force", "force", is_flag=True, default=False)
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_disable(partial_name, partial_name_field, force, **kwargs):
     """Disable a feature"""
     mode = "disable"
     params = {"mode": "force"} if force else None
-    feature = _okta_get("features", partial_name,
-                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature = _okta_get(
+        "features",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     feature_id = feature["id"]
-    rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}",
-                                REST.post, params=params)
+    rv = okta_manager.call_okta(
+        f"/features/{feature_id}/{mode}", REST.post, params=params
+    )
     return rv
 
 
 @cli_features.command(name="dependents", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
-@click.option("--force", 'force', is_flag=True, default=False)
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
+@click.option("--force", "force", is_flag=True, default=False)
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_dependents(partial_name, partial_name_field, force, **kwargs):
     """List features depending on this one"""
     mode = "dependents"
     params = {"mode": "force"} if force else None
-    feature = _okta_get("features", partial_name,
-                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature = _okta_get(
+        "features",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     feature_id = feature["id"]
     rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
     rv.sort(key=lambda x: x["name"])
@@ -1472,14 +1653,17 @@ def features_dependents(partial_name, partial_name_field, force, **kwargs):
 
 @cli_features.command(name="dependencies", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=False, default=None)
-@click.option("-f", "--partial-name-field", 'partial_name_field', default="name")
-@click.option("--force", 'force', is_flag=True, default=False)
+@click.option("-f", "--partial-name-field", "partial_name_field", default="name")
+@click.option("--force", "force", is_flag=True, default=False)
 @_output_type_command_wrapper("id,status,stage.value,type,name")
 def features_dependencies(partial_name, partial_name_field, force, **kwargs):
     """List dependencies of this feature"""
     mode = "dependencies"
-    feature = _okta_get("features", partial_name,
-                        selector=_selector_field_find(partial_name_field, partial_name))
+    feature = _okta_get(
+        "features",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     feature_id = feature["id"]
     rv = okta_manager.call_okta(f"/features/{feature_id}/{mode}", REST.get)
     rv.sort(key=lambda x: x["name"])
@@ -1499,8 +1683,7 @@ def cli_main():
 
 
 @cli_main.command(name="dump", context_settings=CONTEXT_SETTINGS)
-@click.option('-d', '--dir', 'target_dir',
-              help="Save in this directory", default=None)
+@click.option("-d", "--dir", "target_dir", help="Save in this directory", default=None)
 @click.option("--no-user-list", is_flag=True)
 @click.option("--no-app-users", is_flag=True)
 @click.option("--no-group-users", is_flag=True)
@@ -1534,12 +1717,14 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
         table = []
         with ThreadPoolExecutor(max_workers=workers) as ex:
             runs = {
-                ex.submit(okta_manager.call_okta,
-                          f"/{rest_path}/{obj['id']}/users",
-                          REST.get,
-                          params={"limit": 1000}):
-                    obj["id"]
-                for obj in obj_list}
+                ex.submit(
+                    okta_manager.call_okta,
+                    f"/{rest_path}/{obj['id']}/users",
+                    REST.get,
+                    params={"limit": 1000},
+                ): obj["id"]
+                for obj in obj_list
+            }
             for result in runs:
                 gid = runs[result]
                 table += [(gid, u["id"]) for u in result.result()]
@@ -1558,14 +1743,14 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
         print("Saving user list ... ", end="", flush=True)
         dump_me = okta_manager.list_users()
         # deprovisioned users are NOT included in the listing by default
-        tmp_str = "status eq \"DEPROVISIONED\""
+        tmp_str = 'status eq "DEPROVISIONED"'
         dump_me += okta_manager.list_users(search_query=tmp_str)
         save_in(target_dir, "users.csv", dump_me)
         print("done.")
 
     for func, what, no_detail in (
-            (okta_manager.list_groups, "group", no_group_users),
-            (okta_manager.list_apps, "app", no_app_users)
+        (okta_manager.list_groups, "group", no_group_users),
+        (okta_manager.list_apps, "app", no_app_users),
     ):
         print(f"Saving {what} list ... ", end="", flush=True)
         dump_me = func()
@@ -1582,34 +1767,49 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
 
 
 @cli_main.command(name="raw", context_settings=CONTEXT_SETTINGS)
-@click.argument('api_endpoint')
-@click.option('-X', '--http-method',
-              default="get", type=click.Choice(("get", "post", "put", "delete")),
-              help="Which HTTP method to use; default: 'get'")
-@click.option('-q', '--query', 'query_params', multiple=True,
-              help="Set a query field in the URL, format field=value")
-@click.option('-b', '--body', 'body',
-              default=None,
-              help="Specify message body, use FILE:<filename> to read from file")
-@click.option('--base-path', 'base_path',
-              default=None,
-              help="Specify a different base path than the default (/api/v1)")
+@click.argument("api_endpoint")
+@click.option(
+    "-X",
+    "--http-method",
+    default="get",
+    type=click.Choice(("get", "post", "put", "delete")),
+    help="Which HTTP method to use; default: 'get'",
+)
+@click.option(
+    "-q",
+    "--query",
+    "query_params",
+    multiple=True,
+    help="Set a query field in the URL, format field=value",
+)
+@click.option(
+    "-b",
+    "--body",
+    "body",
+    default=None,
+    help="Specify message body, use FILE:<filename> to read from file",
+)
+@click.option(
+    "--base-path",
+    "base_path",
+    default=None,
+    help="Specify a different base path than the default (/api/v1)",
+)
 @_output_type_command_wrapper(None)
 def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
     """Perform a request against the specified API endpoint"""
     methods = {
-        "get":    REST.get,
-        "post":   REST.post,
+        "get": REST.get,
+        "post": REST.post,
         "delete": REST.delete,
-        "put":    REST.put,
+        "put": REST.put,
     }
     use_method = methods[http_method.lower()]
     if base_path and not base_path.startswith("/"):
         base_path = "/" + base_path
     if not api_endpoint.startswith("/"):
         api_endpoint = "/" + api_endpoint
-    p_dict = dict(
-        [(y[0], y[1]) for y in map(lambda x: x.split("=", 1), query_params)])
+    p_dict = dict([(y[0], y[1]) for y in map(lambda x: x.split("=", 1), query_params)])
     if body:
         if body.startswith("FILE:"):
             use_body = json.loads(open(body[5:], "r").read())
@@ -1617,8 +1817,13 @@ def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
             use_body = json.loads(body)
     else:
         use_body = None
-    rv = okta_manager.call_okta(api_endpoint, use_method, params=p_dict, body_obj=use_body,
-                                custom_path_base=base_path)
+    rv = okta_manager.call_okta(
+        api_endpoint,
+        use_method,
+        params=p_dict,
+        body_obj=use_body,
+        custom_path_base=base_path,
+    )
     return rv
 
 
@@ -1642,7 +1847,7 @@ def eventhook_list(partial_name, **kwargs):
     partial_name_field = "name"
     selector = None
     if partial_name:
-        selector=_selector_field_find(partial_name_field, partial_name)
+        selector = _selector_field_find(partial_name_field, partial_name)
     rv = _okta_retrieve("eventHooks", None, selector=selector)
     return rv
 
@@ -1653,8 +1858,11 @@ def eventhook_list(partial_name, **kwargs):
 def eventhook_get(partial_name, **kwargs):
     """Retrieves information about one specific feature"""
     partial_name_field = "name"
-    rv = _okta_get("eventHooks", partial_name,
-                   selector=_selector_field_find(partial_name_field, partial_name))
+    rv = _okta_get(
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
+    )
     return rv
 
 
@@ -1674,22 +1882,30 @@ def get_event_object(url, name, events):
             "version": "1.0.0",
             "config": {
                 "uri": url,
-            }
-        }
+            },
+        },
     }
     return event_obj
 
 
 @cli_eventhooks.command(name="add", context_settings=CONTEXT_SETTINGS)
-@click.option("-u", "--url",
-              required=True,
-              help="The URL where the events will be sent to by Okta")
-@click.option("-n", "--name",
-              required=True,
-              help="A short name (description) of the event hook")
-@click.option("-e", "--event", "events",
-              required=True, multiple=True,
-              help="Specify event types (either separated by comma or multiple -e)")
+@click.option(
+    "-u",
+    "--url",
+    required=True,
+    help="The URL where the events will be sent to by Okta",
+)
+@click.option(
+    "-n", "--name", required=True, help="A short name (description) of the event hook"
+)
+@click.option(
+    "-e",
+    "--event",
+    "events",
+    required=True,
+    multiple=True,
+    help="Specify event types (either separated by comma or multiple -e)",
+)
 @_output_type_command_wrapper("id,created,status,verificationStatus,name")
 def eventhook_add(url, name, events, **kwargs):
     """Creates a new event hook"""
@@ -1699,26 +1915,37 @@ def eventhook_add(url, name, events, **kwargs):
 
 @cli_eventhooks.command(name="update", context_settings=CONTEXT_SETTINGS)
 @click.argument("partial_name", required=True, default=None)
-@click.option("-u", "--url",
-              required=True,
-              help="The URL where the events will be sent to by Okta")
-@click.option("-n", "--name",
-              required=True,
-              help="A short name (description) of the event hook")
-@click.option("-e", "--event", "events",
-              required=True, multiple=True,
-              help="Specify event types (either separated by comma or multiple -e)")
+@click.option(
+    "-u",
+    "--url",
+    required=True,
+    help="The URL where the events will be sent to by Okta",
+)
+@click.option(
+    "-n", "--name", required=True, help="A short name (description) of the event hook"
+)
+@click.option(
+    "-e",
+    "--event",
+    "events",
+    required=True,
+    multiple=True,
+    help="Specify event types (either separated by comma or multiple -e)",
+)
 @_output_type_command_wrapper("id,created,status,verificationStatus,name")
 def eventhook_update(partial_name, url, name, events, **kwargs):
     """Updates an event hook"""
     partial_name_field = "name"
     existing = _okta_get(
-        "eventHooks", partial_name,
-        selector=_selector_field_find(partial_name_field, partial_name)
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
     )
     existing_id = existing["id"]
     event_obj = get_event_object(url, name, events)
-    return okta_manager.call_okta(f"/eventHooks/{existing_id}", REST.put, body_obj=event_obj)
+    return okta_manager.call_okta(
+        f"/eventHooks/{existing_id}", REST.put, body_obj=event_obj
+    )
 
 
 @cli_eventhooks.command(name="activate", context_settings=CONTEXT_SETTINGS)
@@ -1728,13 +1955,13 @@ def eventhook_activate(partial_name, **kwargs):
     """Activates an event hook"""
     partial_name_field = "name"
     existing = _okta_get(
-        "eventHooks", partial_name,
-        selector=_selector_field_find(partial_name_field, partial_name)
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
     )
     existing_id = existing["id"]
     return okta_manager.call_okta_raw(
-        f"/eventHooks/{existing_id}/lifecycle/deactivate",
-        REST.post
+        f"/eventHooks/{existing_id}/lifecycle/deactivate", REST.post
     )
 
 
@@ -1745,13 +1972,13 @@ def eventhook_verify(partial_name, **kwargs):
     """Verifies an event hook"""
     partial_name_field = "name"
     existing = _okta_get(
-        "eventHooks", partial_name,
-        selector=_selector_field_find(partial_name_field, partial_name)
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
     )
     existing_id = existing["id"]
     return okta_manager.call_okta(
-        f"/eventHooks/{existing_id}/lifecycle/verify",
-        REST.post
+        f"/eventHooks/{existing_id}/lifecycle/verify", REST.post
     )
 
 
@@ -1762,14 +1989,14 @@ def eventhook_deactivate(partial_name, **kwargs):
     """Deactivates an event hook"""
     partial_name_field = "name"
     existing = _okta_get(
-        "eventHooks", partial_name,
-        selector=_selector_field_find(partial_name_field, partial_name)
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
     )
     existing_id = existing["id"]
     existing_name = existing["name"]
     return okta_manager.call_okta(
-        f"/eventHooks/{existing_id}/lifecycle/deactivate",
-        REST.post
+        f"/eventHooks/{existing_id}/lifecycle/deactivate", REST.post
     )
 
 
@@ -1780,17 +2007,14 @@ def eventhook_delete(partial_name, **kwargs):
     """Deactivates an event hook"""
     partial_name_field = "name"
     existing = _okta_get(
-        "eventHooks", partial_name,
-        selector=_selector_field_find(partial_name_field, partial_name)
+        "eventHooks",
+        partial_name,
+        selector=_selector_field_find(partial_name_field, partial_name),
     )
     existing_id = existing["id"]
     existing_name = existing["name"]
-    okta_manager.call_okta_raw(
-        f"/eventHooks/{existing_id}",
-        REST.delete
-    )
+    okta_manager.call_okta_raw(f"/eventHooks/{existing_id}", REST.delete)
     return f"event hook {existing_id} ({existing_name}) deleted"
-
 
 
 cli_main.add_command(cli_config)

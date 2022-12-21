@@ -11,8 +11,8 @@ def test_dict_flat_to_nested():
 
 
 def test_dict_nested_to_flat():
-    input = {'a': 1, 'c': {'a': 2, 'b': {'x': 5, 'y': 10}}, 'd': [1, 2, 3]}
-    wanted = {'a': 1, 'c.a': 2, 'c.b.x': 5, 'd': [1, 2, 3], 'c.b.y': 10}
+    input = {"a": 1, "c": {"a": 2, "b": {"x": 5, "y": 10}}, "d": [1, 2, 3]}
+    wanted = {"a": 1, "c.a": 2, "c.b.x": 5, "d": [1, 2, 3], "c.b.y": 10}
     assert wanted == _dict_nested_to_flat(input)
 
 
@@ -33,4 +33,3 @@ def test_get_dotted():
     assert 4 == len(dotted_keys)
     for item in ["hi.ho.silver", "hi.ho.letsgo", "hi.howareyou", "schmee"]:
         assert item in dotted_keys
-

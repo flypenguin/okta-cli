@@ -1,444 +1,390 @@
-_perms_self_read_only = [
-    {
-        "principal": "SELF",
-        "action":    "READ_ONLY"
-    }
-]
+_perms_self_read_only = [{"principal": "SELF", "action": "READ_ONLY"}]
 
-_perms_self_read_write = [
-    {
-        "principal": "SELF",
-        "action":    "READ_WRITE"
-    }
-]
+_perms_self_read_write = [{"principal": "SELF", "action": "READ_WRITE"}]
 
-_perms_self_hide = [
-    {
-        "principal": "SELF",
-        "action":    "HIDE"
-    }
-]
+_perms_self_hide = [{"principal": "SELF", "action": "HIDE"}]
 
 # a dump of an okta user schema with some example
 # properties (int, bool)
 okta_user_schema = {
-    "id":          "https://paracelsus.okta.com/meta/schemas/user/default",
-    "$schema":     "http://json-schema.org/draft-04/schema#",
-    "name":        "user",
-    "title":       "User",
+    "id": "https://paracelsus.okta.com/meta/schemas/user/default",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "name": "user",
+    "title": "User",
     "description": "Okta user profile template with default permission settings",
     "lastUpdated": "2019-02-04T14:38:16.000Z",
-    "created":     "2018-07-23T08:46:45.000Z",
+    "created": "2018-07-23T08:46:45.000Z",
     "definitions": {
         "custom": {
-            "id":         "#custom",
-            "type":       "object",
+            "id": "#custom",
+            "type": "object",
             "properties": {
                 "abool": {
-                    "title":       "A bool",
+                    "title": "A bool",
                     "description": "A boolean variable",
-                    "type":        "boolean",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                    "type": "boolean",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
                 "anint": {
-                    "title":       "An int",
+                    "title": "An int",
                     "description": "An integer value",
-                    "type":        "integer",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                    "type": "integer",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
             },
         },
-        "base":   {
-            "id":         "#base",
-            "type":       "object",
+        "base": {
+            "id": "#base",
+            "type": "object",
             "properties": {
-                "login":             {
-                    "title":       "Username",
-                    "type":        "string",
-                    "required":    True,
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
-                    "minLength":   5,
-                    "maxLength":   100,
-                    "pattern":     ".+",
+                "login": {
+                    "title": "Username",
+                    "type": "string",
+                    "required": True,
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
+                    "minLength": 5,
+                    "maxLength": 100,
+                    "pattern": ".+",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "firstName":         {
-                    "title":       "First name",
-                    "type":        "string",
-                    "required":    True,
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
-                    "minLength":   1,
-                    "maxLength":   50,
+                "firstName": {
+                    "title": "First name",
+                    "type": "string",
+                    "required": True,
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
+                    "minLength": 1,
+                    "maxLength": 50,
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "lastName":          {
-                    "title":       "Last name",
-                    "type":        "string",
-                    "required":    True,
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
-                    "minLength":   1,
-                    "maxLength":   50,
+                "lastName": {
+                    "title": "Last name",
+                    "type": "string",
+                    "required": True,
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
+                    "minLength": 1,
+                    "maxLength": 50,
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "middleName":        {
-                    "title":       "Middle name",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "middleName": {
+                    "title": "Middle name",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "honorificPrefix":   {
-                    "title":       "Honorific prefix",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "honorificPrefix": {
+                    "title": "Honorific prefix",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "honorificSuffix":   {
-                    "title":       "Honorific suffix",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "honorificSuffix": {
+                    "title": "Honorific suffix",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "email":             {
-                    "title":       "Primary email",
-                    "type":        "string",
-                    "required":    True,
-                    "format":      "email",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "email": {
+                    "title": "Primary email",
+                    "type": "string",
+                    "required": True,
+                    "format": "email",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "title":             {
-                    "title":       "Title",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "title": {
+                    "title": "Title",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "displayName":       {
-                    "title":       "Display name",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "displayName": {
+                    "title": "Display name",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "nickName":          {
-                    "title":       "Nickname",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "nickName": {
+                    "title": "Nickname",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "profileUrl":        {
-                    "title":       "Profile Url",
-                    "type":        "string",
-                    "format":      "uri",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "profileUrl": {
+                    "title": "Profile Url",
+                    "type": "string",
+                    "format": "uri",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "secondEmail":       {
-                    "title":       "Secondary email",
-                    "type":        "string",
-                    "format":      "email",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "secondEmail": {
+                    "title": "Secondary email",
+                    "type": "string",
+                    "format": "email",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "mobilePhone":       {
-                    "title":       "Mobile phone",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
-                    "maxLength":   100,
+                "mobilePhone": {
+                    "title": "Mobile phone",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
+                    "maxLength": 100,
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "primaryPhone":      {
-                    "title":       "Primary phone",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
-                    "maxLength":   100,
+                "primaryPhone": {
+                    "title": "Primary phone",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
+                    "maxLength": 100,
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "streetAddress":     {
-                    "title":       "Street address",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "streetAddress": {
+                    "title": "Street address",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "city":              {
-                    "title":       "City",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "city": {
+                    "title": "City",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "state":             {
-                    "title":       "State",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "state": {
+                    "title": "State",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "zipCode":           {
-                    "title":       "Zip code",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "zipCode": {
+                    "title": "Zip code",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "countryCode":       {
-                    "title":       "Country code",
-                    "type":        "string",
-                    "format":      "country-code",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "countryCode": {
+                    "title": "Country code",
+                    "type": "string",
+                    "format": "country-code",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "postalAddress":     {
-                    "title":       "Postal Address",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "postalAddress": {
+                    "title": "Postal Address",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_hide,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
                 "preferredLanguage": {
-                    "title":       "Preferred language",
-                    "type":        "string",
-                    "format":      "language-code",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                    "title": "Preferred language",
+                    "type": "string",
+                    "format": "language-code",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "locale":            {
-                    "title":       "Locale",
-                    "type":        "string",
-                    "format":      "locale",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "locale": {
+                    "title": "Locale",
+                    "type": "string",
+                    "format": "locale",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "timezone":          {
-                    "title":       "Time zone",
-                    "type":        "string",
-                    "format":      "timezone",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "timezone": {
+                    "title": "Time zone",
+                    "type": "string",
+                    "format": "timezone",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "userType":          {
-                    "title":       "User type",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "userType": {
+                    "title": "User type",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "employeeNumber":    {
-                    "title":       "Employee number",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "employeeNumber": {
+                    "title": "Employee number",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "costCenter":        {
-                    "title":       "Cost center",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "costCenter": {
+                    "title": "Cost center",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "organization":      {
-                    "title":       "Organization",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "organization": {
+                    "title": "Organization",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "division":          {
-                    "title":       "Division",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "division": {
+                    "title": "Division",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "department":        {
-                    "title":       "Department",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "department": {
+                    "title": "Department",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_write,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "managerId":         {
-                    "title":       "ManagerId",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "managerId": {
+                    "title": "ManagerId",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
+                    "master": {"type": "PROFILE_MASTER"},
                 },
-                "manager":           {
-                    "title":       "Manager",
-                    "type":        "string",
-                    "mutability":  "READ_WRITE",
-                    "scope":       "NONE",
+                "manager": {
+                    "title": "Manager",
+                    "type": "string",
+                    "mutability": "READ_WRITE",
+                    "scope": "NONE",
                     "permissions": _perms_self_read_only,
-                    "master":      {"type": "PROFILE_MASTER"}
-                }
+                    "master": {"type": "PROFILE_MASTER"},
+                },
             },
-            "required":   [
-                "login",
-                "firstName",
-                "lastName",
-                "email"
-            ]
+            "required": ["login", "firstName", "lastName", "email"],
+        },
+    },
+    "type": "object",
+    "properties": {
+        "profile": {
+            "allOf": [{"$ref": "#/definitions/custom"}, {"$ref": "#/definitions/base"}]
         }
     },
-    "type":        "object",
-    "properties":  {
-        "profile": {
-            "allOf": [
-                {
-                    "$ref": "#/definitions/custom"
-                },
-                {
-                    "$ref": "#/definitions/base"
-                }
-            ]
-        }
-    }
 }
 
 okta_groups_list = [
     {
-        "id":                    "group1",
-        "created":               "2018-09-13T12:51:16.000Z",
-        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "id": "group1",
+        "created": "2018-09-13T12:51:16.000Z",
+        "lastUpdated": "2018-10-17T12:00:38.000Z",
         "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
-        "objectClass":           [
-            "okta:user_group"
-        ],
-        "type":                  "OKTA_GROUP",
-        "profile":               {
-            "name":        "Group One",
-            "description": ""
-        },
-        "_links":                {
-            "logo":  [
-                {
-                    "name": "medium",
-                    "href": "https://some.logo",
-                    "type": "image/png"
-                },
+        "objectClass": ["okta:user_group"],
+        "type": "OKTA_GROUP",
+        "profile": {"name": "Group One", "description": ""},
+        "_links": {
+            "logo": [
+                {"name": "medium", "href": "https://some.logo", "type": "image/png"},
                 {
                     "name": "large",
                     "href": "https://some_large.logo",
-                    "type": "image/png"
-                }
+                    "type": "image/png",
+                },
             ],
             "users": {"href": "http://okta/api/v1/groups/group1/users"},
-            "apps":  {"href": "http://okta/api/v1/groups/group1/apps"},
-        }
+            "apps": {"href": "http://okta/api/v1/groups/group1/apps"},
+        },
     },
     {
-        "id":                    "group2",
-        "created":               "2018-09-13T12:51:16.000Z",
-        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "id": "group2",
+        "created": "2018-09-13T12:51:16.000Z",
+        "lastUpdated": "2018-10-17T12:00:38.000Z",
         "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
-        "objectClass":           [
-            "okta:user_group"
-        ],
-        "type":                  "OKTA_GROUP",
-        "profile":               {
-            "name":        "Group Two",
-            "description": ""
-        },
-        "_links":                {
-            "logo":  [
-                {
-                    "name": "medium",
-                    "href": "https://some.logo",
-                    "type": "image/png"
-                },
+        "objectClass": ["okta:user_group"],
+        "type": "OKTA_GROUP",
+        "profile": {"name": "Group Two", "description": ""},
+        "_links": {
+            "logo": [
+                {"name": "medium", "href": "https://some.logo", "type": "image/png"},
                 {
                     "name": "large",
                     "href": "https://some_large.logo",
-                    "type": "image/png"
-                }
+                    "type": "image/png",
+                },
             ],
             "users": {"href": "http://okta/api/v1/groups/group2/users"},
-            "apps":  {"href": "http://okta/api/v1/groups/group2/apps"},
-        }
+            "apps": {"href": "http://okta/api/v1/groups/group2/apps"},
+        },
     },
     {
-        "id":                    "group3",
-        "created":               "2018-09-13T12:51:16.000Z",
-        "lastUpdated":           "2018-10-17T12:00:38.000Z",
+        "id": "group3",
+        "created": "2018-09-13T12:51:16.000Z",
+        "lastUpdated": "2018-10-17T12:00:38.000Z",
         "lastMembershipUpdated": "2019-01-16T08:48:12.000Z",
-        "objectClass":           [
-            "okta:user_group"
-        ],
-        "type":                  "OKTA_GROUP",
-        "profile":               {
-            "name":        "Group 3",
-            "description": ""
-        },
-        "_links":                {
-            "logo":  [
-                {
-                    "name": "medium",
-                    "href": "https://some.logo",
-                    "type": "image/png"
-                },
+        "objectClass": ["okta:user_group"],
+        "type": "OKTA_GROUP",
+        "profile": {"name": "Group 3", "description": ""},
+        "_links": {
+            "logo": [
+                {"name": "medium", "href": "https://some.logo", "type": "image/png"},
                 {
                     "name": "large",
                     "href": "https://some_large.logo",
-                    "type": "image/png"
-                }
+                    "type": "image/png",
+                },
             ],
             "users": {"href": "http://okta/api/v1/groups/group3/users"},
-            "apps":  {"href": "http://okta/api/v1/groups/group3/apps"},
-        }
+            "apps": {"href": "http://okta/api/v1/groups/group3/apps"},
+        },
     },
 ]

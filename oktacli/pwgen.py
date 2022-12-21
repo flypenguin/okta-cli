@@ -20,6 +20,5 @@ def generate_password(num_words=3, lang="en"):
     db.bind("sqlite", sqlfile)
     db.generate_mapping(create_tables=True)
     with db_session:
-        rv = [p.word
-              for p in Word.select(lambda x: x.lang == lang).random(num_words)]
+        rv = [p.word for p in Word.select(lambda x: x.lang == lang).random(num_words)]
     return rv

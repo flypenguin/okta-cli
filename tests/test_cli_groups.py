@@ -9,7 +9,7 @@ from oktacli.okta import Okta
 from .testprep import prepare_standard_calls
 
 
-@patch('oktacli.cli.get_manager')
+@patch("oktacli.cli.get_manager")
 @responses.activate
 @prepare_standard_calls
 def test_group_adduser(get_manager):
@@ -19,8 +19,12 @@ def test_group_adduser(get_manager):
     # set up test
     get_manager.return_value = Okta("http://okta", "12ab")
     runner = CliRunner()
-    responses.add(responses.PUT, re.compile('.+/groups/group1/users/user00/?'),
-                  body="", status=204)
+    responses.add(
+        responses.PUT,
+        re.compile(".+/groups/group1/users/user00/?"),
+        body="",
+        status=204,
+    )
     # run command
     result = runner.invoke(cli.cli_groups, params0)
     # validate

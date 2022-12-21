@@ -26,8 +26,9 @@ def get_config_file():
 def load_config():
     config_file = get_config_file()
     if not osp.isfile(config_file):
-        raise ExitException("okta-cli was not configured. Please run with "
-                            "'config new' command.")
+        raise ExitException(
+            "okta-cli was not configured. Please run with " "'config new' command."
+        )
     with open(config_file, "r") as fh:
         return _check_config(json.loads(fh.read()))
 
@@ -43,17 +44,23 @@ def get_manager():
     config = load_config()
 
     if "default" not in config:
-        raise ExitException("Default context not configured. "
-                            "Please execute 'okta-cli config use-context CONTEXT'")
+        raise ExitException(
+            "Default context not configured. "
+            "Please execute 'okta-cli config use-context CONTEXT'"
+        )
 
     context = config["default"]
     if context not in config["profiles"]:
-        raise ExitException(f"Default context '{context}' does not exist. "
-                            "Either add it or run 'use-context' command to configure a different one.")
+        raise ExitException(
+            f"Default context '{context}' does not exist. "
+            "Either add it or run 'use-context' command to configure a different one."
+        )
 
     context_dict = config["profiles"][context]
     if not context_dict["url"].startswith("https://"):
-        raise ExitException("ERROR: configured Okta URL does not start with 'https://'. Please fix this.")
+        raise ExitException(
+            "ERROR: configured Okta URL does not start with 'https://'. Please fix this."
+        )
 
     return Okta(**context_dict)
 
@@ -67,11 +74,9 @@ def filter_dicts(dicts, *, filters={}, partial=False):
     # value: regex filter / matching function compiled with
     #        with lowercase (!) input
     if not partial:
-        filters = {k: re.compile(v.lower()).fullmatch
-                   for k, v in filters.items()}
+        filters = {k: re.compile(v.lower()).fullmatch for k, v in filters.items()}
     else:
-        filters = {k: re.compile(v.lower()).search
-                   for k, v in filters.items()}
+        filters = {k: re.compile(v.lower()).search for k, v in filters.items()}
 
     def _match(testee):
         for k, check_func in filters.items():

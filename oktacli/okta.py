@@ -26,31 +26,45 @@ class REST(enum.Enum):
 
 
 class Okta:
-
     def __init__(self, url, token):
         self.token = token
         self.path_base = "api/v1"
         self.url = url
 
         self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type':  'application/json',
-            'Accept':        'application/json',
-            'Authorization': 'SSWS ' + token,
-        })
+        self.session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "SSWS " + token,
+            }
+        )
 
-    def call_okta_raw(self, path, method, *, params=None, body_obj=None,
-                      custom_url=None, custom_path_base=None):
+    def call_okta_raw(
+        self,
+        path,
+        method,
+        *,
+        params=None,
+        body_obj=None,
+        custom_url=None,
+        custom_path_base=None,
+    ):
         call_method = getattr(self.session, method.value)
         call_params = {"params": params if params is not None else {}}
         call_url = urljoin(
             (custom_url if custom_url is not None else self.url),
-            "/".join(filter(None, (
-                custom_path_base.strip("/")
-                if custom_path_base is not None
-                else self.path_base,
-                path.strip("/")
-            )))
+            "/".join(
+                filter(
+                    None,
+                    (
+                        custom_path_base.strip("/")
+                        if custom_path_base is not None
+                        else self.path_base,
+                        path.strip("/"),
+                    ),
+                )
+            ),
         )
         if method == REST.post and body_obj:
             call_params["data"] = json.dumps(body_obj)
@@ -77,13 +91,25 @@ class Okta:
                 raise rsp.raise_for_status()
         return rsp
 
-    def call_okta(self, path, method, *,
-                  params=None, body_obj=None,
-                  result_limit=None,
-                  custom_url=None, custom_path_base=None):
-        rsp = self.call_okta_raw(path, method, params=params, body_obj=body_obj,
-                                 custom_url=custom_url,
-                                 custom_path_base=custom_path_base)
+    def call_okta(
+        self,
+        path,
+        method,
+        *,
+        params=None,
+        body_obj=None,
+        result_limit=None,
+        custom_url=None,
+        custom_path_base=None,
+    ):
+        rsp = self.call_okta_raw(
+            path,
+            method,
+            params=params,
+            body_obj=body_obj,
+            custom_url=custom_url,
+            custom_path_base=custom_path_base,
+        )
         rv = rsp.json()
         # NOW, we either have a SINGLE DICT in the rv variable,
         #     *OR*
@@ -139,9 +165,9 @@ class Okta:
         return self.call_okta("/apps", REST.get, params=params)
 
     def add_user(self, query_params, body_object):
-        return self.call_okta("/users", REST.post,
-                              params=query_params,
-                              body_obj=body_object)
+        return self.call_okta(
+            "/users", REST.post, params=query_params, body_obj=body_object
+        )
 
     def update_user(self, user_id, body_object):
         path = f"/users/{user_id}"
@@ -199,12 +225,12 @@ class Okta:
         return self.call_okta(
             f"/users/{user_id}/lifecycle/reset_password",
             REST.post,
-            params={'sendEmail': f"{str(send_email).lower()}"}
+            params={"sendEmail": f"{str(send_email).lower()}"},
         )
 
     def expire_password(self, user_id, *, temp_password=False):
         return self.call_okta(
             f"/users/{user_id}/lifecycle/expire_password",
             REST.post,
-            params={'tempPassword': f"{str(temp_password).lower()}"}
+            params={"tempPassword": f"{str(temp_password).lower()}"},
         )
