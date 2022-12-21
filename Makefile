@@ -58,4 +58,3 @@ dockertest:
 	docker build . --no-cache --tag $$IMG ; \
 	docker run $$IMG
 .PHONY: test
-	
