@@ -35,7 +35,7 @@ REQUIRED = [
 ]
 
 EXTRAS = {
-    # 'fancy feature': ['django'],
+    "dev": ["bumpversion", "pytest", "responses", "twine", "wheel"],
 }
 
 # The rest you shouldn't have to touch too much :)

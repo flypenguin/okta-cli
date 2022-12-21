@@ -1,4 +1,1 @@
-pytest
-wheel
-bumpversion
-twine
+-e . [dev]
