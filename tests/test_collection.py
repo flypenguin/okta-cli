@@ -17,7 +17,7 @@ class DottedCollectionTests(unittest.TestCase):
     def test_dottedcollection(self):
         """ DottedCollection Tests """
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 "Can't instantiate abstract class DottedCollection with "
                 "abstract methods __delitem__, __getitem__, __setitem__,"
@@ -125,7 +125,7 @@ class DottedCollectionTests(unittest.TestCase):
         self.assertEqual(obj['c'][2]['d'].to_json(), '[3, 4, [5]]')
         self.assertEqual(obj['c'][2]['d'][2].to_json(), '[5]')
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 AttributeError,
                 "'int' object has no attribute 'to_json'"):
             obj['c'][2]['d'][2][0].to_json()
@@ -136,7 +136,7 @@ class DottedCollectionTests(unittest.TestCase):
 
         self.assertNotIsInstance(obj, list)
 
-        with self.assertRaisesRegexp(IndexError, 'list index out of range'):
+        with self.assertRaisesRegex(IndexError, 'list index out of range'):
             obj[0]
 
         self.assertReprsEqual(repr(obj), '[]')
@@ -146,7 +146,7 @@ class DottedCollectionTests(unittest.TestCase):
         obj[1] = 1
 
         # Bad try
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 IndexError,
                 'list (assignment )?index out of range'):
             obj[3] = 3
@@ -157,7 +157,7 @@ class DottedCollectionTests(unittest.TestCase):
         self.assertReprsEqual(repr(obj), '[0, 1, 2]')
 
         # Bad try in nested list
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 IndexError,
                 'list (assignment )?index out of range'):
             obj['3.1'] = 1
@@ -205,7 +205,7 @@ class DottedCollectionTests(unittest.TestCase):
         # Test slicing
         self.assertReprsEqual(repr(obj[:2]), '[1, 2]')
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 IndexError,
                 'list (assignment )?index out of range'):
             del obj[3]
@@ -222,12 +222,12 @@ class DottedCollectionTests(unittest.TestCase):
 
         self.assertNotIsInstance(obj, dict)
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 KeyError,
                 'DottedDict keys must be str or unicode'):
             obj[0] = 0
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 KeyError,
                 'DottedDict keys must be str or unicode'):
             obj[1.0] = 0
@@ -332,17 +332,17 @@ class DottedCollectionTests(unittest.TestCase):
                      '}}'
         data = DottedCollection.load_json(json_value)
         self.assertIsInstance(data, DottedDict)
-        self.assertEqual(repr(data["facets"]["d\.o\. origen"]),
+        self.assertEqual(repr(data["facets"]["d\\.o\\. origen"]),
                          repr([u"rioja", u"ribera del duero", u"d.o. bierzo"]))
-        self.assertEqual(repr(data["facets.d\.o\. origen"]),
+        self.assertEqual(repr(data["facets.d\\.o\\. origen"]),
                          repr([u"rioja", u"ribera del duero", u"d.o. bierzo"]))
-        self.assertEqual(data["facets.d\.o\. origen.0"], u"rioja")
-        self.assertEqual(data["facets.d\.o\. origen.2"], u"d.o. bierzo")
-        data["do\.not\.split"] = True
-        self.assertTrue(data["do\.not\.split"])
-        data["split.this\.not"] = False
-        self.assertEqual(data["split.this\.not"], False)
-        self.assertEqual(data["split"]["this\.not"], False)
+        self.assertEqual(data["facets.d\\.o\\. origen.0"], u"rioja")
+        self.assertEqual(data["facets.d\\.o\\. origen.2"], u"d.o. bierzo")
+        data["do\\.not\\.split"] = True
+        self.assertTrue(data["do\\.not\\.split"])
+        data["split.this\\.not"] = False
+        self.assertEqual(data["split.this\\.not"], False)
+        self.assertEqual(data["split"]["this\\.not"], False)
 
     def test_all(self):
         """Power Tests"""
