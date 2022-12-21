@@ -3,6 +3,7 @@ v18.0.0
 
 * Require Python >= 3.7 (mainly because of responses package)
 * Inline dotted library, make compatible with Python 3.10
+  (original library is no longer maintained it seems)
 
 v17.3.1
 =======
