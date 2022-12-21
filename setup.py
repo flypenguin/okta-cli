@@ -35,7 +35,7 @@ REQUIRED = [
 ]
 
 EXTRAS = {
-    "dev": ["bumpversion", "pytest", "responses", "twine", "wheel"],
+    "dev": ["bumpversion", "pytest", "responses", "tox", "twine", "wheel"],
 }
 
 # The rest you shouldn't have to touch too much :)
