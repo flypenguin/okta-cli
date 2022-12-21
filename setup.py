@@ -23,7 +23,7 @@ DESCRIPTION = (
 URL = "https://github.com/flypenguin/okta-cli"
 EMAIL = "mr.axel.bock@gmail.com"
 AUTHOR = "Axel Bock"
-REQUIRES_PYTHON = ">=3.5.0"
+REQUIRES_PYTHON = ">=3.7.0"
 
 REQUIRED = [
     "appdirs",
@@ -125,7 +125,10 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     # $ setup.py publish support.

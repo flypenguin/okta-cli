@@ -388,3 +388,13 @@ okta_groups_list = [
         },
     },
 ]
+
+
+okta_users_list = [
+    # /api/v1/users/user00
+    # MINIMAL VERSION SO TESTS WORK
+    {
+        "id": "user00_id",
+        "profile": {"login": "user00"},
+    },
+]

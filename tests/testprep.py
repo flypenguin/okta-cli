@@ -1,5 +1,5 @@
 import responses
-from .testdata import okta_user_schema
+from .testdata import okta_user_schema, okta_users_list
 from .testdata import okta_groups_list
 
 
@@ -13,8 +13,20 @@ def prepare_standard_calls(func):
         )
         responses.add(
             responses.GET,
+            "http://okta/api/v1/users/user00",
+            json=okta_users_list[0],
+            status=200,
+        )
+        responses.add(
+            responses.GET,
             "http://okta/api/v1/groups/",
             json=okta_groups_list,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "http://okta/api/v1/groups/group1",
+            json=okta_groups_list[0],
             status=200,
         )
         return func(*args, **kwargs)
