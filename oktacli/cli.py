@@ -28,7 +28,7 @@ from .okta import REST
 from .okta import OktaAPIError
 from .exceptions import ExitException
 
-VERSION = "18.0.0"
+VERSION = "18.0.1"
 
 # global constants
 TABLE_MAX_FIELD_LENGTH = None
