@@ -1,3 +1,8 @@
+v18.0.1
+=======
+
+* fix missing dotted library in published pypi lib (thanks to @sanitybit for pointing it out)
+
 v18.0.0
 =======
 
