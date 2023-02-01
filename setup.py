@@ -118,8 +118,6 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=("tests",)),
-    # If your package is a single module, use this instead of 'packages':
-    # py_modules=['mypackage'],
     entry_points={
         "console_scripts": ["okta-cli=oktacli:cli_main"],
     },
