@@ -24,6 +24,7 @@ repos:
         # pre-commit's default_language_version, see
         # https://pre-commit.com/#top_level-default_language_version
         language_version: python3.10
+        files: '.+\.py$'
   - repo: local
     hooks:
       - id: unittest
@@ -31,4 +32,5 @@ repos:
         name: run unit tests
         entry: python -m pytest
         language: system
+        files: '(oktacli|tests)/.+\.py'
         args: ["tests/"]
