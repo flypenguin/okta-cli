@@ -1,3 +1,8 @@
+v18.0.3
+=======
+
+* add missing "six" dependency
+
 v18.0.2
 =======
 
