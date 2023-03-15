@@ -1,19 +1,27 @@
+SHELL = bash
+
 all:    checkclean clean build
 
 test:
 	pytest
 .PHONY: test
 
-.PHONY: pypi
-pypi:   clean build upload
+.PHONY: push
+push:
+	git push
+	git push --tags
 
 .PHONY: upload
 upload:
 	twine upload dist/*
 
+.PHONY: pypi
+pypi:   build upload
+
 .PHONY: build
-build:
+build: clean
 	rm -rf build/ dist/
+	python setup.py sdist
 	python setup.py bdist_wheel
 
 .PHONY: clean
@@ -42,19 +50,19 @@ bump_minor:
 bump_patch:
 	bumpversion patch
 
-.PHONY: push
-push:
-	git push
-	git push --tags
+.PHONY: now-upload-message
+now-upload-message:
+	@echo -e "\nDONE.\nNow push & upload by executing ...\n"
+	@echo -e "    make upload\n\nHave fun :)"
 
 .PHONY: major
-major: clean checkclean bump_major build push upload
+major: clean checkclean bump_major build now-upload-message
 
 .PHONY: minor
-minor: clean checkclean bump_minor build push upload
+minor: clean checkclean bump_minor build now-upload-message
 
 .PHONY: patch
-patch: clean checkclean bump_patch build push upload
+patch: clean checkclean bump_patch build now-upload-message
 
 dockertest:
 	@IMG="temp/$$(basename $$(pwd)):$$(date +%s)" ; \
