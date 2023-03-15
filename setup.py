@@ -21,9 +21,9 @@ DESCRIPTION = (
     "An Okta command line interface for scripting and quickly performing routine tasks"
 )
 URL = "https://github.com/flypenguin/okta-cli"
-EMAIL = "mr.axel.bock@gmail.com"
+EMAIL = "ab@a3b3.de"
 AUTHOR = "Axel Bock"
-REQUIRES_PYTHON = ">=3.7.0"
+REQUIRES_PYTHON = ">=3.7.0, <3.11"
 
 REQUIRED = [
     "appdirs",
@@ -34,17 +34,15 @@ REQUIRED = [
     "pyyaml",
 ]
 
-EXTRAS = {
-    "dev": [
-        "bumpversion",
-        "pre-commit",
-        "pytest",
-        "responses",
-        "tox",
-        "twine",
-        "wheel",
-    ],
-}
+EXTRAS = [
+    "bumpversion",
+    "pre-commit",
+    "pytest",
+    "responses",
+    "tox",
+    "twine",
+    "wheel",
+]
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -122,7 +120,9 @@ setup(
         "console_scripts": ["okta-cli=oktacli:cli_main"],
     },
     install_requires=REQUIRED,
-    extras_require=EXTRAS,
+    extras_require={
+        "dev": EXTRAS,
+    },
     include_package_data=True,
     license="MIT",
     classifiers=[
