@@ -14,7 +14,7 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-VERSION = "18.0.3"
+VERSION = "18.0.4"
 
 NAME = "okta-cli"
 DESCRIPTION = (
