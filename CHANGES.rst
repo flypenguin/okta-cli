@@ -1,3 +1,10 @@
+v18.0.2
+=======
+
+* also build source distribution for pypi
+* update my email :)
+* internal "build system" fixes
+
 v18.0.1
 =======
 
