@@ -1,3 +1,8 @@
+v18.0.4
+=======
+
+* update installation docs, also for pypi
+
 v18.0.3
 =======
 

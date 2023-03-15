@@ -1,5 +1,7 @@
 # Okta-CLI
 
+**NOW WITH HOMEBREW TAP ON A MAC - SEE "INSTALLATION" BELOW :))**
+
 This is a python-based CLI tool for Okta.
 **It is not made or maintained by or in any way affiliated with anyone working at Okta.**
 It is mainly driven by the personal needs of its author, although the feature set is becoming quite complete now.
@@ -11,7 +13,24 @@ The latter is apparently used for setting up the source for development projects
 
 ## Requirements
 
-_REQUIRES_ Python 3.7+, for the change log see [CHANGES.rst](CHANGES.rst).
+- A Mac or Linux machine, it _might_ work on Windows (untested)
+- Python 3.7+, for the change log see [CHANGES.rst](CHANGES.rst).
+- unfortunately **Python 3.11 is not _yet_ supported** due to a dependency.
+
+## Installation
+
+### Mac & homebrew
+
+```bash
+brew tap flypenguin/okta-cli
+brew install okta-cli
+```
+
+### All others
+
+- create a python virtualenv: `mkvirtualenv okta-cli`
+- `pip install okta-cli`
+- start using it: `okta-cli config new`
 
 ## Quickstart
 
