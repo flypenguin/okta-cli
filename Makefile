@@ -6,23 +6,10 @@ test:
 	pytest
 .PHONY: test
 
-.PHONY: push
-push:
-	git push
-	git push --tags
-
-.PHONY: upload
-upload:
-	twine upload dist/*
-
-.PHONY: pypi
-pypi:   build upload
-
-.PHONY: build
-build: clean
-	rm -rf build/ dist/
-	python setup.py sdist
-	python setup.py bdist_wheel
+.PHONY: checkclean
+checkclean:
+	echo -e "\nCHECK IF BUILD DIR IS CLEAN ...\n"
+	git diff-index --quiet HEAD --
 
 .PHONY: clean
 clean:
@@ -33,10 +20,27 @@ clean:
 	rm -rf ignoreme build dist
 	rm -rf tmp
 
-.PHONY: checkclean
-checkclean:
-	echo -e "\nCHECK IF BUILD DIR IS CLEAN ...\n"
-	git diff-index --quiet HEAD --
+.PHONY: build
+build: clean test
+	rm -rf build/ dist/
+	python setup.py sdist
+	python setup.py bdist_wheel
+
+.PHONY: push
+push:
+	git push
+	git push --tags
+
+.PHONY: upload
+upload: push
+	twine upload dist/*
+
+.PHONY: now-upload-message
+now-upload-message:
+	@echo -e "\nDONE.\nNow push & upload by executing ...\n"
+	@echo -e "    make upload\n\nHave fun :)"
+
+# now let's get to the ones we use most often :)
 
 .PHONY: bump_major
 bump_major:
@@ -50,19 +54,14 @@ bump_minor:
 bump_patch:
 	bumpversion patch
 
-.PHONY: now-upload-message
-now-upload-message:
-	@echo -e "\nDONE.\nNow push & upload by executing ...\n"
-	@echo -e "    make upload\n\nHave fun :)"
-
 .PHONY: major
-major: clean checkclean bump_major build now-upload-message
+major: checkclean bump_major build now-upload-message
 
 .PHONY: minor
-minor: clean checkclean bump_minor build now-upload-message
+minor: checkclean bump_minor build now-upload-message
 
 .PHONY: patch
-patch: clean checkclean bump_patch build now-upload-message
+patch: checkclean bump_patch build now-upload-message
 
 dockertest:
 	@IMG="temp/$$(basename $$(pwd)):$$(date +%s)" ; \
