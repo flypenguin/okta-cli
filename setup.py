@@ -32,6 +32,7 @@ REQUIRED = [
     "openpyxl",
     "pony",
     "pyyaml",
+    "six",  # dotted remainders ...
 ]
 
 EXTRAS = [
