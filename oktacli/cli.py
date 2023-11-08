@@ -1308,7 +1308,7 @@ def users_update(user_id, set_fields, set_array, context):
 
     \b
     okta-cli users update 012345 \\
-       -p credentials.recovery_question \\
+       -c credentials.recovery_question \\
        -s question="Who let the dogs out?" \\
        -s answer="Me."
     """
