@@ -1,3 +1,10 @@
+v18.0.5
+=======
+
+* merge a patch which corrects a typo in the CLI help
+* INTERNAL: switch to pyproject.toml project management
+* INTERNAL: pin dependency versions now
+
 v18.0.4
 =======
 
