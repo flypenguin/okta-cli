@@ -1,0 +1,70 @@
+# https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+
+
+[project]
+name = "okta-cli"
+authors = [{ name = "Axel Bock", email = "ab@a3b3.de" }]
+version = "18.0.4"
+requires-python = ">=3.7"
+
+description = "An Okta command line interface for scripting and quickly performing routine tasks"
+readme = "README.md"
+license = { text = "MIT License" }
+keywords = ["okta", "cli"]
+classifiers = [
+    # Trove classifiers
+    # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+dynamic = ["dependencies"]
+
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = {file = "requirements-dev.txt"}
+
+
+[project.urls]
+Homepage = "https://github.com/flypenguin/okta-cli"
+Repository = "https://github.com/flypenguin/okta-cli"
+
+
+[project.scripts]
+okta-cli = "oktacli:cli_main"
+
+
+[tool.bumpversion]
+current_version = "18.0.4"
+commit = true
+tag = true
+message = "build(release): {current_version} -> {new_version}"
+tag_message = ""
+no_sign_tags = true
+
+
+[[tool.bumpversion.files]]
+filename = "oktacli/cli.py"
+search = "{current_version}"
+replace = "{new_version}"
+
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = "{current_version}"
+replace = "{new_version}"

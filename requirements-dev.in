@@ -1,0 +1,4 @@
+-c requirements.txt
+bump-my-version
+pytest
+responses

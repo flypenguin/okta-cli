@@ -2,14 +2,38 @@ SHELL = bash
 
 all:    checkclean clean build
 
+
+_bump:
+	bump-my-version bump $(BUMP_WHAT)
+.PHONY: _bump
+
+
+_checkclean:
+	echo -e "\nCHECK IF BUILD DIR IS CLEAN ...\n"
+	git diff-index --quiet HEAD --
+.PHONY: _checkclean
+.SILENT: _checkclean
+
+
+_print_upload_message:
+	@echo -e "\nDONE.\nNow push & upload by executing ...\n"
+	@echo -e "    make upload\n\nHave fun :)"
+.PHONY: _print_upload_message
+
+
+%.txt: %.in
+	pip-compile -q --output-file "$@" "$<"
+
+requirements-dev.txt: requirements.txt
+
+requirements: requirements.txt requirements-dev.txt
+.PHONY: requirements
+
+
 test:
 	pytest
 .PHONY: test
 
-.PHONY: checkclean
-checkclean:
-	echo -e "\nCHECK IF BUILD DIR IS CLEAN ...\n"
-	git diff-index --quiet HEAD --
 
 .PHONY: clean
 clean:
@@ -20,52 +44,36 @@ clean:
 	rm -rf ignoreme build dist
 	rm -rf tmp
 
+
 .PHONY: build
 build: clean test
-	rm -rf build/ dist/
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python -m build --wheel
+
 
 .PHONY: push
 push:
 	git push
 	git push --tags
 
+
 .PHONY: upload
 upload: push
 	twine upload dist/*
 
-.PHONY: now-upload-message
-now-upload-message:
-	@echo -e "\nDONE.\nNow push & upload by executing ...\n"
-	@echo -e "    make upload\n\nHave fun :)"
 
 # now let's get to the ones we use most often :)
 
-.PHONY: bump_major
-bump_major:
-	bumpversion major
 
-.PHONY: bump_minor
-bump_minor:
-	bumpversion minor
-
-.PHONY: bump_patch
-bump_patch:
-	bumpversion patch
-
+major: BUMP_WHAT := major
+major: _checkclean _bump build _print_upload_message
 .PHONY: major
-major: checkclean bump_major build now-upload-message
 
+
+minor: BUMP_WHAT := minor
+minor: _checkclean _bump build _print_upload_message
 .PHONY: minor
-minor: checkclean bump_minor build now-upload-message
 
+
+patch: BUMP_WHAT := patch
+patch: _checkclean _bump build _print_upload_message
 .PHONY: patch
-patch: checkclean bump_patch build now-upload-message
-
-dockertest:
-	@IMG="temp/$$(basename $$(pwd)):$$(date +%s)" ; \
-	echo $$IMG ; \
-	docker build . --no-cache --tag $$IMG ; \
-	docker run $$IMG
-.PHONY: test
