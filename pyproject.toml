@@ -32,9 +32,13 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 
+[tool.setuptools]
+# see here: https://is.gd/dzQdSd
+# not used in favor of auto discovery, see here: https://tinyurl.com/2xyemdhd
+#package_dir = {"" = "src"}
+
 [tool.setuptools.dynamic.dependencies]
 file = "requirements.txt"
-
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = {file = "requirements-dev.txt"}
@@ -59,7 +63,7 @@ no_sign_tags = true
 
 
 [[tool.bumpversion.files]]
-filename = "oktacli/cli.py"
+filename = "src/oktacli/cli.py"
 search = "{current_version}"
 replace = "{new_version}"
 
@@ -68,3 +72,7 @@ replace = "{new_version}"
 filename = "pyproject.toml"
 search = "{current_version}"
 replace = "{new_version}"
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

@@ -6,6 +6,10 @@
 #
 annotated-types==0.6.0
     # via pydantic
+build==1.0.3
+    # via
+    #   -r requirements-dev.in
+    #   pip-tools
 bump-my-version==0.12.0
     # via -r requirements-dev.in
 certifi==2023.7.22
@@ -20,6 +24,7 @@ click==8.1.7
     # via
     #   -c requirements.txt
     #   bump-my-version
+    #   pip-tools
     #   rich-click
 docutils==0.20.1
     # via readme-renderer
@@ -48,7 +53,11 @@ more-itertools==10.1.0
 nh3==0.2.14
     # via readme-renderer
 packaging==23.2
-    # via pytest
+    # via
+    #   build
+    #   pytest
+pip-tools==7.3.0
+    # via -r requirements-dev.in
 pkginfo==1.9.6
     # via twine
 pluggy==1.3.0
@@ -65,6 +74,8 @@ pygments==2.16.1
     # via
     #   readme-renderer
     #   rich
+pyproject-hooks==1.0.0
+    # via build
 pytest==7.4.3
     # via -r requirements-dev.in
 python-dotenv==1.0.0
@@ -95,7 +106,11 @@ rich==13.6.0
 rich-click==1.7.1
     # via bump-my-version
 tomli==2.0.1
-    # via pytest
+    # via
+    #   build
+    #   pip-tools
+    #   pyproject-hooks
+    #   pytest
 tomlkit==0.12.2
     # via bump-my-version
 twine==4.0.2
@@ -112,5 +127,11 @@ urllib3==2.0.7
     #   requests
     #   responses
     #   twine
+wheel==0.42.0
+    # via pip-tools
 zipp==3.17.0
     # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip
+# setuptools
