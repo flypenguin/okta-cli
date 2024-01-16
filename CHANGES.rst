@@ -1,3 +1,9 @@
+v18.1.1
+=======
+
+* Internally switch to src/ file layout
+* Fix broken installation script from 18.1.0
+
 v18.1.0
 =======
 
