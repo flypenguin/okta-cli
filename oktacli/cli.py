@@ -1,32 +1,32 @@
-import json
-import logging
-import sys
 import collections.abc as collections
 import csv
+import json
+import logging
 import re
+import sys
 import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime as dt
 from functools import wraps
-from os.path import splitext, join, isdir
 from os import mkdir
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from os.path import splitext, join, isdir
+from typing import Optional, Union
 
 import click
 import yaml
-from requests import RequestException
-from .dotted.collection import DottedDict, DottedCollection
-from requests.exceptions import HTTPError as RequestsHTTPError
 from openpyxl import load_workbook
+from requests import RequestException
+from requests.exceptions import HTTPError as RequestsHTTPError
 
-from .api import load_config
-from .api import save_config
-from .api import get_manager
 from .api import filter_dicts
 from .api import get_config_file
-
-from .okta import REST
-from .okta import OktaAPIError
+from .api import get_manager
+from .api import load_config
+from .api import save_config
+from .dotted.collection import DottedDict, DottedCollection
 from .exceptions import ExitException
+from .okta import OktaAPIError
+from .okta import REST
 
 VERSION = "18.0.5"
 
@@ -336,6 +336,62 @@ def _validate_url(ctx, param, value):
     return value
 
 
+def excel_reader(filename):
+    wb = load_workbook(filename=filename)
+    rows = wb.active.rows
+
+    # Get the header values as keys and move the iterator to the next item
+    keys = [c.value for c in next(rows)]
+    num_keys = len(keys)
+    for row in rows:
+        values = [c.value for c in row]
+        rv = dict(zip(keys, values[:num_keys]))
+        if any(rv.values()):
+            yield rv
+
+
+def csv_reader(filename):
+    with open(filename, "r", encoding="utf-8") as infile:
+        dialect = csv.Sniffer().sniff(infile.read(4096))
+        infile.seek(0)
+        dr = csv.DictReader(infile, dialect=dialect)
+        for row in dr:
+            if any(row.values()):
+                yield row
+
+
+def file_reader(
+    filename: str,
+    *,
+    jump_to_user: Optional[str] = None,
+    jump_to_index: int = 0,
+    limit: int = 0,
+):
+    rdr = excel_reader if splitext(filename)[1].lower() == ".xlsx" else csv_reader
+    dr = rdr(filename)
+    if jump_to_user:
+        tmp = next(dr)
+        while jump_to_user not in (tmp.get("profile.login", ""), tmp.get("id", "")):
+            tmp = next(dr)
+    elif jump_to_index:
+        # prevent both being used at the same time :)
+        for _ in range(jump_to_index):
+            next(dr)
+    _cnt = 0
+    for row in dr:
+        if limit and _cnt == limit:
+            break
+        yield row
+        _cnt += 1
+
+
+# ###########################################################################
+#
+# COMMAND GROUP: "config ..."
+#
+# ###########################################################################
+
+
 @click.group(name="config")
 def cli_config():
     """Manage okta-cli configuration"""
@@ -442,6 +498,92 @@ def config_current_context():
     print("Current profile set to '{}'.".format(config["default"]))
 
 
+# ###########################################################################
+#
+# SOME INTERNAL WRAPPERS FOR FUNCTIONS USED BY MULTIPLE PARTS
+# (e.g. "add_user", used in "users bulk-add" and "users-add", ...
+#
+# ###########################################################################
+
+
+def internal_add_user(
+    fields_raw: Union[list, dict],
+    *,
+    override_fields_raw: Union[list, dict] = None,
+    profile_fields_raw: Union[list, dict] = None,
+    group_ids: list = None,
+    activate: bool = False,
+    provider: bool = False,
+    nextlogin: bool = False,
+):
+    """
+    Convenience wrapper for several CLI functions that add a new user (at least "users add"
+    and "users bulk-add").
+
+    Each _raw parameter is either a list or a dict. If it's a list it must be a list of
+    "one=two" formatted strings, which will then be converted to a dict {"one": "two"}.
+
+    :param fields_raw: Either ["one=two", ...] or {"one": "two"}
+    :param override_fields_raw: Fields that "override" the fields_raw information, same format.
+    :param profile_raw: Same as fields_raw, but all keys will be prefixed with "profile."
+    :param group_ids: A list of group IDs the user should be part of [ID0, ID1, ]
+    :param activate: Activate the user on creation
+    :param provider: TBD
+    :param nextlogin: Change password on next login
+    :return: Okta.add_user() return value
+    """
+
+    fields_dict = (
+        {k: v for k, v in map(lambda x: x.split("=", 1), fields_raw)}
+        if isinstance(fields_raw, list)
+        else fields_raw
+    )
+
+    override_fields_raw = override_fields_raw or []
+    fields_dict.update(
+        {k: v for k, v in map(lambda x: x.split("=", 1), override_fields_raw)}
+        if isinstance(override_fields_raw, list)
+        else override_fields_raw
+    )
+
+    # filter out all non-prefixed fields, cause you cannot set "top level" fields in okta
+    fields_dict = {k: v for k, v in fields_dict.items() if k.find(".") > -1}
+
+    profile_fields_raw = profile_fields_raw or []
+    if isinstance(profile_fields_raw, list):
+        profile_dict = {
+            "profile." + k: v
+            for k, v in map(lambda x: x.split("=", 1), profile_fields_raw)
+        }
+    else:
+        profile_dict = {"profile." + k: v for k, v in profile_fields_raw.items()}
+    fields_dict.update(profile_dict)
+
+    group_ids = group_ids or []
+
+    if group_ids:
+        fields_dict["groupIds"] = group_ids
+
+    # query parameters
+    params = {
+        "activate": "True" if activate else "False",
+        "provider": "True" if provider else "False",
+    }
+    if nextlogin:
+        params["nextlogin"] = "changePassword"
+
+    # when reading from csv, we iterate
+    final_dict = _dict_flat_to_nested(fields_dict)
+    return okta_manager.add_user(params, final_dict)
+
+
+# ###########################################################################
+#
+# COMMAND GROUP: "pw ..."
+#
+# ###########################################################################
+
+
 @click.group(name="pw")
 def cli_pw():
     """Manage passwords"""
@@ -505,6 +647,13 @@ def pw_set(login_or_id, set_password, generate, expire, language, min_length):
         okta_manager.expire_password(login_or_id, temp_password=False)
     rv = "PASSWORD" + ("_EXPIRED" if expire else "") + f": {set_password}"
     return rv
+
+
+# ###########################################################################
+#
+# COMMAND GROUP: "groups ..."
+#
+# ###########################################################################
 
 
 @click.group(name="groups")
@@ -716,6 +865,13 @@ def groups_clear(name_or_id, use_id):
         okta_manager.call_okta_raw(path, REST.delete)
         print("ok", file=sys.stderr)
     return f"All users removed from group {group_id} ({group_name})"
+
+
+# ###########################################################################
+#
+# COMMAND GROUP: "apps ..."
+#
+# ###########################################################################
 
 
 @click.group(name="apps")
@@ -1035,6 +1191,13 @@ def apps_groups(app, **kwargs):
     return rv
 
 
+# ###########################################################################
+#
+# COMMAND GROUP: "users ..."
+#
+# ###########################################################################
+
+
 @click.group(name="users")
 def cli_users():
     """Add, update (etc.) users"""
@@ -1328,14 +1491,140 @@ def users_update(user_id, set_fields, set_array, context):
     return okta_manager.update_user(user_id, nested_dict)
 
 
+@cli_users.command(name="bulk-add", context_settings=CONTEXT_SETTINGS)
+@click.argument("file")
+@click.option(
+    "-s",
+    "--set",
+    "set_fields",
+    metavar="FIELD=value",
+    help="set any user object field",
+    multiple=True,
+)
+@click.option(
+    "--activate/--no-activate",
+    default=True,
+    help="Set 'activation' flag, default: True",
+)
+@click.option(
+    "--provider/--no-provider",
+    default=False,
+    help="Set 'provider' flag, default: False",
+)
+@click.option(
+    "--nextlogin/--no-nextlogin",
+    default=False,
+    help="User must change password, default: False",
+)
+@click.option(
+    "-g",
+    "--group",
+    "groups",
+    metavar="GROUP_ID",
+    help="specify groups the user should be added to on creation",
+    multiple=True,
+)
+@click.option(
+    "-i",
+    "--jump-to-index",
+    metavar="IDX",
+    default=0,
+    help="Start with index IDX (0-based) and skip previous entries",
+)
+@click.option(
+    "-l",
+    "--limit",
+    metavar="NUM",
+    default=0,
+    help="Stop after NUM updates",
+)
+@click.option(
+    "-w",
+    "--workers",
+    metavar="NUM",
+    default=25,
+    help="use this many threads parallel, default:25",
+)
+@_command_wrapper
+def users_bulk_add(
+    file,
+    set_fields,
+    activate,
+    provider,
+    nextlogin,
+    groups,
+    jump_to_index,
+    limit,
+    workers,
+):
+    """
+    Bulk-ADD users from a CSV or Excel (.xlsx) file
+
+    The CSV file *must* contain a "profile.login" column.
+
+    All columns which do not contain a dot (".") are ignored. You can only
+    update fields of sub-structures, not top level fields in okta (e.g. you
+    *can* update "profile.site", but you *cannot* update "id").
+    """
+
+    def _add_parallel(_row, index):
+        current_idx = index + jump_to_index
+        user_id = _row.get("profile.login", "").strip()
+        if user_id == "":
+            add_err.append((current_idx, "missing profile.login column", None))
+            return
+
+        try:
+            add_ok.append(
+                internal_add_user(
+                    _row,
+                    override_fields_raw=set_fields,
+                    group_ids=groups,
+                    activate=activate,
+                    nextlogin=nextlogin,
+                    provider=provider,
+                )
+            )
+        except RequestsHTTPError as e:
+            add_err.append((index + jump_to_index, str(e), None))
+        except OktaAPIError as e:
+            add_err.append((index + jump_to_index, str(e), e.error_object))
+
+    print("Bulk update might take a while. Please be patient.", flush=True)
+
+    add_ok = []
+    add_err = []
+    dr = file_reader(file, jump_to_index=jump_to_index, limit=limit)
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        runs = {idx: ex.submit(_add_parallel, row, idx) for idx, row in enumerate(dr)}
+        for job in as_completed(runs.values()):
+            pass
+
+    print(f"{len(runs)} - done.", file=sys.stderr)
+    tmp = {"added": add_ok, "errors": add_err}
+    timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
+    rv = ""
+    for name, results in tmp.items():
+        if len(results):
+            file_name = f"okta-bulk-update-{timestamp_str}-{name}.json"
+            with open(file_name, "w") as outfile:
+                outfile.write(json.dumps(results, indent=2, sort_keys=True))
+                rv += f"{len(results):>4} {name:6} - {file_name}\n"
+        else:
+            rv += f"{len(results):>5} {name:6}\n"
+    return rv + f"{len(add_ok) + len(add_err)} total"
+
+
 @cli_users.command(name="bulk-update", context_settings=CONTEXT_SETTINGS)
 @click.argument("file")
 @click.option(
     "-s",
     "--set",
     "set_fields",
+    metavar="FIELD=value",
+    help="set any user object field",
     multiple=True,
-    help="Set default field values for updates",
 )
 @click.option(
     "-i",
@@ -1372,45 +1661,6 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
     *can* update "profile.site", but you *cannot* update "id").
     """
 
-    def excel_reader():
-        wb = load_workbook(filename=file)
-        rows = wb.active.rows
-
-        # Get the header values as keys and move the iterator to the next item
-        keys = [c.value for c in next(rows)]
-        num_keys = len(keys)
-        for row in rows:
-            values = [c.value for c in row]
-            rv = dict(zip(keys, values[:num_keys]))
-            if any(rv.values()):
-                yield rv
-
-    def csv_reader():
-        with open(file, "r", encoding="utf-8") as infile:
-            dialect = csv.Sniffer().sniff(infile.read(4096))
-            infile.seek(0)
-            dr = csv.DictReader(infile, dialect=dialect)
-            for row in dr:
-                if any(row.values()):
-                    yield row
-
-    def file_reader():
-        dr = excel_reader() if splitext(file)[1].lower() == ".xlsx" else csv_reader()
-        if jump_to_user:
-            tmp = next(dr)
-            while jump_to_user not in (tmp.get("profile.login", ""), tmp.get("id", "")):
-                tmp = next(dr)
-        elif jump_to_index:
-            # prevent both being used at the same time :)
-            for _ in range(jump_to_index):
-                next(dr)
-        _cnt = 0
-        for row in dr:
-            if limit and _cnt == limit:
-                break
-            yield row
-            _cnt += 1
-
     def update_user_parallel(_row, index):
         user_id = None
 
@@ -1419,33 +1669,31 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
         for field in ("id", "profile.login"):
             if field in _row and user_id is None:
                 user_id = _row.pop(field)
+
+        # user_id check
+        current_idx = index + jump_to_index
+        if user_id is None:
+            upd_err.append((current_idx, "missing id or profile.login column", None))
+            return
+
         # you can't set top-level fields. pop all of them.
         _row = {k: v for k, v in _row.items() if k.find(".") > -1}
         # fields_dict - from outer scope.
         final_dict = _dict_flat_to_nested(_row, defaults=fields_dict)
 
-        # user_id check
-        if user_id is None:
-            upd_err.append(
-                (
-                    index + jump_to_index,
-                    final_dict,
-                    "missing user_id column (id or profile.login)",
-                )
-            )
-            return
-
         try:
             upd_ok.append(okta_manager.update_user(user_id, final_dict))
+        except OktaAPIError as e:
+            upd_err.append((current_idx, str(e), e.error_object))
         except RequestsHTTPError as e:
-            upd_err.append((index + jump_to_index, final_dict, str(e)))
+            upd_err.append((current_idx, str(e), None))
 
     print("Bulk update might take a while. Please be patient.", flush=True)
 
     upd_ok = []
     upd_err = []
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    dr = file_reader()
+    dr = file_reader(file)
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
         runs = {
@@ -1455,7 +1703,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
             pass
 
     print(f"{len(runs)} - done.", file=sys.stderr)
-    tmp = {"ok": upd_ok, "errors": upd_err}
+    tmp = {"updated": upd_ok, "errors": upd_err}
     timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
     rv = ""
     for name, results in tmp.items():
@@ -1465,7 +1713,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
                 outfile.write(json.dumps(results, indent=2, sort_keys=True))
                 rv += f"{len(results):>4} {name:6} - {file_name}\n"
         else:
-            rv += f"{len(results):>4} {name:6}\n"
+            rv += f"{len(results):>5} {name:6}\n"
     return rv + f"{len(upd_ok) + len(upd_err)} total"
 
 
@@ -1528,25 +1776,21 @@ def users_add(set_fields, profile_fields, groups, activate, provider, nextlogin)
     Okta documentation: https://is.gd/aUtkTo
     """
     # create user dict
-    fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    profile_dict = {
-        "profile." + k: v for k, v in map(lambda x: x.split("="), profile_fields)
-    }
-    fields_dict.update(profile_dict)
-    if groups:
-        fields_dict["groupIds"] = groups
+    return internal_add_user(
+        set_fields,
+        profile_fields_raw=profile_fields,
+        group_ids=groups,
+        activate=activate,
+        provider=provider,
+        nextlogin=nextlogin,
+    )
 
-    # query parameters
-    params = {
-        "activate": "True" if activate else "False",
-        "provider": "True" if provider else "False",
-    }
-    if nextlogin:
-        params["nextlogin"] = "changePassword"
 
-    # when reading from csv, we iterate
-    final_dict = _dict_flat_to_nested(fields_dict)
-    return okta_manager.add_user(params, final_dict)
+# ###########################################################################
+#
+# COMMAND GROUP: "features ..."
+#
+# ###########################################################################
 
 
 @click.group(name="features")
@@ -1684,6 +1928,13 @@ def cli_main():
     If in doubt start with: "okta-cli config new --help"
     """
     pass
+
+
+# ###########################################################################
+#
+# MISC COMMANDS WITHOUT GROUP (dump, ...)
+#
+# ###########################################################################
 
 
 @cli_main.command(name="dump", context_settings=CONTEXT_SETTINGS)
@@ -1835,6 +2086,13 @@ def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
 def cli_version():
     """Print version number and exit"""
     print(VERSION)
+
+
+# ###########################################################################
+#
+# COMMAND GROUP: "eventhooks ..."
+#
+# ###########################################################################
 
 
 @click.group(name="eventhooks")
@@ -2019,6 +2277,13 @@ def eventhook_delete(partial_name, **kwargs):
     existing_name = existing["name"]
     okta_manager.call_okta_raw(f"/eventHooks/{existing_id}", REST.delete)
     return f"event hook {existing_id} ({existing_name}) deleted"
+
+
+# ###########################################################################
+#
+# MAIN CLI SETUP
+#
+# ###########################################################################
 
 
 cli_main.add_command(cli_config)

@@ -40,7 +40,7 @@ def save_config(config_to_save):
         fh.write(json.dumps(config_to_save))
 
 
-def get_manager():
+def get_manager() -> Okta:
     config = load_config()
 
     if "default" not in config:

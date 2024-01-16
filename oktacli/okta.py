@@ -7,6 +7,11 @@ import requests
 
 
 class OktaAPIError(Exception):
+    error_code: str
+    error_link: str
+    error_id: str
+    error_causes: list
+
     def __init__(self, error_obj, status_code=-1):
         self.error_code = error_obj["errorCode"]
         self.error_link = error_obj["errorLink"]
@@ -15,7 +20,17 @@ class OktaAPIError(Exception):
         # dicts later.
         causes = error_obj.get("errorCauses", None)
         self.error_causes = causes if isinstance(causes, list) else []
+        self.error_obj = error_obj
         super().__init__(error_obj["errorSummary"])
+
+    @property
+    def error_object(self):
+        return {
+            "errorCode": self.error_code,
+            "errorLink": self.error_link,
+            "errorId": self.error_id,
+            "errorCauses": self.error_causes,
+        }
 
 
 class REST(enum.Enum):
