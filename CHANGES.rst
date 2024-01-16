@@ -1,3 +1,8 @@
+v18.1.2
+=======
+
+* Update docs of README.md, no code changes.
+
 v18.1.1
 =======
 
