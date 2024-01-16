@@ -34,29 +34,43 @@ brew install okta-cli
 
 ## Quickstart
 
-Every more complex function should have help texts available: `okta-cli users add -h`, or maybe `okta-cli users update -h` or maybe `okta-cli apps add -h` ... those are probably the most interesting ones.
+Every more complex function should have help texts available: `okta-cli users add -h`, or
+maybe `okta-cli users update -h` or maybe `okta-cli apps add -h` ... those are probably the
+most interesting ones.
 
 ```bash
 $ pip install okta-cli                                # install :)
+
 $ okta-cli config new \                               # create a new okta profile
            -n my-profile -\
            -u https://my.okta.url \
            -t API_TOKEN
-$ okta-cli users list \                               # search users with a query
-           -f 'profile.email eq "my@email.com"'
-$ okta-cli features list                              # list okta server-side features
-$ okta-cli features enable "Recent Activity"          # enable an Okta feature
-$ okta cli users groups adduser \                     # add a user to a group
-           -g app1_rollout \
-           -u fred.flintstone@flintstones.com
+
+$ okta-cli -h                                         # get help
+
+$ okta-cli apps -h                                    # get help
 $ okta-cli apps adduser \                             # assign an app to a user
            -a my_app_name -u 0109121 \
            -f profile.employeeId
+
+$ okta-cli users -h                                   # get help
+$ okta-cli users list --csv                           # list all users as csv
+$ okta-cli users list \                               # search users with a query
+           -f 'profile.email eq "my@email.com"'
 $ okta-cli users update id012345678 \                 # update a field of a user record
            --set profile.email=my@other.email.com
-$ okta-cli users bulk-update update-list.xlsx         # CSV is okay as well :)
-$ okta-cli version                                    # print version and exit
+$ okta cli users groups adduser \                     # add a user to a group
 $ okta-cli users get my-login -vvvvv                  # see http debug output
+$ okta-cli users bulk-add add-list.csv                # Bulk-ADD users
+$ okta-cli users bulk-update update-list.xlsx         # Bulk-UPDATE users
+
+$ okta-cli features -h                                # get help
+$ okta-cli features list                              # list okta server-side features
+$ okta-cli features enable "Recent Activity"          # enable an Okta feature
+           -g app1_rollout \
+           -u fred.flintstone@flintstones.com
+
+$ okta-cli version                                    # print version and exit
 ```
 
 ## Configuration
