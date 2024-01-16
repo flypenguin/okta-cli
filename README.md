@@ -88,7 +88,7 @@ The commands `bulk-add` and `bulk-update` can read from CSV or Excel. Consider t
 * for the command `bulk-update` there _MUST_ be either a `profile.login` or an `id` column, the latter has preference.
 * all other will most probably refer to profile fields, and map to the add/update API call.
   * most probably you will want to have `profile.FIELD` columns (e.g. `profile.firstName`, `profile.zipCode`, ...).
-  * you can see the valid standard field names here: https://developer.okta.com/docs/reference/api/schemas/.
+  * you can see the valid standard field names here: https://developer.okta.com/docs/reference/api/schemas/#user-profile-base-subschema.
 * all columns which do not contain a "." are _ignored_.
 
 **Excel:**
