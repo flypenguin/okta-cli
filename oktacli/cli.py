@@ -374,8 +374,11 @@ def config_list():
     """List all configuration profiles"""
     global config
     config = load_config()
+    default_config = config.get("default", "")
     for name, conf in config["profiles"].items():
-        print("{}  {}  {}".format(name, conf["url"], "*" * 3 + conf["token"][-4:]))
+        curr = "  (CURRENT)" if name == default_config else ""
+        tok = "*" * 3 + conf["token"][-4:]
+        print("{}  {}  {}{}".format(name, conf["url"], tok, curr))
 
 
 @cli_config.command(name="use-context", context_settings=CONTEXT_SETTINGS)
