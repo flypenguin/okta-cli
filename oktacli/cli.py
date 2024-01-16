@@ -398,6 +398,7 @@ def config_use_context(profile_name):
 
 @cli_config.command(name="delete", context_settings=CONTEXT_SETTINGS)
 @click.argument("profile-name")
+@_command_wrapper
 def config_delete(profile_name):
     """
     Delete a config profile
@@ -418,7 +419,7 @@ def config_delete(profile_name):
             del config["default"]
             rv.append("No more profiles left.")
     save_config(config)
-    print("\n".join(rv))
+    return "\n".join(rv)
 
 
 @cli_config.command(name="file", context_settings=CONTEXT_SETTINGS)
