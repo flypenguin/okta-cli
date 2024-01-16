@@ -1,3 +1,11 @@
+v18.1.0
+=======
+
+* Add "users bulk-add" command
+* Add progress bars to "bulk-*" commands
+* Fix #21 (1) - "config delete" doesn't dump any more on wrong config name
+* Fix #21 (2) - "config list" shows the default now
+
 v18.0.5
 =======
 
