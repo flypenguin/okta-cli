@@ -2,6 +2,7 @@ import collections.abc as collections
 import csv
 import json
 import logging
+import progressbar
 import re
 import sys
 import traceback
@@ -1586,11 +1587,13 @@ def users_bulk_add(
                 )
             )
         except RequestsHTTPError as e:
-            add_err.append((index + jump_to_index, str(e), None))
+            add_err.append((current_idx, str(e), None))
         except OktaAPIError as e:
-            add_err.append((index + jump_to_index, str(e), e.error_object))
+            add_err.append((current_idx, str(e), e.error_object))
+        except Exception as e:
+            add_err.append((current_idx, str(e), None))
 
-    print("Bulk update might take a while. Please be patient.", flush=True)
+    print("Bulk adding users might take a while. Please be patient.", flush=True)
 
     add_ok = []
     add_err = []
@@ -1598,16 +1601,16 @@ def users_bulk_add(
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
         runs = {idx: ex.submit(_add_parallel, row, idx) for idx, row in enumerate(dr)}
-        for job in as_completed(runs.values()):
-            pass
+        with progressbar.ProgressBar(max_value=len(runs)) as bar:
+            for job in as_completed(runs.values()):
+                bar.increment()
 
-    print(f"{len(runs)} - done.", file=sys.stderr)
     tmp = {"added": add_ok, "errors": add_err}
     timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
     rv = ""
     for name, results in tmp.items():
         if len(results):
-            file_name = f"okta-bulk-update-{timestamp_str}-{name}.json"
+            file_name = f"okta-bulk-add-{timestamp_str}-{name}.json"
             with open(file_name, "w") as outfile:
                 outfile.write(json.dumps(results, indent=2, sort_keys=True))
                 rv += f"{len(results):>4} {name:6} - {file_name}\n"
@@ -1661,7 +1664,7 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
     *can* update "profile.site", but you *cannot* update "id").
     """
 
-    def update_user_parallel(_row, index):
+    def _upd_parallel(_row, index):
         user_id = None
 
         # this is a closure, let's use the outer scope's variables
@@ -1687,22 +1690,22 @@ def users_bulk_update(file, set_fields, jump_to_index, jump_to_user, limit, work
             upd_err.append((current_idx, str(e), e.error_object))
         except RequestsHTTPError as e:
             upd_err.append((current_idx, str(e), None))
+        except Exception as e:
+            upd_err.append((current_idx, str(e), None))
 
     print("Bulk update might take a while. Please be patient.", flush=True)
 
     upd_ok = []
     upd_err = []
     fields_dict = {k: v for k, v in map(lambda x: x.split("="), set_fields)}
-    dr = file_reader(file)
+    dr = file_reader(file, jump_to_user=jump_to_user, jump_to_index=jump_to_index)
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        runs = {
-            idx: ex.submit(update_user_parallel, row, idx) for idx, row in enumerate(dr)
-        }
-        for job in as_completed(runs.values()):
-            pass
+        runs = {idx: ex.submit(_upd_parallel, row, idx) for idx, row in enumerate(dr)}
+        with progressbar.ProgressBar(max_value=len(runs), redirect_stdout=True) as bar:
+            for _ in as_completed(runs.values()):
+                bar.increment()
 
-    print(f"{len(runs)} - done.", file=sys.stderr)
     tmp = {"updated": upd_ok, "errors": upd_err}
     timestamp_str = dt.now().strftime("%Y%m%d_%H%M%S")
     rv = ""

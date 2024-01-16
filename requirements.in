@@ -3,5 +3,6 @@ click
 requests
 openpyxl
 pony
+progressbar2
 pyyaml
 six

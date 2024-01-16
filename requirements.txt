@@ -20,11 +20,17 @@ openpyxl==3.1.2
     # via -r requirements.in
 pony==0.7.17
     # via -r requirements.in
+progressbar2==4.3.2
+    # via -r requirements.in
+python-utils==3.8.1
+    # via progressbar2
 pyyaml==6.0.1
     # via -r requirements.in
 requests==2.31.0
     # via -r requirements.in
 six==1.16.0
     # via -r requirements.in
+typing-extensions==4.9.0
+    # via python-utils
 urllib3==2.0.7
     # via requests
