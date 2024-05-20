@@ -2034,6 +2034,13 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
     help="Which HTTP method to use; default: 'get'",
 )
 @click.option(
+    "-H",
+    "--header",
+    "headers",
+    multiple=True,
+    help="Set an HTTP header",
+)
+@click.option(
     "-q",
     "--query",
     "query_params",
@@ -2054,7 +2061,7 @@ def dump(target_dir, no_user_list, no_app_users, no_group_users):
     help="Specify a different base path than the default (/api/v1)",
 )
 @_output_type_command_wrapper(None)
-def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
+def raw(api_endpoint, http_method, query_params, body, base_path, headers, **kwargs):
     """Perform a request against the specified API endpoint"""
     methods = {
         "get": REST.get,
@@ -2068,6 +2075,7 @@ def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
     if not api_endpoint.startswith("/"):
         api_endpoint = "/" + api_endpoint
     p_dict = dict([(y[0], y[1]) for y in map(lambda x: x.split("=", 1), query_params)])
+    header_dict = dict([(h[0].strip(), h[1].strip()) for h in map(lambda x: x.split(":", 1), headers)])
     if body:
         if body.startswith("FILE:"):
             use_body = json.loads(open(body[5:], "r").read())
@@ -2079,6 +2087,7 @@ def raw(api_endpoint, http_method, query_params, body, base_path, **kwargs):
         api_endpoint,
         use_method,
         params=p_dict,
+        headers=header_dict,
         body_obj=use_body,
         custom_path_base=base_path,
     )

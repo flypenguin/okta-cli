@@ -61,12 +61,16 @@ class Okta:
         method,
         *,
         params=None,
+        headers=None,
         body_obj=None,
         custom_url=None,
         custom_path_base=None,
     ):
         call_method = getattr(self.session, method.value)
-        call_params = {"params": params if params is not None else {}}
+        call_params = {
+            "params": params if params is not None else {},
+            "headers": headers if headers is not None else {},
+        }
         call_url = urljoin(
             (custom_url if custom_url is not None else self.url),
             "/".join(
@@ -112,6 +116,7 @@ class Okta:
         method,
         *,
         params=None,
+        headers=None,
         body_obj=None,
         result_limit=None,
         custom_url=None,
@@ -121,37 +126,41 @@ class Okta:
             path,
             method,
             params=params,
+            headers=headers,
             body_obj=body_obj,
             custom_url=custom_url,
             custom_path_base=custom_path_base,
         )
-        rv = rsp.json()
-        # NOW, we either have a SINGLE DICT in the rv variable,
-        #     *OR*
-        # a list.
-        last_url = None
-        while True:
-            # let's stop if we defined a result_limit
-            if result_limit and len(rv) > result_limit:
-                break
-            # now, let's get all the "next" links. if we do NOT have a list,
-            # we do not have "next" links :) . handy!
-            url = rsp.links.get("next", {"url": ""})["url"]
-            # sanity checks
-            if not url or last_url == url:
-                break
-            last_url = url
-            rsp = self.call_okta_raw("", REST.get, custom_url=url, custom_path_base="")
-            # now the += operation is safe, cause we have a list.
-            # this is a liiiitle bit implicit, but should work smoothly.
-            rv += rsp.json()
-        # filter out _links items from the final result list
-        if isinstance(rv, list):
-            for item in rv:
-                item.pop("_links", None)
-        elif isinstance(rv, dict):
-            rv.pop("_links", None)
-        return rv
+        if rsp.headers['Content-Type'] == "application/json":
+            rv = rsp.json()
+            # NOW, we either have a SINGLE DICT in the rv variable,
+            #     *OR*
+            # a list.
+            last_url = None
+            while True:
+                # let's stop if we defined a result_limit
+                if result_limit and len(rv) > result_limit:
+                    break
+                # now, let's get all the "next" links. if we do NOT have a list,
+                # we do not have "next" links :) . handy!
+                url = rsp.links.get("next", {"url": ""})["url"]
+                # sanity checks
+                if not url or last_url == url:
+                    break
+                last_url = url
+                rsp = self.call_okta_raw("", REST.get, custom_url=url, custom_path_base="")
+                # now the += operation is safe, cause we have a list.
+                # this is a liiiitle bit implicit, but should work smoothly.
+                rv += rsp.json()
+            # filter out _links items from the final result list
+            if isinstance(rv, list):
+                for item in rv:
+                    item.pop("_links", None)
+            elif isinstance(rv, dict):
+                rv.pop("_links", None)
+            return rv
+        else:
+            return rsp.text
 
     def list_groups(self, query_ex="", filter_ex=""):
         params = {}
